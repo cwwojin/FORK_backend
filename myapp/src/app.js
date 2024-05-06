@@ -16,12 +16,17 @@ app.use(bodyParser.json());
 app.use(morgan("dev")); // Logging middleware
 
 // Routes
-app.use("/api/auth", authRoutes);
+// app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
-app.use("/api/facilities", facilityRoutes);
-app.use("/api/maps", mapRoutes);
+// app.use("/api/facilities", facilityRoutes);
+// app.use("/api/maps", mapRoutes);
 
 // Error Handling Middleware
 app.use(errorMiddleware);
+
+// TMP
+app.get('/', (req,res) => {
+    res.send('<h1>Hello World!</h1>');
+});
 
 module.exports = app;
