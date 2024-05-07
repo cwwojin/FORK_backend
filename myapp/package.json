@@ -13,8 +13,7 @@
   "author": "Foodie",
   "license": "ISC",
   "devDependencies": {
-    "nodemon": "^3.1.0",
-    "sequelize-auto": "^0.8.8"
+    "nodemon": "^3.1.0"
   },
   "dependencies": {
     "aws-sdk": "^2.1613.0",
@@ -24,7 +23,6 @@
     "express-validator": "^7.0.1",
     "morgan": "^1.10.0",
     "pg": "^8.11.5",
-    "pg-hstore": "^2.3.4",
-    "sequelize": "^6.37.3"
+    "pg-hstore": "^2.3.4"
   }
 }

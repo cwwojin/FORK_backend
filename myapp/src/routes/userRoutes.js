@@ -1,6 +1,5 @@
-// Routes for user profile management
-const express = require('express');
-const router = express.Router();
+const { Router } = require('express');
+const router = Router();
 const userController = require('../controllers/userController');
 const { body, param, query } = require('express-validator');
 const { validatorChecker } = require('../middleware/validator');
@@ -13,7 +12,7 @@ router
     ).get(
         '/:id',
         [
-            param('id').exists().toInt().isInt({min: 0}),
+            param('id').exists().notEmpty(),
             validatorChecker,
         ],
         userController.getUserById

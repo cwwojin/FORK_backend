@@ -1,27 +1,21 @@
 'use strict';
 
-const Sequelize = require('sequelize');
-const initModels = require('./init-models');  // models from sequelize-auto
-const process = require('process');
-const env = process.env.NODE_ENV || 'development';  // change default value.
-const config = require(__dirname + '/../config/config.json')[env];  // edit credentials in JSON if necessary.
+const pg = require('pg');
+const env = process.env.NODE_ENV || 'development';
+const config = require('../config/config')[env];
 
-let sequelize;
-if (config.use_env_variable) {
-  sequelize = new Sequelize(process.env[config.use_env_variable], config);
-} else {
-  sequelize = new Sequelize(config.database, config.username, config.password, {
+const pool = new pg.Pool({
     host: config.host,
-  	dialect: config.dialect,
-    pool: {
-        max: 5,
-        min: 0,
-        acquire: 30000,
-        idle: 10000,
+    user: config.username,
+    password: config.password,
+    database: config.database,
+    port: 5432,
+    max: 10,
+})
+pool.connect((err) => {
+    if(err){
+        console.log('DB connection failed : ' + err)
     }
-  });
-}
+});
 
-const db = initModels(sequelize);
-
-module.exports = db;
+module.exports = pool;
