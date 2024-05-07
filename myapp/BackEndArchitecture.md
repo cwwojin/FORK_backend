@@ -7,13 +7,13 @@ myapp/
 │ │ ├── config.js # Load database configuration
 │ │ └── index.js # Central configuration file
 │ │
-│ ├── routes/ # Route definitions for the application
+│ ├── routes/ # Routers for handling routes and request validation
 │ │ ├── authRoutes.js # Routes for user authentication and registration services
 │ │ ├── userRoutes.js # Routes for user information services
 │ │ ├── facilityRoutes.js # Routes for facility information services
 │ │ └── mapRoutes.js # Routes for map-related services
 │ │
-│ ├── controllers/ # Controllers for handling request validation, response & error handling
+│ ├── controllers/ # Controllers for handling request, response & error handling
 │ │ ├── authController.js # Controller for user authentication and registration services
 │ │ ├── userController.js # Controller for user information services
 │ │ ├── facilityController.js # Controller for facility information services
