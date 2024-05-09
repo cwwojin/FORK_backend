@@ -8,7 +8,8 @@
   },
   "scripts": {
     "dev": "NODE_ENV=development nodemon src/server.js",
-    "test": "NODE_ENV=test nodemon src/server.js"
+    "test": "NODE_ENV=test node src/server.js",
+    "prod": "NODE_ENV=production node src/server.js"
   },
   "keywords": [],
   "author": "Foodie",

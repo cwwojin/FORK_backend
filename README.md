@@ -10,7 +10,15 @@
 2024 Spring CS350 Project - FORK
 
 ## Installation <a name="installation"></a>
-.
+### Prerequisites
+1. [Install AWS CLI & S3 credentials](https://docs.aws.amazon.com/ko_kr/cli/latest/userguide/getting-started-install.html)
+2. [Install Docker, Docker Compose](https://docs.docker.com/compose/install/)
+3. Clone this repository
+### Run Server with Docker
+- argument : {'dev', 'test', 'prod'}
+```shell
+$ bash compose.sh dev
+```
 
 ## Contribution <a name="contribution"></a>
 ### Branch rules
