@@ -133,3 +133,4 @@ dist
 .DS_Store
 *.http
 database/
+*tmp*
