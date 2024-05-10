@@ -1,0 +1,36 @@
+services:
+  backend-dev:
+    container_name: fork_backend_dev
+    env_file: .env.dev
+    build:
+      dockerfile: ./Dockerfile
+      target: dev
+    restart: unless-stopped
+    ports:
+      - "80:3000"
+    profiles:
+      - dev
+
+  backend-test:
+    container_name: fork_backend_test
+    env_file: .env.test
+    build:
+      dockerfile: ./Dockerfile
+      target: test
+    restart: unless-stopped
+    ports:
+      - "80:3000"
+    profiles:
+      - test
+
+  backend-prod:
+    container_name: fork_backend_prod
+    env_file: .env.prod
+    build:
+      dockerfile: ./Dockerfile
+      target: prod
+    restart: unless-stopped
+    ports:
+      - "80:3000"
+    profiles:
+      - prod

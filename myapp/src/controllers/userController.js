@@ -1,6 +1,5 @@
 const userService = require("../services/userService");
 
-
 module.exports = {
     // get all users
     getUsers: async (req,res,next) => {
@@ -13,7 +12,7 @@ module.exports = {
     },
     // get user by ID
     getUserById: async (req,res,next) => {
-        const id = req.params.id;
+        const id = Number(req.params.id);
         try{
             const result = await userService.getUserById(id);
             if(result.length !== 0){
@@ -35,7 +34,84 @@ module.exports = {
         }
     },
     // update user - profile
-    // update user - preferences
-    // update user - favorites
+    updateUserProfile: async (req,res,next) => {
+        const id = Number(req.params.id);
+        try{
+            const result = await userService.updateUserProfile(req.body, id);
+            res.status(201).json(result[0]);
+        }catch(err){
+            res.status(404).json({message: `No user with id: ${id}`});
+        }
+    },
+    deleteUser: async (req,res,next) => {
+        const id = Number(req.params.id);
+        try{
+            const result = await userService.deleteUser(id);
+            res.status(200).json({message: `Successfully deleted user id: ${id}`});
+        }catch(err){
+            res.status(404).json({message: `No user with id: ${id}`});
+        }
+    },
+    // get user preferences
+    getUserPreference: async (req,res,next) => {
+        const id = Number(req.params.id);
+        try{
+            const result = await userService.getUserPreference(id);
+            res.status(200).json(result);
+        }catch(err){
+            next(err);
+        }
+    },
+    // add a preference to user (if it isnt already added)
+    addUserPreference: async (req,res,next) => {
+        const id = Number(req.params.id);
+        try {
+            const result = await userService.addUserPreference(id, req.body.preferenceId);
+            res.status(201).json(result[0]);
+        }catch(err){
+            next(err);
+        }
+    },
+    // delete a preference of a user
+    deleteUserPreference: async (req,res,next) => {
+        const id = Number(req.params.id);
+        try{
+            const result = await userService.deleteUserPreference(id, req.body.preferenceId);
+            res.status(200).json({message: `Successfully deleted user preference`});
+        }catch(err){
+            res.status(404).json({message: err.message});
+        }
+    },
+    // get user favorites
+    getUserFavorite: async (req,res,next) => {
+        const id = Number(req.params.id);
+        try{
+            const result = await userService.getUserFavorite(id);
+            res.status(200).json(result);
+        }catch(err){
+            next(err);
+        }
+    },
+    // add a favorite
+    addUserFavorite: async (req,res,next) => {
+        const id = Number(req.params.id);
+        try {
+            const result = await userService.addUserFavorite(id, req.body.facilityId);
+            res.status(201).json(result[0]);
+        }catch(err){
+            next(err);
+        }
+    },
+    // delete a favorite
+    deleteUserFavorite: async (req,res,next) => {
+        const id = Number(req.params.id);
+        try{
+            const result = await userService.deleteUserFavorite(id, req.body.facilityId);
+            res.status(200).json({message: `Successfully deleted user favorite`});
+        }catch(err){
+            res.status(404).json({message: err.message});
+        }
+    }
+
 
 }
