@@ -10,4 +10,4 @@ if ! [ -e ./.env.prod ]; then
     aws s3 cp s3://fork-foodies/env/.env.prod ./.env.prod
 fi
 
-docker compose --profile $1 up --force-recreate
+docker compose --profile $1 up -d --force-recreate

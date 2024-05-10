@@ -1,20 +1,20 @@
 FROM node:latest as base
 
 # Install necessary packages
-RUN apt-get update && apt-get install -y \
-    unzip \
-    curl
+# RUN apt-get update && apt-get install -y \
+#     unzip \
+#     curl
+
+# AWS CLI
+# RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+# RUN unzip awscliv2.zip
+# RUN ./aws/install
 
 # App setup & dependencies
 WORKDIR /usr/myapp
 COPY ./myapp/package.json ./
 RUN npm install --omit=dev
 COPY ./myapp .
-
-# AWS CLI
-# RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-# RUN unzip awscliv2.zip
-# RUN ./aws/install
 
 # Dev image
 FROM base as dev

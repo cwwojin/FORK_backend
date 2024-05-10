@@ -7,7 +7,7 @@ services:
       target: dev
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "80:3000"
     profiles:
       - dev
 
@@ -19,7 +19,7 @@ services:
       target: test
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "80:3000"
     profiles:
       - test
 
@@ -31,6 +31,6 @@ services:
       target: prod
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "80:3000"
     profiles:
       - prod
