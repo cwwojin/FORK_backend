@@ -47,6 +47,7 @@ module.exports = {
         const result = await db.query(query);
         return result.rows;
     },
+    // delete user
     deleteUser: async (id) => {
         const query = {
             text: 'delete from "user" where id = $1',

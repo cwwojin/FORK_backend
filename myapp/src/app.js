@@ -6,6 +6,7 @@ const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const facilityRoutes = require("./routes/facilityRoutes");
 const mapRoutes = require("./routes/mapRoutes");
+const reviewRoutes = require("./routes/reviewRoutes");
 const errorMiddleware = require("./middleware/errorMiddleware");
 
 const app = express();
@@ -20,6 +21,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/facilities", facilityRoutes);
 app.use("/api/maps", mapRoutes);
+app.use("/api/reviews/", reviewRoutes);
 
 // Error Handling Middleware
 app.use(errorMiddleware);
