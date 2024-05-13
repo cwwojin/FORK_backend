@@ -3,7 +3,7 @@ const router = Router();
 const userController = require('../controllers/userController');
 const { body, param, query } = require('express-validator');
 const { validatorChecker } = require('../middleware/validator');
-const { USER_TYPES } = require("../helper/helper");
+const { USER_TYPES, validateUserId, validatePassword } = require("../helper/helper");
 
 router
     .get(       // GET : get all users
@@ -19,8 +19,8 @@ router
     ).post(     // POST : create new user
         '/create',
         [
-            body('userId').exists().notEmpty().isLength({max: 20}),
-            body('password').exists().notEmpty().isLength({min: 6, max: 20}),
+            body('userId').exists().notEmpty().isLength({min: 6, max: 20}).custom(validateUserId),
+            body('password').exists().notEmpty().isLength({min: 6, max: 20}).custom(validatePassword),
             body('userType').exists().toInt().isIn(USER_TYPES),
             body('email').exists().isEmail(),
             body('displayName').exists().notEmpty(),
