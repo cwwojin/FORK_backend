@@ -16,7 +16,7 @@ module.exports = {
             next(err);
         }
     },
-    // get reviews by query : userId, facilityId & hashtags, image
+    /** get reviews by query : userId, facilityId & hashtags, image */
     getReviewByQuery: async (req,res,next) => {
         try{
             const result = await reviewService.getReviewByQuery(req.query.facility,req.query.user,req.body);
@@ -25,7 +25,7 @@ module.exports = {
             next(err);
         }
     },
-    // create review
+    /** create review */
     createReview: async (req,res,next) => {
         try{
             const imageUri = (req.file !== undefined) ? makeS3Uri(req.file.bucket, req.file.key) : '';
@@ -38,7 +38,7 @@ module.exports = {
                 imageUri: imageUri,
             }
             const result = await reviewService.createReview(args);
-            res.status(201).json(result);
+            res.status(201).json(result[0]);
         }catch(err){
             next(err);
         }

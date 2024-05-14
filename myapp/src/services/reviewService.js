@@ -28,8 +28,15 @@ module.exports = {
             values.push(userId);
             baseQuery = baseQuery + `and r.author_id = $${values.length} `;
         }
-        if(parseBoolean(body.hasImage)){
-            baseQuery = baseQuery + `and r.img_uri <> '' `;
+        switch(parseBoolean(body.hasImage)){
+            case true:
+                baseQuery = baseQuery + `and r.img_uri <> '' `;
+                break;
+            case false:
+                baseQuery = baseQuery + `and r.img_uri = '' `;
+                break;
+            case undefined:
+                break;
         }
         if(body.hashtags){
             values.push(body.hashtags)
@@ -71,6 +78,10 @@ module.exports = {
             const insertJunctionQuery = `insert into review_hashtag (review_id, hashtag_id)
                 values ${hashtagIds.map((e) => `(${reviewId}, ${e})`).join(`, `)}`;
             await db.query(insertJunctionQuery);
+            result = await db.query({
+                text: `select * from review_with_hashtag r where id = $1`,
+                values: [id],
+            });
             await db.query('COMMIT');
             return result.rows;
         }catch(err){
@@ -102,6 +113,10 @@ module.exports = {
             const insertJunctionQuery = `insert into review_hashtag (review_id, hashtag_id)
                 values ${hashtagIds.map((e) => `(${id}, ${e})`).join(`, `)}`;
             await db.query(insertJunctionQuery);
+            result = await db.query({
+                text: `select * from review_with_hashtag r where id = $1`,
+                values: [id],
+            });
             await db.query('COMMIT');
             return result.rows;
         }catch(err){
