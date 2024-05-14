@@ -8,6 +8,7 @@ const facilityRoutes = require("./routes/facilityRoutes");
 const mapRoutes = require("./routes/mapRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const stampRoutes = require("./routes/stampRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 const errorMiddleware = require("./middleware/errorMiddleware");
 
 const app = express();
@@ -24,6 +25,7 @@ app.use("/api/facilities", facilityRoutes);
 app.use("/api/maps", mapRoutes);
 app.use("/api/reviews/", reviewRoutes);
 app.use("/api/stamps", stampRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Error Handling Middleware
 app.use(errorMiddleware);
