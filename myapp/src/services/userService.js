@@ -21,13 +21,12 @@ module.exports = {
     // create new user
     createUser: async (info) => {
         const query = {
-            text: 'insert into "user" (account_id, user_type, password, email, display_name) values ($1, $2, $3, $4, $5) returning *',
+            text: 'insert into "user" (account_id, user_type, password, email) values ($1, $2, $3, $4) returning *',
             values: [
                 info.userId,
                 info.userType,
                 info.password,
                 info.email,
-                info.displayName,
             ]
         };
         const result = await db.query(query);
@@ -36,11 +35,10 @@ module.exports = {
     // update user - profile (password, email, display_name)
     updateUserProfile: async (info, id) => {
         const query = {
-            text: 'update "user" set password = $1, email = $2, display_name = $3 where id = $4 returning *',
+            text: 'update "user" set password = $1, email = $2 where id = $3 returning *',
             values: [
                 info.password,
                 info.email,
-                info.displayName,
                 id,
             ]
         };
