@@ -80,7 +80,7 @@ module.exports = {
             await db.query(insertJunctionQuery);
             result = await db.query({
                 text: `select * from review_with_hashtag r where id = $1`,
-                values: [id],
+                values: [reviewId],
             });
             await db.query('COMMIT');
             return result.rows;
