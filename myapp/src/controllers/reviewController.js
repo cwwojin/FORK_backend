@@ -63,4 +63,23 @@ module.exports = {
             next(err);
         }
     },
+    /** get all hashtags */
+    getAllHashtags: async (req,res,next) => {
+        try{
+            const result = await reviewService.getAllHashtags();
+            res.status(200).json(result);
+        }catch(err){
+            next(err);
+        }
+    },
+    /** get hashtag by id */
+    getHashtag: async (req,res,next) => {
+        const id = Number(req.params.id);
+        try{
+            const result = await reviewService.getHashtag(id);
+            res.status(200).json(result[0]);
+        }catch(err){
+            next(err);
+        }
+    },
 }

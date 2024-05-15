@@ -133,6 +133,22 @@ module.exports = {
         const result = await db.query(query);
         return result;
     },
-
+    /** get all hashtags */
+    getAllHashtags: async () => {
+        const query = {
+            text: `select * from hashtag`,
+        };
+        const result = await db.query(query);
+        return result.rows;
+    },
+    /** get hashtag by id */
+    getHashtag: async (id) => {
+        const query = {
+            text: `select * from hashtag where id = $1`,
+            values: [id],
+        };
+        const result = await db.query(query);
+        return result.rows;
+    },
 
 }
