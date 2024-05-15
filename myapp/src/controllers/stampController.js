@@ -5,25 +5,41 @@ module.exports = {
     getStampBook: async (req,res,next) => {
         try{
             const result = await stampService.getStampBook(req.query.user, req.query.facility);
-            res.status(200).json(result);
+            res.status(200).json({
+                status: "success",
+                data: result,
+            });
         }catch(err){
-            res.status(404).json({message: "Failed to retrieve stampbooks!"});
+            next(err);
         }
     },
     /** create stampbook with user_id, facility_id */
     createStampBook: async (req,res,next) => {
         try{
             const result = await stampService.createStampBook(req.body);
-            res.status(201).json(result[0]);
+            if(result.length !== 0){
+                res.status(201).json({
+                    status: "success",
+                    data: result[0],
+                });
+            }else{
+                res.status(404).json({
+                    status: "fail",
+                    message: `No records were inserted`,
+                })
+            }
         }catch(err){
-            res.status(409).json({message: err.message});
+            next(err);
         }
     },
     /** perform a stamp transaction */
     stampTransaction: async (req,res,next) => {
         try{
             const result = await stampService.stampTransaction(req.body);
-            res.status(200).json(result[0]);
+            res.status(201).json({
+                status: "success",
+                data: result[0],
+            });
         }catch(err){
             next(err);
         }

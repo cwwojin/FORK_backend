@@ -5,7 +5,10 @@ module.exports = {
     getUsers: async (req,res,next) => {
         try{
             const result = await userService.getUsers();
-            res.status(200).json(result);
+            res.status(200).json({
+                status: "success",
+                data: result,
+            });
         }catch(err){
             next(err);
         }
@@ -16,9 +19,15 @@ module.exports = {
         try{
             const result = await userService.getUserById(id);
             if(result.length !== 0){
-                res.status(200).json(result[0]);
+                res.status(200).json({
+                    status: "success",
+                    data: result[0],
+                });
             }else{
-                res.status(404).json({message: `No user with id: ${id}`});
+                res.status(404).json({
+                    status: "fail",
+                    message: `No user with id: ${id}`}
+                );
             }
         }catch(err){
             next(err);
@@ -28,9 +37,19 @@ module.exports = {
     createUser: async (req,res,next) => {
         try{
             const result = await userService.createUser(req.body);
-            res.status(201).json(result[0])
+            if(result.length !== 0){
+                res.status(201).json({
+                    status: "success",
+                    data: result[0],
+                });
+            }else{
+                res.status(404).json({
+                    status: "fail",
+                    message: `No records were inserted`,
+                });
+            }
         }catch(err){
-            res.status(409).json({message: 'Failed to insert new user : ' + err.message});
+            next(err);
         }
     },
     // update user - profile
@@ -38,9 +57,19 @@ module.exports = {
         const id = Number(req.params.id);
         try{
             const result = await userService.updateUserProfile(req.body, id);
-            res.status(201).json(result[0]);
+            if(result.length !== 0){
+                res.status(201).json({
+                    status: "success",
+                    data: result[0],
+                });
+            }else{
+                res.status(404).json({
+                    status: "fail",
+                    message: `No user with id: ${id}`,
+                })
+            }
         }catch(err){
-            res.status(404).json({message: `No user with id: ${id}`});
+            next(err);
         }
     },
     // delete user
@@ -48,9 +77,11 @@ module.exports = {
         const id = Number(req.params.id);
         try{
             const result = await userService.deleteUser(id);
-            res.status(200).json({message: `Successfully deleted user id: ${id}`});
+            res.status(200).json({
+                status: "success",
+            });
         }catch(err){
-            res.status(404).json({message: `No user with id: ${id}`});
+            next(err);
         }
     },
     // get user preferences
@@ -58,7 +89,10 @@ module.exports = {
         const id = Number(req.params.id);
         try{
             const result = await userService.getUserPreference(id);
-            res.status(200).json(result);
+            res.status(200).json({
+                status: "success",
+                data: result,
+            });
         }catch(err){
             next(err);
         }
@@ -68,7 +102,10 @@ module.exports = {
         const id = Number(req.params.id);
         try {
             const result = await userService.addUserPreference(id, req.body.preferenceId);
-            res.status(201).json(result[0]);
+            res.status(201).json({
+                status: "success",
+                data: result[0],
+            });
         }catch(err){
             next(err);
         }
@@ -78,9 +115,11 @@ module.exports = {
         const id = Number(req.params.id);
         try{
             const result = await userService.deleteUserPreference(id, req.body.preferenceId);
-            res.status(200).json({message: `Successfully deleted user preference`});
+            res.status(200).json({
+                status: "success",
+            });
         }catch(err){
-            res.status(404).json({message: err.message});
+            next(err);
         }
     },
     // get user favorites
@@ -88,7 +127,10 @@ module.exports = {
         const id = Number(req.params.id);
         try{
             const result = await userService.getUserFavorite(id);
-            res.status(200).json(result);
+            res.status(200).json({
+                status: "success",
+                data: result,
+            });
         }catch(err){
             next(err);
         }
@@ -98,7 +140,10 @@ module.exports = {
         const id = Number(req.params.id);
         try {
             const result = await userService.addUserFavorite(id, req.body.facilityId);
-            res.status(201).json(result[0]);
+            res.status(201).json({
+                status: "success",
+                data: result[0],
+            });
         }catch(err){
             next(err);
         }
@@ -108,9 +153,11 @@ module.exports = {
         const id = Number(req.params.id);
         try{
             const result = await userService.deleteUserFavorite(id, req.body.facilityId);
-            res.status(200).json({message: `Successfully deleted user favorite`});
+            res.status(200).json({
+                status: "success",
+            });
         }catch(err){
-            res.status(404).json({message: err.message});
+            next(err);
         }
     }
 
