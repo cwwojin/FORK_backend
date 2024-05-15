@@ -28,4 +28,7 @@ module.exports = {
             return false;
         }
     },
+    validateMapArea: (area) => {
+        return ('latMin' in area) && ('lngMin' in area) && ('latMax' in area) && ('lngMax' in area);
+    }
 }

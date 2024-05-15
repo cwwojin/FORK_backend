@@ -22,7 +22,7 @@ app.use(morgan("dev")); // Logging middleware
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/facilities", facilityRoutes);
-app.use("/api/maps", mapRoutes);
+app.use("/api/map", mapRoutes);
 app.use("/api/reviews/", reviewRoutes);
 app.use("/api/stamps", stampRoutes);
 app.use("/api/admin", adminRoutes);
