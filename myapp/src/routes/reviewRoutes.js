@@ -52,7 +52,7 @@ router
             validatorChecker,
         ],
         reviewController.createReview
-    ).put(      // PUT : edit review contents - content, hashtags
+    ).post(      // POST : edit review contents - content, hashtags
         '/:id',
         [
             param('id').exists().isInt({min: 1}),

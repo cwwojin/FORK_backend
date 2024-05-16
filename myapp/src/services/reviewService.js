@@ -127,11 +127,11 @@ module.exports = {
     /** delete a review */
     deleteReview: async (id) => {
         const query = {
-            text: `delete from review where id = $1`,
+            text: `delete from review where id = $1 returning *`,
             values: [id]
         }
         const result = await db.query(query);
-        return result;
+        return result.rows;
     },
     /** get all hashtags */
     getAllHashtags: async () => {

@@ -54,7 +54,7 @@ module.exports = {
     /** delete a report by id*/
     deleteReport: async (id) => {
         const query = {
-            text: `delete from report where id = $1`,
+            text: `delete from report where id = $1 returning *`,
             values: [id],
         };
         const result = await db.query(query);
@@ -75,7 +75,7 @@ module.exports = {
         }
         try{
             await db.query('BEGIN');
-            const result = await db.query({
+            let result = await db.query({
                 text: `update report 
                     set status = $1, action = $2, admin_id = $3, respond_date = now()
                     where id = $4 returning *`,
@@ -86,11 +86,13 @@ module.exports = {
                     id,
                 ]
             });
+            result = result.rows;
             if(body.action === 'delete'){
-                await reviewService.deleteReview(reviewId);
+                const deleteResult = await reviewService.deleteReview(reviewId);
+                result = {...result, deleteRows: deleteResult.rows}
             }
             await db.query('COMMIT');
-            return result.rows;
+            return result;
         }catch(err){
             await db.query('ROLLBACK');
             throw new Error(err);

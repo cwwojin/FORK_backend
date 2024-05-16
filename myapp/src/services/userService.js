@@ -48,11 +48,11 @@ module.exports = {
     // delete user
     deleteUser: async (id) => {
         const query = {
-            text: 'delete from "user" where id = $1',
+            text: 'delete from "user" where id = $1 returning *',
             values: [id],
         };
         const result = await db.query(query);
-        return result;
+        return result.rows;
     },
     // get user preferences
     getUserPreference: async (id) => {
@@ -77,11 +77,11 @@ module.exports = {
     // delete a preference of a user
     deleteUserPreference: async (userId, preferenceId) => {
         const query = {
-            text: `delete from user_preference where user_id = $1 and preference_id = $2`,
+            text: `delete from user_preference where user_id = $1 and preference_id = $2 returning *`,
             values: [userId, preferenceId],
         }
         const result = await db.query(query);
-        return result;
+        return result.rows;
     },
     // get user favorites
     getUserFavorite: async (id) => {
@@ -109,11 +109,11 @@ module.exports = {
     // delete a favorite of a user
     deleteUserFavorite: async (userId, facilityId) => {
         const query = {
-            text: `delete from favorite where user_id = $1 and facility_id = $2`,
+            text: `delete from favorite where user_id = $1 and facility_id = $2 returning *`,
             values: [userId, facilityId],
         }
         const result = await db.query(query);
-        return result;
+        return result.rows;
     },
 
 }
