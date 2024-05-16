@@ -42,7 +42,10 @@ module.exports = {
             values.push(body.hashtags)
             baseQuery = baseQuery + `and r.hashtag_ids && $${values.length} `;
         }
-        const result = await db.query({text: baseQuery, values: values});
+        const result = await db.query({
+            text: baseQuery + `order by r.post_date desc `, 
+            values: values,
+        });
         return result.rows;
     },
     /** 

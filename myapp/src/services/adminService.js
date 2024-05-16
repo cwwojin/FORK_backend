@@ -20,18 +20,18 @@ module.exports = {
         let baseQuery = `select * from report where 1=1 `;
         if(authorId !== undefined){
             values.push(authorId);
-            baseQuery = baseQuery + `and author_id = $${values.length}`;
+            baseQuery = baseQuery + `and author_id = $${values.length} `;
         }
         if(args.type !== undefined){
             values.push(args.type);
-            baseQuery = baseQuery + `and type = $${values.length}`;
+            baseQuery = baseQuery + `and type = $${values.length} `;
         }
         if(args.status !== undefined){
             values.push(args.status);
-            baseQuery = baseQuery + `and status = $${values.length}`;
+            baseQuery = baseQuery + `and status = $${values.length} `;
         }
         const result = await db.query({
-            text: baseQuery,
+            text: baseQuery + `order by created_at desc`,
             values: values
         });
         return result.rows;
