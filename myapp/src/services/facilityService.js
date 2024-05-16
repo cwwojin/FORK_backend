@@ -15,79 +15,62 @@ class FacilityService {
   }
 
   async createFacility(data) {
+    let client;
     try {
-      await db.query("BEGIN");
+      // Use of client and transaction control
+      client = await db.connect();
+      await client.query("BEGIN");
 
-      // Insert into facility table
-      let query = `
+      // Insert into facility table, get the facility ID
+      const facilityQuery = `
         INSERT INTO facility (name, business_id, type, description, url)
         VALUES ($1, $2, $3, $4, $5)
         RETURNING id;
       `;
-      let values = [
+      const facilityValues = [
         data.name,
         data.business_id,
         data.type,
         data.description,
         data.url,
       ];
-      const facilityResult = await db.query(query, values);
+      const facilityResult = await client.query(facilityQuery, facilityValues);
       const facilityId = facilityResult.rows[0].id;
 
       // Insert into address table
       if (data.address) {
-        query = `
+        const addressQuery = `
           INSERT INTO address (facility_id, post_number, country, city, road_address, jibun_address, english_address, lat, lng)
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
         `;
-        values = [
-          facilityId,
-          data.address.post_number,
-          data.address.country,
-          data.address.city,
-          data.address.road_address,
-          data.address.jibun_address,
-          data.address.english_address,
-          data.address.lat,
-          data.address.lng,
-        ];
-        await db.query(query, values);
+        const addressValues = [facilityId, ...Object.values(data.address)];
+        await client.query(addressQuery, addressValues);
       }
 
-      // Insert into stamp_ruleset table if provided
-      if (data.stamp_ruleset) {
-        query = `
-          INSERT INTO stamp_ruleset (facility_id, logo_img_uri, total_cnt)
-          VALUES ($1, $2, $3);
-        `;
-        values = [
-          facilityId,
-          data.stamp_ruleset.logo_img_uri,
-          data.stamp_ruleset.total_cnt,
-        ];
-        await db.query(query, values);
-      }
-
-      // Insert into opening_hours table if provided
-      if (data.opening_hours && data.opening_hours.length) {
-        data.opening_hours.forEach(async (hour) => {
-          query = `
+      // Other stamp_ruleset, opening_hours, menu
+      if (data.opening_hours) {
+        for (const hour of data.opening_hours) {
+          const hoursQuery = `
             INSERT INTO opening_hours (facility_id, day, open_time, close_time)
             VALUES ($1, $2, $3, $4);
           `;
-          values = [facilityId, hour.day, hour.open_time, hour.close_time];
-          await db.query(query, values);
-        });
+          const hoursValues = [
+            facilityId,
+            hour.day,
+            hour.open_time,
+            hour.close_time,
+          ];
+          await client.query(hoursQuery, hoursValues);
+        }
       }
 
-      // Insert into menu table if provided
-      if (data.menu && data.menu.length) {
-        data.menu.forEach(async (item) => {
-          query = `
+      if (data.menu) {
+        for (const item of data.menu) {
+          const menuQuery = `
             INSERT INTO menu (facility_id, name, slug, img_uri, description, price, quantity)
             VALUES ($1, $2, $3, $4, $5, $6, $7);
           `;
-          values = [
+          const menuValues = [
             facilityId,
             item.name,
             item.slug,
@@ -96,16 +79,82 @@ class FacilityService {
             item.price,
             item.quantity,
           ];
-          await db.query(query, values);
-        });
+          await client.query(menuQuery, menuValues);
+        }
       }
 
-      await db.query("COMMIT");
-
+      // If successful, commit the transaction
+      await client.query("COMMIT");
       return facilityResult.rows[0];
     } catch (error) {
-      await db.query("ROLLBACK");
+      if (client) {
+        await client.query("ROLLBACK");
+      }
       throw error;
+    } finally {
+      client?.release();
+    }
+  }
+
+  async insertAddress(facilityId, address) {
+    const query = `
+      INSERT INTO address (facility_id, post_number, country, city, road_address, jibun_address, english_address, lat, lng)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+    `;
+    const values = [
+      facilityId,
+      address.post_number,
+      address.country,
+      address.city,
+      address.road_address,
+      address.jibun_address,
+      address.english_address,
+      address.lat,
+      address.lng,
+    ];
+    await db.query(query, values);
+  }
+
+  async insertStampRuleset(facilityId, stampRuleset) {
+    const query = `
+      INSERT INTO stamp_ruleset (facility_id, logo_img_uri, total_cnt)
+      VALUES ($1, $2, $3);
+    `;
+    const values = [
+      facilityId,
+      stampRuleset.logo_img_uri,
+      stampRuleset.total_cnt,
+    ];
+    await db.query(query, values);
+  }
+
+  async insertOpeningHours(facilityId, openingHours) {
+    for (const hour of openingHours) {
+      const query = `
+        INSERT INTO opening_hours (facility_id, day, open_time, close_time)
+        VALUES ($1, $2, $3, $4);
+      `;
+      const values = [facilityId, hour.day, hour.open_time, hour.close_time];
+      await db.query(query, values);
+    }
+  }
+
+  async insertMenuItems(facilityId, menuItems) {
+    for (const item of menuItems) {
+      const query = `
+        INSERT INTO menu (facility_id, name, slug, img_uri, description, price, quantity)
+        VALUES ($1, $2, $3, $4, $5, $6, $7);
+      `;
+      const values = [
+        facilityId,
+        item.name,
+        item.slug || "",
+        item.img_uri || "",
+        item.description || "",
+        item.price,
+        item.quantity || "",
+      ];
+      await db.query(query, values);
     }
   }
 

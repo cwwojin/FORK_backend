@@ -63,13 +63,12 @@ module.exports = {
 
   updateMenu: async (req, res, next) => {
     try {
-      const result = await facilityService.updateMenu(
-        req.params.facilityId,
-        req.body
-      );
+      const facilityId = req.params.facilityId;
+      const menuItems = req.body.menu; // This should include all necessary menu item details
+      const result = await facilityService.updateMenu(facilityId, [menuItems]); // Assuming the service expects an array of items
       res.status(200).json(result);
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      next(err);
     }
   },
 };
