@@ -4,9 +4,11 @@ const passwordPattern = new RegExp("^[a-zA-Z0-9._\-]+$");
 module.exports = {
     USER_TYPES: [0,1,2],
     TRANSACTION_TYPES: [0,1],
+    REPORT_TYPES: [0,1],
+    REPORT_STATUS: [0,1],
     IMG_FILE_TYPES: ['png', 'jpg', 'jpeg', 'bmp', 'gif', 'webp', 'psd'],
     parseBoolean: (string) => {
-        string === "true" ? true : string === "false" ? false : undefined;
+        return string === "true" ? true : string === "false" ? false : undefined;
     },
     toDateTimeString: () => {
         const date = new Date();
