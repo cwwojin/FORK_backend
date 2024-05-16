@@ -23,7 +23,6 @@ router
             body('password').exists().notEmpty().isLength({min: 6, max: 20}).custom(validatePassword),
             body('userType').exists().toInt().isIn(USER_TYPES),
             body('email').exists().isEmail(),
-            body('displayName').exists().notEmpty(),
             validatorChecker,
         ],
         userController.createUser
@@ -33,7 +32,6 @@ router
             param('id').exists().isInt({min:1}),
             body('password').exists().notEmpty().isLength({min: 6, max: 20}),
             body('email').exists().isEmail(),
-            body('displayName').exists().notEmpty(),
             validatorChecker,
         ],
         userController.updateUserProfile
