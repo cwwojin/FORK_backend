@@ -19,6 +19,8 @@ const upload = multer({
     },
 });
 
+
+/** Router for "/api/reviews" */
 router
     .get(       // GET : get review by review id
         '/:id',
@@ -69,5 +71,24 @@ router
     )
 ;
 
-module.exports = router;
+/** Router for "api/hashtags" */
+const hashtagRoutes = new Router();
+hashtagRoutes
+    .get(       // GET : get all hashtags
+        '/',
+        reviewController.getAllHashtags
+    ).get(      // GET : get hashtag by id
+        '/:id',
+        [
+            param('id').exists().isInt({min: 1}),
+            validatorChecker,
+        ],
+        reviewController.getHashtag
+    )
+;
+
+module.exports = {
+    reviewRoutes: router,
+    hashtagRoutes: hashtagRoutes,
+}
 
