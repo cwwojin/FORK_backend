@@ -219,6 +219,54 @@ class FacilityService {
     if (rowCount === 0) throw new Error("Facility not found");
     return { message: "Facility deleted successfully" };
   }
+  async addOpeningHours(facilityId, hours) {
+    try {
+      await db.query("BEGIN");
+      const query = `
+      INSERT INTO opening_hours (facility_id, day, open_time, close_time)
+      VALUES ($1, $2, $3, $4);
+    `;
+      const values = [facilityId, hours.day, hours.open_time, hours.close_time];
+      await db.query(query, values);
+      await db.query("COMMIT");
+      return { message: "Opening hours added successfully" };
+    } catch (error) {
+      await db.query("ROLLBACK");
+      throw error;
+    }
+  }
+  async updateMenu(facilityId, menuItems) {
+    try {
+      await db.query("BEGIN");
+      // Optionally clear existing menu items if that's the intended logic
+      const deleteQuery = `DELETE FROM menu WHERE facility_id = $1;`;
+      await db.query(deleteQuery, [facilityId]);
+
+      // Insert new menu items
+      menuItems.forEach(async (item) => {
+        const insertQuery = `
+        INSERT INTO menu (facility_id, name, slug, img_uri, description, price, quantity)
+        VALUES ($1, $2, $3, $4, $5, $6, $7);
+      `;
+        const values = [
+          facilityId,
+          item.name,
+          item.slug || "",
+          item.img_uri || "",
+          item.description || "",
+          item.price,
+          item.quantity || "",
+        ];
+        await db.query(insertQuery, values);
+      });
+
+      await db.query("COMMIT");
+      return { message: "Menu updated successfully" };
+    } catch (error) {
+      await db.query("ROLLBACK");
+      throw error;
+    }
+  }
 }
 
 module.exports = new FacilityService();

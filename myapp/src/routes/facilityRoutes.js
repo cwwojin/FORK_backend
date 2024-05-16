@@ -61,7 +61,10 @@ router.post(
     param("facilityId")
       .isNumeric()
       .withMessage("Valid Facility ID is required"),
-    body("day").isInt({ min: 0, max: 6 }).withMessage("Valid day is required"),
+    body("day")
+      .trim()
+      .isInt({ min: 0, max: 6 })
+      .withMessage("Valid day is required"),
     body("open_time").notEmpty().withMessage("Opening time is required"),
     body("close_time").notEmpty().withMessage("Closing time is required"),
     validatorChecker,
