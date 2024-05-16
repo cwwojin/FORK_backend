@@ -86,10 +86,12 @@ module.exports = {
                     id,
                 ]
             });
-            result = result.rows;
+            result = {
+                report: result.rows[0],
+            };
             if(body.action === 'delete'){
                 const deleteResult = await reviewService.deleteReview(reviewId);
-                result = {...result, deleteRows: deleteResult.rows}
+                result.deleteRows = deleteResult;
             }
             await db.query('COMMIT');
             return result;

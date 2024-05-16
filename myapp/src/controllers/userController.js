@@ -79,6 +79,7 @@ module.exports = {
             const result = await userService.deleteUser(id);
             res.status(200).json({
                 status: "success",
+                data: result[0],
             });
         }catch(err){
             next(err);
@@ -117,6 +118,7 @@ module.exports = {
             const result = await userService.deleteUserPreference(id, req.body.preferenceId);
             res.status(200).json({
                 status: "success",
+                data: result[0],
             });
         }catch(err){
             next(err);
@@ -155,6 +157,7 @@ module.exports = {
             const result = await userService.deleteUserFavorite(id, req.body.facilityId);
             res.status(200).json({
                 status: "success",
+                data: result[0],
             });
         }catch(err){
             next(err);

@@ -59,6 +59,7 @@ module.exports = {
             const result = await adminService.deleteReport(id);
             res.status(200).json({
                 status: "success",
+                data: result[0],
             });
         }catch(err){
             next(err);
@@ -71,7 +72,7 @@ module.exports = {
             const result = await adminService.handleReport(id,req.body);
             res.status(200).json({
                 status: "success",
-                data: result[0],
+                data: result,
             });
         }catch(err){
             next(err);

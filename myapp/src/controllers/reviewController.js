@@ -88,6 +88,7 @@ module.exports = {
             const result = await reviewService.deleteReview(id);
             res.status(200).json({
                 status: "success",
+                data: result[0],
             });
         }catch(err){
             next(err);
