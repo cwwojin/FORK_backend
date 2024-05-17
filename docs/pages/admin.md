@@ -8,7 +8,7 @@
 4. [DELETE delete report](#delete--delete-report)
 5. [POST handle report](#post--handle-report-by-admin)
 
-
+---
 
 ## GET : get report by query
 - Get bug & content reports by query
@@ -33,6 +33,8 @@
 | status | `success` |
 | data | array of `report` rows |
 
+---
+
 ## GET : get report by id
 - Get bug & content report by unique id
 
@@ -53,6 +55,8 @@
 | --- | --- |
 | status | `success` |
 | data | the returned `report` object |
+
+---
 
 ## POST : create report
 - Create a new bug / content report
@@ -78,6 +82,8 @@
 | status | `success` |
 | data | the created `report` object |
 
+---
+
 ## DELETE : delete report
 - Delete a report
 
@@ -98,6 +104,8 @@
 | --- | --- |
 | status | `success` |
 | data | the deleted `report` object |
+
+---
 
 ## POST : handle report (by admin)
 - set the report to `accepted`, and perform follow-up action.
