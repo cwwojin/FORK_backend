@@ -1,5 +1,6 @@
 const db = require('../models/index');
 const { parseBoolean } = require('../helper/helper');
+const { removeS3File } = require('../helper/s3Engine');
 
 module.exports = {
     /** get review by review id */
@@ -94,6 +95,7 @@ module.exports = {
     },
     /** 
      * Update review
+     * - can update content or hashtags
      */
     updateReview: async (id, body) => {
         try{
@@ -127,13 +129,18 @@ module.exports = {
             throw new Error(err);
         }
     },
-    /** delete a review */
+    /** delete a review 
+     * - if a review with image is deleted, delete the image from S3
+     * */
     deleteReview: async (id) => {
         const query = {
             text: `delete from review where id = $1 returning *`,
             values: [id]
         }
         const result = await db.query(query);
+        if(result.rows.length !== 0 && result.rows[0].img_uri){
+            await removeS3File(result.rows[0].img_uri);
+        }
         return result.rows;
     },
     /** get all hashtags */

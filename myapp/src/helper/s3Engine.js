@@ -1,9 +1,14 @@
-const { S3Client } = require('@aws-sdk/client-s3');
+const { S3Client, DeleteObjectCommand } = require('@aws-sdk/client-s3');
+const multer = require('multer');
 const multerS3 = require('multer-s3');
-const { toDateTimeString } = require('../helper/helper');
+const { toDateTimeString, splitS3Uri, IMG_FILE_TYPES } = require('./helper');
 
 const s3 = new S3Client({
     region: 'ap-southeast-2',
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY,
+        secretAccessKey: process.env.AWS_SECRET_KEY,
+    },
 });
 
 const s3Engine = multerS3({
@@ -16,4 +21,32 @@ const s3Engine = multerS3({
     },
 });
 
-module.exports = s3Engine;
+/** 
+ * multer middleware
+ * - supports certain image formats
+ * - upload to S3
+ * */
+const s3Uploader = multer({
+    storage: s3Engine,
+    fileFilter: (req,file,cb) => {
+        const fileExt = file.originalname.split('.').pop();
+        if(IMG_FILE_TYPES.includes(fileExt)) {
+            cb(null, true);
+        }else{
+            cb(null, false);
+        }
+    },
+});
+
+module.exports = {
+    s3Uploader: s3Uploader,
+    /** helper : delete a single file from S3 */
+    removeS3File: async (uri) => {
+        const path = splitS3Uri(uri);
+        try{
+            await s3.send(new DeleteObjectCommand(path));
+        }catch(err){
+            throw new Error(err);
+        }
+    },
+};

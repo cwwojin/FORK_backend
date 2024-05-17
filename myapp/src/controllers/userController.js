@@ -1,4 +1,5 @@
 const userService = require("../services/userService");
+const { makeS3Uri } = require("../helper/helper");
 
 module.exports = {
     /** get user by query - account_id, user_type */
@@ -159,6 +160,47 @@ module.exports = {
                 status: "success",
                 data: result[0],
             });
+        }catch(err){
+            next(err);
+        }
+    },
+    /** upload a user profile image */
+    uploadUserProfileImage: async (req,res,next) => {
+        const id = Number(req.params.id);
+        try{
+            const imageUri = (req.file !== undefined) ? makeS3Uri(req.file.bucket, req.file.key) : '';
+            const result = await userService.uploadUserProfileImage(id, imageUri);
+            if(result.length !== 0){
+                res.status(201).json({
+                    status: "success",
+                    data: result[0],
+                });
+            }else{
+                res.status(404).json({
+                    status: "fail",
+                    message: `No user with id: ${id}`,
+                });
+            }
+        }catch(err){
+            next(err);
+        }
+    },
+    /** delete a user profile image */
+    deleteUserProfileImage: async (req,res,next) => {
+        const id = Number(req.params.id);
+        try{
+            const result = await userService.deleteUserProfileImage(id);
+            if(result.length !== 0){
+                res.status(201).json({
+                    status: "success",
+                    data: result[0],
+                });
+            }else{
+                res.status(404).json({
+                    status: "fail",
+                    message: `No user with id: ${id}`,
+                });
+            }
         }catch(err){
             next(err);
         }
