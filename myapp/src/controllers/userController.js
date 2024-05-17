@@ -162,6 +162,38 @@ module.exports = {
         }catch(err){
             next(err);
         }
+    },
+    /** get all preferences */
+    getAllPreferences: async (req,res,next) => {
+        try{
+            const result = await userService.getAllPreferences();
+            res.status(200).json({
+                status: "success",
+                data: result,
+            });
+        }catch(err){
+            next(err);
+        }
+    },
+    /** get preference by id */
+    getPreference: async (req,res,next) => {
+        const id = Number(req.params.id);
+        try{
+            const result = await userService.getPreference(id);
+            if(result.length !== 0){
+                res.status(200).json({
+                    status: "success",
+                    data: result[0]
+                });
+            }else{
+                res.status(404).json({
+                    status: "fail",
+                    message: `no preference with id: ${id}`,
+                });
+            }
+        }catch(err){
+            next(err);
+        }
     }
 
 

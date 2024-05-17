@@ -3,7 +3,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const morgan = require("morgan");
 const authRoutes = require("./routes/authRoutes");
-const userRoutes = require("./routes/userRoutes");
+const { userRoutes, preferenceRoutes } = require("./routes/userRoutes");
 const facilityRoutes = require("./routes/facilityRoutes");
 const mapRoutes = require("./routes/mapRoutes");
 const { reviewRoutes, hashtagRoutes } = require("./routes/reviewRoutes");
@@ -21,6 +21,7 @@ app.use(morgan("dev")); // Logging middleware
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/preferences", preferenceRoutes);
 app.use("/api/facilities", facilityRoutes);
 app.use("/api/map", mapRoutes);
 app.use("/api/reviews", reviewRoutes);

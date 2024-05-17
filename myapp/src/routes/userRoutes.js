@@ -5,6 +5,8 @@ const { body, param, query } = require('express-validator');
 const { validatorChecker } = require('../middleware/validator');
 const { USER_TYPES, validateUserId, validatePassword } = require("../helper/helper");
 
+
+/** Router for "/api/users" */
 router
     .get(       // GET : get users by query
         '/',
@@ -73,14 +75,14 @@ router
             validatorChecker,
         ],
         userController.deleteUserPreference
-    ).get(
+    ).get(      // GET : get favorites of a user
         '/favorite/:id',
         [
             param('id', `route param 'id' must be a positive integer`).exists().isInt({min:1}),
             validatorChecker,
         ],
         userController.getUserFavorite
-    ).put(
+    ).put(      // PUT : add a user favorite, if not already added
         '/favorite/:id',
         [
             param('id', `route param 'id' must be a positive integer`).exists().isInt({min:1}),
@@ -88,7 +90,7 @@ router
             validatorChecker,
         ],
         userController.addUserFavorite
-    ).delete(
+    ).delete(   // DELETE : delete a user favorite
         '/favorite/:id',
         [
             param('id', `route param 'id' must be a positive integer`).exists().isInt({min:1}),
@@ -99,5 +101,24 @@ router
     )
 ;
 
+/** Router for "/api/preferences" */
+const preferenceRoutes = new Router();
+preferenceRoutes
+    .get(       // GET : get all preferences
+        '/',
+        userController.getAllPreferences
+    ).get(      // GET : get preference by id
+        '/:id',
+        [
+            param('id', `route param 'id' must be a positive integer`).exists().isInt({min:1}),
+            validatorChecker,
+        ],
+        userController.getPreference
+    )
+;
 
-module.exports = router;
+
+module.exports = {
+    userRoutes: router,
+    preferenceRoutes: preferenceRoutes,
+};

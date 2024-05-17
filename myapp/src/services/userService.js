@@ -129,5 +129,22 @@ module.exports = {
         const result = await db.query(query);
         return result.rows;
     },
+    /** get all preferences - used for both user & facility */
+    getAllPreferences: async () => {
+        const query = {
+            text: `select * from preference`,
+        };
+        const result = await db.query(query);
+        return result.rows;
+    },
+    /** get preference by id*/
+    getPreference: async (id) => {
+        const query = {
+            text: `select * from preference where id = $1`,
+            values: [id],
+        };
+        const result = await db.query(query);
+        return result.rows;
+    },
 
 }
