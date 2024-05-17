@@ -6,8 +6,13 @@ const { validatorChecker } = require('../middleware/validator');
 const { USER_TYPES, validateUserId, validatePassword } = require("../helper/helper");
 
 router
-    .get(       // GET : get all users
+    .get(       // GET : get users by query
         '/',
+        [
+            query('accountId').optional().isString(),
+            query('type').optional().isIn(USER_TYPES),
+            validatorChecker,
+        ],
         userController.getUsers
     ).get(      // GET : get user by account_id
         '/:id',
@@ -21,7 +26,7 @@ router
         [
             body('userId').exists().notEmpty().isLength({min: 6, max: 20}).custom(validateUserId),
             body('password').exists().notEmpty().isLength({min: 6, max: 20}).custom(validatePassword),
-            body('userType').exists().toInt().isIn(USER_TYPES),
+            body('userType').exists().isIn(USER_TYPES),
             body('email').exists().isEmail(),
             validatorChecker,
         ],

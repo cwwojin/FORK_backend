@@ -1,10 +1,24 @@
 const db = require("../models/index");
 
 module.exports = {
-    // get all users
-    getUsers: async () => {
+    /** 
+     * get user by query 
+     * - (args) account_id, user_type
+     * */
+    getUsers: async (args) => {
+        let baseQuery = `select * from "user" where 1=1 `;
+        let values = [];
+        if(args.accountId !== undefined){
+            values.push(args.accountId);
+            baseQuery = baseQuery + `and account_id = $${values.length} `;
+        }
+        if(args.type !== undefined){
+            values.push(args.type);
+            baseQuery = baseQuery + `and user_type = $${values.length} `;
+        }
         const query = {
-            text: 'select * from "user" order by id asc',
+            text: baseQuery,
+            values: values,
         };
         const result = await db.query(query);
         return result.rows;

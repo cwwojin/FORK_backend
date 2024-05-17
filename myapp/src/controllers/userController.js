@@ -1,10 +1,10 @@
 const userService = require("../services/userService");
 
 module.exports = {
-    // get all users
+    /** get user by query - account_id, user_type */
     getUsers: async (req,res,next) => {
         try{
-            const result = await userService.getUsers();
+            const result = await userService.getUsers(req.query);
             res.status(200).json({
                 status: "success",
                 data: result,
