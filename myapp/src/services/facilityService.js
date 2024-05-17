@@ -22,7 +22,6 @@ class FacilityService {
   async createFacility(data) {
     let client;
     try {
-      // Use of client and transaction control
       client = await db.connect();
       await client.query("BEGIN");
 
@@ -46,15 +45,11 @@ class FacilityService {
       const facility = facilityResult.rows[0];
 
       // Insert into address table
-      if (data.address) {
-        await this.insertAddress(client, facility.id, data.address);
-      }
-
-      // Other stamp_ruleset, opening_hours, menu
+      await this.insertAddress(client, facility.id, data.address);
+      // Insert opening hours, menu, and posts if provided
       if (data.openingHours) {
         await this.insertOpeningHours(client, facility.id, data.openingHours);
       }
-
       if (data.menu) {
         await this.insertMenuItems(client, facility.id, data.menu);
       }
@@ -62,8 +57,6 @@ class FacilityService {
         await this.insertPosts(client, facility.id, data.posts);
       }
 
-      // await client.query("REFRESH MATERIALIZED VIEW facility_address_avgscore");
-      // If successful, commit the transaction
       await client.query("COMMIT");
       return facility;
     } catch (error) {
@@ -73,7 +66,7 @@ class FacilityService {
       throw error;
     } finally {
       if (client) {
-        client?.release();
+        client.release();
       }
     }
   }
@@ -261,7 +254,70 @@ class FacilityService {
       const { rows } = await client.query(query, [id]);
 
       await client.query("COMMIT");
-      return rows[0] ? rows[0] : { message: "No facility to delete" };
+      return rows; // Return the deleted rows or an empty array if none
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  async getAddressByFacilityId(facilityId) {
+    const query = "SELECT * FROM address WHERE facility_id = $1";
+    const { rows } = await db.query(query, [facilityId]);
+    return rows;
+  }
+
+  async addAddress(facilityId, address) {
+    let client;
+    try {
+      client = await db.connect();
+      await client.query("BEGIN");
+
+      const deleteQuery = "DELETE FROM address WHERE facility_id = $1";
+      await client.query(deleteQuery, [facilityId]);
+
+      const insertQuery = `
+        INSERT INTO address (facility_id, post_number, country, city, road_address, jibun_address, english_address, lat, lng)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        RETURNING *;
+      `;
+      const values = [
+        facilityId,
+        address.postNumber,
+        address.country,
+        address.city,
+        address.roadAddress,
+        address.jibunAddress,
+        address.englishAddress,
+        address.lat,
+        address.lng,
+      ];
+      const { rows } = await client.query(insertQuery, values);
+
+      await client.query("COMMIT");
+      return rows[0];
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  async deleteAddressByFacilityId(facilityId) {
+    let client;
+    try {
+      client = await db.connect();
+      await client.query("BEGIN");
+
+      const deleteQuery =
+        "DELETE FROM address WHERE facility_id = $1 RETURNING *;";
+      const { rows } = await client.query(deleteQuery, [facilityId]);
+
+      await client.query("COMMIT");
+      return rows; // Return the deleted rows or an empty array if none
     } catch (error) {
       await client.query("ROLLBACK");
       throw error;
@@ -276,7 +332,7 @@ class FacilityService {
     return rows;
   }
 
-  async updateOpeningHours(facilityId, openingHours) {
+  async addOpeningHours(facilityId, openingHours) {
     let client;
     try {
       client = await db.connect();
@@ -290,8 +346,13 @@ class FacilityService {
         VALUES ($1, $2, $3, $4)
         RETURNING *;
       `;
+
       const result = [];
-      for (const hour of openingHours) {
+      const hoursArray = Array.isArray(openingHours)
+        ? openingHours
+        : [openingHours];
+
+      for (const hour of hoursArray) {
         const values = [facilityId, hour.day, hour.openTime, hour.closeTime];
         const { rows } = await client.query(insertQuery, values);
         result.push(rows[0]);
@@ -307,22 +368,20 @@ class FacilityService {
     }
   }
 
-  async addOpeningHours(facilityId, hours) {
+  async deleteOpeningHours(facilityId) {
     let client;
     try {
       client = await db.connect();
       await client.query("BEGIN");
 
-      const query = `
-        INSERT INTO opening_hours (facility_id, day, open_time, close_time)
-        VALUES ($1, $2, $3, $4)
+      const deleteQuery = `
+        DELETE FROM opening_hours WHERE facility_id = $1
         RETURNING *;
       `;
-      const values = [facilityId, hours.day, hours.openTime, hours.closeTime];
-      const { rows } = await client.query(query, values);
+      const { rows } = await client.query(deleteQuery, [facilityId]);
 
       await client.query("COMMIT");
-      return rows[0];
+      return rows; // Return the deleted rows or an empty array if none
     } catch (error) {
       await client.query("ROLLBACK");
       throw error;
@@ -440,17 +499,18 @@ class FacilityService {
       client = await db.connect();
       await client.query("BEGIN");
 
-      const deleteQuery =
-        "DELETE FROM menu WHERE facility_id = $1 AND id = $2 RETURNING *";
+      const deleteQuery = `
+        DELETE FROM menu WHERE facility_id = $1 AND id = $2 RETURNING *;
+      `;
       const { rows } = await client.query(deleteQuery, [facilityId, menuId]);
 
       await client.query("COMMIT");
-      return rows[0] ? rows[0] : { message: "No menu item to delete" };
+      return rows; // Return the deleted rows or an empty array if none
     } catch (error) {
       await client.query("ROLLBACK");
       throw error;
     } finally {
-      client?.release();
+      client.release();
     }
   }
 
@@ -535,7 +595,7 @@ class FacilityService {
       const { rows } = await client.query(deleteQuery, [postId]);
 
       await client.query("COMMIT");
-      return rows[0] ? rows[0] : { message: "No post to delete" };
+      return rows; // Return the deleted rows or an empty array if none
     } catch (error) {
       await client.query("ROLLBACK");
       throw error;
@@ -543,6 +603,7 @@ class FacilityService {
       client.release();
     }
   }
+
   async getStampRulesetRewardsByFacilityId(facilityId) {
     const query = "SELECT * FROM stamp_ruleset_rewards WHERE facility_id = $1";
     const { rows } = await db.query(query, [facilityId]);
@@ -555,13 +616,42 @@ class FacilityService {
       client = await db.connect();
       await client.query("BEGIN");
 
-      const query = `
+      // Delete existing stamp ruleset and rewards if they exist
+      const deleteQuery = `
+        DELETE FROM stamp_ruleset WHERE facility_id = $1;
+      `;
+      await client.query(deleteQuery, [facilityId]);
+
+      const deleteRewardsQuery = `
+        DELETE FROM stamp_reward WHERE facility_id = $1;
+      `;
+      await client.query(deleteRewardsQuery, [facilityId]);
+
+      // Insert the new stamp ruleset
+      const insertQuery = `
         INSERT INTO stamp_ruleset (facility_id, logo_img_uri, total_cnt)
         VALUES ($1, $2, $3)
         RETURNING *;
       `;
       const values = [facilityId, data.logoImgUri, data.totalCnt];
-      const { rows } = await client.query(query, values);
+      const { rows } = await client.query(insertQuery, values);
+
+      if (rows.length === 0) {
+        throw new Error("Stamp ruleset not created");
+      }
+
+      // Insert rewards if provided
+      if (data.rewards && data.rewards.length > 0) {
+        const rewardsInsertQuery = `
+          INSERT INTO stamp_reward (facility_id, cnt, name)
+          VALUES ($1, $2, $3)
+          RETURNING *;
+        `;
+        for (const reward of data.rewards) {
+          const rewardValues = [facilityId, reward.cnt, reward.name];
+          await client.query(rewardsInsertQuery, rewardValues);
+        }
+      }
 
       await client.query("COMMIT");
       return rows[0];
@@ -668,9 +758,7 @@ class FacilityService {
       const { rows } = await client.query(deleteQuery, values);
 
       await client.query("COMMIT");
-      return rows[0]
-        ? { message: "Stamp reward deleted successfully" }
-        : { message: "Stamp reward not found" };
+      return rows; // Return the deleted rows or an empty array if none
     } catch (error) {
       await client.query("ROLLBACK");
       throw error;
@@ -717,16 +805,25 @@ class FacilityService {
     let client;
     try {
       client = await db.connect();
-      const query = `
+      await client.query("BEGIN");
+
+      const deleteQuery = `
         DELETE FROM facility_preference
         WHERE facility_id = $1 AND preference_id = $2
         RETURNING *;
       `;
-      const values = [facilityId, preferenceId];
-      const { rows } = await client.query(query, values);
-      return rows[0];
+      const { rows } = await client.query(deleteQuery, [
+        facilityId,
+        preferenceId,
+      ]);
+
+      await client.query("COMMIT");
+      return rows; // Return the deleted rows or an empty array if none
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
     } finally {
-      client?.release();
+      client.release();
     }
   }
 }

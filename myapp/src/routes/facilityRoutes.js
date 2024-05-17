@@ -21,18 +21,40 @@ router.get(
 
 // to be commented later
 router.post(
-  "/", // POST : create a new facility
+  "/", // POST: create a new facility
   [
     body("name").notEmpty().withMessage("Name is required"),
     body("businessId").notEmpty().withMessage("Business ID is required"),
     body("type").notEmpty().withMessage("Type is required"),
     body("description").notEmpty().withMessage("Description is required"),
-    body("url").notEmpty().trim().isURL().withMessage("Valid URL is required"),
+    body("url").notEmpty().isURL().withMessage("Valid URL is required"),
     body("phone").notEmpty().withMessage("Phone is required"),
-    body("email").notEmpty().withMessage("Email is required"),
+    body("email").isEmail().withMessage("Valid email is required"),
     body("profileImgUri")
       .notEmpty()
-      .withMessage("Profile Image URI is required"),
+      .withMessage("Profile image URI is required"),
+    body("address.postNumber")
+      .notEmpty()
+      .withMessage("Post number is required"),
+    body("address.country").notEmpty().withMessage("Country is required"),
+    body("address.city").notEmpty().withMessage("City is required"),
+    body("address.roadAddress")
+      .notEmpty()
+      .withMessage("Road address is required"),
+    body("address.jibunAddress")
+      .notEmpty()
+      .withMessage("Jibun address is required"),
+    body("address.englishAddress")
+      .notEmpty()
+      .withMessage("English address is required"),
+    body("address.lat")
+      .notEmpty()
+      .isFloat()
+      .withMessage("Latitude is required"),
+    body("address.lng")
+      .notEmpty()
+      .isFloat()
+      .withMessage("Longitude is required"),
     validatorChecker,
   ],
   facilityController.createFacility
@@ -61,6 +83,49 @@ router.delete(
   facilityController.deleteFacility
 );
 router.get(
+  "/:facilityId/address", // GET : get address by facility ID
+  [
+    param("facilityId")
+      .isNumeric()
+      .withMessage("Valid Facility ID is required"),
+    validatorChecker,
+  ],
+  facilityController.getAddressByFacilityId
+);
+
+router.post(
+  "/:facilityId/address", // POST : add or update address for a facility
+  [
+    param("facilityId")
+      .isNumeric()
+      .withMessage("Valid Facility ID is required"),
+    body("postNumber").notEmpty().withMessage("Post number is required"),
+    body("country").notEmpty().withMessage("Country is required"),
+    body("city").notEmpty().withMessage("City is required"),
+    body("roadAddress").notEmpty().withMessage("Road address is required"),
+    body("jibunAddress").notEmpty().withMessage("Jibun address is required"),
+    body("englishAddress")
+      .notEmpty()
+      .withMessage("English address is required"),
+    body("lat").notEmpty().isFloat().withMessage("Latitude is required"),
+    body("lng").notEmpty().isFloat().withMessage("Longitude is required"),
+    validatorChecker,
+  ],
+  facilityController.addAddress
+);
+
+router.delete(
+  "/:facilityId/address", // DELETE : delete address for a facility
+  [
+    param("facilityId")
+      .isNumeric()
+      .withMessage("Valid Facility ID is required"),
+    validatorChecker,
+  ],
+  facilityController.deleteAddressByFacilityId
+);
+
+router.get(
   "/:facilityId/opening-hours", // GET : get opening hours for a facility
   [
     param("facilityId")
@@ -77,32 +142,33 @@ router.post(
       .isNumeric()
       .withMessage("Valid Facility ID is required"),
     body("day")
+      .optional() // Optional here because we can accept array or single object
       .trim()
       .isInt({ min: 0, max: 6 })
       .withMessage("Valid day is required"),
-    body("openTime").notEmpty().withMessage("Opening time is required"),
-    body("closeTime").notEmpty().withMessage("Closing time is required"),
+    body("openTime")
+      .optional()
+      .notEmpty()
+      .withMessage("Opening time is required"),
+    body("closeTime")
+      .optional()
+      .notEmpty()
+      .withMessage("Closing time is required"),
     validatorChecker,
   ],
   facilityController.addOpeningHours
 );
-
-router.put(
-  "/:facilityId/opening-hours", // PUT : update opening hours for a facility
+router.delete(
+  "/:facilityId/opening-hours", // DELETE : delete opening hours for a facility
   [
     param("facilityId")
       .isNumeric()
       .withMessage("Valid Facility ID is required"),
-    body().isArray().withMessage("Opening hours data should be an array"),
-    body("*.day")
-      .isInt({ min: 0, max: 6 })
-      .withMessage("Valid day is required"),
-    body("*.openTime").notEmpty().withMessage("Opening time is required"),
-    body("*.closeTime").notEmpty().withMessage("Closing time is required"),
     validatorChecker,
   ],
-  facilityController.updateOpeningHours
+  facilityController.deleteOpeningHours
 );
+
 router.get(
   "/:facilityId/menu", // GET : get menu for a facility
   [
@@ -201,10 +267,7 @@ router.post(
       .withMessage("Author ID must be a positive integer"),
     body("title").notEmpty().withMessage("Title is required"),
     body("content").notEmpty().withMessage("Content is required"),
-    body("imgUri")
-      .optional()
-      .isURL()
-      .withMessage("Image URI must be a valid URL"),
+    body("imgUri").notEmpty().withMessage("Image URI must be a valid URL"),
     validatorChecker,
   ],
   facilityController.createPost
@@ -237,7 +300,7 @@ router.delete(
 );
 
 router.get(
-  "/:facilityId/stamp-ruleset", // GET: get a stamp-ruleset
+  "/:facilityId/stamp-ruleset-rewards", // GET: get a stamp-ruleset
   [
     param("facilityId")
       .isNumeric()
@@ -248,12 +311,20 @@ router.get(
 );
 
 router.post(
-  "/:facilityId/stamp-ruleset", // POST: add stamp-ruleset
+  "/:facilityId/stamp-ruleset", // POST: create stamp-ruleset
   [
     param("facilityId")
       .isNumeric()
       .withMessage("Valid Facility ID is required"),
+    body("logoImgUri").notEmpty().withMessage("Logo Image URI is required"),
     body("totalCnt").isNumeric().withMessage("Total count is required"),
+    body("rewards").isArray().withMessage("Rewards must be an array"),
+    body("rewards.*.cnt")
+      .isNumeric()
+      .withMessage("Count is required for each reward"),
+    body("rewards.*.name")
+      .notEmpty()
+      .withMessage("Name is required for each reward"),
     validatorChecker,
   ],
   facilityController.createStampRuleset

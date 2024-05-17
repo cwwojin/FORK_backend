@@ -21,7 +21,8 @@ module.exports = {
 
   createFacility: async (req, res, next) => {
     try {
-      const facility = await facilityService.createFacility(req.body);
+      const data = req.body;
+      const facility = await facilityService.createFacility(data);
       res.status(201).json(facility);
     } catch (err) {
       res.status(400).json({ message: err.message });
@@ -42,12 +43,46 @@ module.exports = {
 
   deleteFacility: async (req, res, next) => {
     try {
-      const message = await facilityService.deleteFacility(req.params.id);
-      res.status(200).json(message);
+      const result = await facilityService.deleteFacility(req.params.id);
+      res.status(200).json(result);
     } catch (err) {
-      res.status(404).json({ message: err.message });
+      res.status(400).json({ message: err.message });
     }
   },
+
+  getAddressByFacilityId: async (req, res, next) => {
+    try {
+      const facilityId = req.params.facilityId;
+      const address = await facilityService.getAddressByFacilityId(facilityId);
+      res.status(200).json(address);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  addAddress: async (req, res, next) => {
+    try {
+      const facilityId = req.params.facilityId;
+      const address = req.body;
+      const result = await facilityService.addAddress(facilityId, address);
+      res.status(201).json(result);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  },
+
+  deleteAddressByFacilityId: async (req, res, next) => {
+    try {
+      const facilityId = req.params.facilityId;
+      const result = await facilityService.deleteAddressByFacilityId(
+        facilityId
+      );
+      res.status(200).json(result);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  },
+
   getOpeningHoursByFacilityId: async (req, res, next) => {
     try {
       const facilityId = req.params.facilityId;
@@ -61,29 +96,22 @@ module.exports = {
   },
   addOpeningHours: async (req, res, next) => {
     try {
-      const { day, openTime, closeTime } = req.body; // Destructure keys from request body
-      const openingHoursData = {
-        day,
-        openTime,
-        closeTime,
-      };
+      const facilityId = req.params.facilityId;
+      const openingHours = req.body; // It can be an object or an array
       const result = await facilityService.addOpeningHours(
-        req.params.facilityId,
-        openingHoursData
+        facilityId,
+        openingHours
       );
       res.status(201).json(result);
     } catch (err) {
       res.status(400).json({ message: err.message });
     }
   },
-  updateOpeningHours: async (req, res, next) => {
+
+  deleteOpeningHours: async (req, res, next) => {
     try {
       const facilityId = req.params.facilityId;
-      const openingHours = req.body; // Expect an array of opening hours
-      const result = await facilityService.updateOpeningHours(
-        facilityId,
-        openingHours
-      );
+      const result = await facilityService.deleteOpeningHours(facilityId);
       res.status(200).json(result);
     } catch (err) {
       res.status(400).json({ message: err.message });
@@ -144,14 +172,12 @@ module.exports = {
     try {
       const facilityId = Number(req.params.facilityId);
       const menuId = Number(req.params.menuId);
-
       const result = await facilityService.deleteMenu(facilityId, menuId);
       res.status(200).json(result);
     } catch (err) {
       res.status(400).json({ message: err.message });
     }
   },
-
   getPostsByFacilityId: async (req, res, next) => {
     try {
       const facilityId = req.params.facilityId;
@@ -203,8 +229,8 @@ module.exports = {
   deletePost: async (req, res, next) => {
     try {
       const { postId } = req.params;
-      const message = await facilityService.deletePost(postId);
-      res.status(200).json(message);
+      const result = await facilityService.deletePost(postId);
+      res.status(200).json(result);
     } catch (err) {
       res.status(400).json({ message: err.message });
     }
@@ -213,7 +239,7 @@ module.exports = {
   getStampRulesetRewardsByFacilityId: async (req, res, next) => {
     try {
       const facilityId = req.params.facilityId;
-      const ruleset = await facilityService.getStampRulesetByFacilityId(
+      const ruleset = await facilityService.getStampRulesetRewardsByFacilityId(
         facilityId
       );
       res.status(200).json(ruleset);
@@ -224,12 +250,10 @@ module.exports = {
 
   createStampRuleset: async (req, res, next) => {
     try {
-      const facilityId = Number(req.params.facilityId);
-      const ruleset = await facilityService.createStampRuleset(
-        facilityId,
-        req.body
-      );
-      res.status(201).json(ruleset);
+      const facilityId = req.params.facilityId;
+      const data = req.body;
+      const result = await facilityService.createStampRuleset(facilityId, data);
+      res.status(201).json(result);
     } catch (err) {
       res.status(400).json({ message: err.message });
     }
@@ -281,11 +305,11 @@ module.exports = {
     try {
       const facilityId = Number(req.params.facilityId);
       const rewardId = Number(req.params.rewardId);
-      const message = await facilityService.deleteStampReward(
+      const result = await facilityService.deleteStampReward(
         facilityId,
         rewardId
       );
-      res.status(200).json(message);
+      res.status(200).json(result);
     } catch (err) {
       res.status(400).json({ message: err.message });
     }
