@@ -574,6 +574,290 @@ class FacilityService {
       client?.release();
     }
   }
+
+  async getStampRulesetByFacilityId(facilityId) {
+    const query = `
+      SELECT * FROM stamp_ruleset WHERE facility_id = $1;
+    `;
+    const { rows } = await db.query(query, [facilityId]);
+    if (rows.length === 0) throw new Error("Stamp ruleset not found");
+    return rows[0];
+  }
+
+  async createStampRuleset(facilityId, data) {
+    let client;
+    try {
+      client = await db.connect();
+      await client.query("BEGIN");
+
+      const query = `
+        INSERT INTO stamp_ruleset (facility_id, logo_img_uri, total_cnt)
+        VALUES ($1, $2, $3)
+        RETURNING *;
+      `;
+      const values = [facilityId, data.logo_img_uri || "", data.total_cnt];
+      const { rows } = await client.query(query, values);
+
+      await client.query("COMMIT");
+      return rows[0];
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client?.release();
+    }
+  }
+
+  async updateStampRuleset(facilityId, data) {
+    let client;
+    try {
+      client = await db.connect();
+      await client.query("BEGIN");
+
+      const query = `
+        UPDATE stamp_ruleset
+        SET logo_img_uri = $1, total_cnt = $2, updated_at = NOW()
+        WHERE facility_id = $3
+        RETURNING *;
+      `;
+      const values = [data.logo_img_uri || "", data.total_cnt, facilityId];
+      const { rows } = await client.query(query, values);
+
+      await client.query("COMMIT");
+      if (rows.length === 0)
+        throw new Error("Stamp ruleset not found or not updated");
+      return rows[0];
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client?.release();
+    }
+  }
+
+  async deleteStampRuleset(facilityId) {
+    let client;
+    try {
+      client = await db.connect();
+      await client.query("BEGIN");
+
+      const deleteQuery = `
+        DELETE FROM stamp_ruleset
+        WHERE facility_id = $1
+        RETURNING *;
+      `;
+      const { rows } = await client.query(deleteQuery, [facilityId]);
+
+      if (rows.length === 0) throw new Error("Stamp ruleset not found");
+
+      await client.query("COMMIT");
+      return { message: "Stamp ruleset deleted successfully" };
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client?.release();
+    }
+  }
+
+  async getStampRewardsByFacilityId(facilityId) {
+    const query = `
+      SELECT * FROM stamp_reward WHERE facility_id = $1;
+    `;
+    const { rows } = await db.query(query, [facilityId]);
+    return rows;
+  }
+
+  async createStampReward(facilityId, data) {
+    let client;
+    try {
+      client = await db.connect();
+      await client.query("BEGIN");
+
+      const query = `
+        INSERT INTO stamp_reward (facility_id, cnt, name)
+        VALUES ($1, $2, $3)
+        RETURNING *;
+      `;
+      const values = [facilityId, data.cnt, data.name];
+      const { rows } = await client.query(query, values);
+
+      await client.query("COMMIT");
+      return rows[0];
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client?.release();
+    }
+  }
+
+  async updateStampReward(facilityId, rewardId, data) {
+    let client;
+    try {
+      client = await db.connect();
+      await client.query("BEGIN");
+
+      const query = `
+        UPDATE stamp_reward
+        SET cnt = $1, name = $2, updated_at = NOW()
+        WHERE facility_id = $3 AND id = $4
+        RETURNING *;
+      `;
+      const values = [data.cnt, data.name, facilityId, rewardId];
+      const { rows } = await client.query(query, values);
+
+      await client.query("COMMIT");
+      if (rows.length === 0)
+        throw new Error("Stamp reward not found or not updated");
+      return rows[0];
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client?.release();
+    }
+  }
+
+  async deleteStampReward(facilityId, rewardId) {
+    let client;
+    try {
+      client = await db.connect();
+      await client.query("BEGIN");
+
+      const deleteQuery = `
+        DELETE FROM stamp_reward
+        WHERE facility_id = $1 AND id = $2
+        RETURNING *;
+      `;
+      const values = [facilityId, rewardId];
+      const { rows } = await client.query(deleteQuery, values);
+
+      if (rows.length === 0) throw new Error("Stamp reward not found");
+
+      await client.query("COMMIT");
+      return { message: "Stamp reward deleted successfully" };
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client?.release();
+    }
+  }
+  async getPreferencesByFacilityId(facilityId) {
+    let client;
+    try {
+      client = await db.connect();
+      const query = `
+        SELECT p.* FROM preference p
+        JOIN facility_preference fp ON p.id = fp.preference_id
+        WHERE fp.facility_id = $1;
+      `;
+      const values = [facilityId];
+      const { rows } = await client.query(query, values);
+      return rows;
+    } finally {
+      client?.release();
+    }
+  }
+
+  async addPreferenceToFacility(facilityId, preferenceId) {
+    let client;
+    try {
+      client = await db.connect();
+      const query = `
+        INSERT INTO facility_preference (facility_id, preference_id)
+        VALUES ($1, $2)
+        RETURNING *;
+      `;
+      const values = [facilityId, preferenceId];
+      const { rows } = await client.query(query, values);
+      return rows[0];
+    } finally {
+      client?.release();
+    }
+  }
+
+  async deletePreferenceFromFacility(facilityId, preferenceId) {
+    let client;
+    try {
+      client = await db.connect();
+      const query = `
+        DELETE FROM facility_preference
+        WHERE facility_id = $1 AND preference_id = $2
+        RETURNING *;
+      `;
+      const values = [facilityId, preferenceId];
+      const { rows } = await client.query(query, values);
+      return rows[0];
+    } finally {
+      client?.release();
+    }
+  }
+
+  async getAllPreferences() {
+    let client;
+    try {
+      client = await db.connect();
+      const query = "SELECT * FROM preference ORDER BY id ASC";
+      const { rows } = await client.query(query);
+      return rows;
+    } finally {
+      client?.release();
+    }
+  }
+
+  async createPreference(data) {
+    let client;
+    try {
+      client = await db.connect();
+      const query = `
+        INSERT INTO preference (type, name)
+        VALUES ($1, $2, $3)
+        RETURNING *;
+      `;
+      const values = [data.type, data.name];
+      const { rows } = await client.query(query, values);
+      return rows[0];
+    } finally {
+      client?.release();
+    }
+  }
+
+  async updatePreference(id, data) {
+    let client;
+    try {
+      client = await db.connect();
+      const query = `
+        UPDATE preference
+        SET type = $1, name = $2, updated_at = NOW()
+        WHERE id = $4
+        RETURNING *;
+      `;
+      const values = [data.type, data.name, id];
+      const { rows } = await client.query(query, values);
+      return rows[0];
+    } finally {
+      client?.release();
+    }
+  }
+
+  async deletePreference(id) {
+    let client;
+    try {
+      client = await db.connect();
+      const query = `
+        DELETE FROM preference
+        WHERE id = $1
+        RETURNING *;
+      `;
+      const values = [id];
+      const { rows } = await client.query(query, values);
+      return rows[0];
+    } finally {
+      client?.release();
+    }
+  }
 }
 
 module.exports = new FacilityService();

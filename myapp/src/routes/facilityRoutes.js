@@ -19,6 +19,10 @@ router.get(
   facilityController.getFacilityById
 );
 
+router.get(
+  "/preferences", // GET : get all preferences
+  facilityController.getAllPreferences
+);
 // to be commented later
 router.post(
   "/", // POST : create a new facility
@@ -225,6 +229,173 @@ router.delete(
     validatorChecker,
   ],
   facilityController.deletePost
+);
+
+router.get(
+  "/:facilityId/stamp-ruleset", // GET: get a stamp-ruleset
+  [
+    param("facilityId")
+      .isNumeric()
+      .withMessage("Valid Facility ID is required"),
+    validatorChecker,
+  ],
+  facilityController.getStampRulesetByFacilityId
+);
+
+router.post(
+  "/:facilityId/stamp-ruleset", // POST: add stamp-ruleset
+  [
+    param("facilityId")
+      .isNumeric()
+      .withMessage("Valid Facility ID is required"),
+    body("total_cnt").isNumeric().withMessage("Total count is required"),
+    validatorChecker,
+  ],
+  facilityController.createStampRuleset
+);
+
+router.put(
+  "/:facilityId/stamp-ruleset", // PUT: update existing stamp-ruleset
+  [
+    param("facilityId")
+      .isNumeric()
+      .withMessage("Valid Facility ID is required"),
+    body("total_cnt").isNumeric().withMessage("Total count is required"),
+    validatorChecker,
+  ],
+  facilityController.updateStampRuleset
+);
+
+router.delete(
+  "/:facilityId/stamp-ruleset", // DELETE: delete stamp-ruleset
+  [
+    param("facilityId")
+      .isNumeric()
+      .withMessage("Valid Facility ID is required"),
+    validatorChecker,
+  ],
+  facilityController.deleteStampRuleset
+);
+
+// For stamp_reward
+router.get(
+  "/:facilityId/stamp-rewards", // GET: get all stamp-rewards
+  [
+    param("facilityId")
+      .isNumeric()
+      .withMessage("Valid Facility ID is required"),
+    validatorChecker,
+  ],
+  facilityController.getStampRewardsByFacilityId
+);
+
+router.post(
+  "/:facilityId/stamp-rewards", // POST: add stamp-reward
+  [
+    param("facilityId")
+      .isNumeric()
+      .withMessage("Valid Facility ID is required"),
+    body("cnt").isNumeric().withMessage("Count is required"),
+    body("name").notEmpty().withMessage("Name is required"),
+    validatorChecker,
+  ],
+  facilityController.createStampReward
+);
+
+router.put(
+  "/:facilityId/stamp-rewards/:rewardId", // PUT: update existing stamp-reward
+  [
+    param("facilityId")
+      .isNumeric()
+      .withMessage("Valid Facility ID is required"),
+    param("rewardId").isNumeric().withMessage("Valid Reward ID is required"),
+    body("cnt").isNumeric().withMessage("Count is required"),
+    body("name").notEmpty().withMessage("Name is required"),
+    validatorChecker,
+  ],
+  facilityController.updateStampReward
+);
+
+router.delete(
+  "/:facilityId/stamp-rewards/:rewardId", // DELETE : delete stamp-reward with specified rewardId
+  [
+    param("facilityId")
+      .isNumeric()
+      .withMessage("Valid Facility ID is required"),
+    param("rewardId").isNumeric().withMessage("Valid Reward ID is required"),
+    validatorChecker,
+  ],
+  facilityController.deleteStampReward
+);
+router.get(
+  "/:facilityId/preferences", // GET : get all preferences by facility ID
+  [
+    param("facilityId")
+      .isNumeric()
+      .withMessage("Valid Facility ID is required"),
+    validatorChecker,
+  ],
+  facilityController.getPreferencesByFacilityId
+);
+
+router.post(
+  "/:facilityId/preferences", // POST : add a preference to a facility
+  [
+    param("facilityId")
+      .isNumeric()
+      .withMessage("Valid Facility ID is required"),
+    body("preferenceId")
+      .isNumeric()
+      .withMessage("Valid Preference ID is required"),
+    validatorChecker,
+  ],
+  facilityController.addPreferenceToFacility
+);
+
+router.delete(
+  "/:facilityId/preferences/:preferenceId", // DELETE : remove a preference from a facility
+  [
+    param("facilityId")
+      .isNumeric()
+      .withMessage("Valid Facility ID is required"),
+    param("preferenceId")
+      .isNumeric()
+      .withMessage("Valid Preference ID is required"),
+    validatorChecker,
+  ],
+  facilityController.deletePreferenceFromFacility
+);
+
+router.post(
+  "/preferences", // POST : create a new preference
+  [
+    body("type").isNumeric().withMessage("Valid type is required"),
+    body("name").notEmpty().withMessage("Name is required"),
+    body("slug").optional(),
+    validatorChecker,
+  ],
+  facilityController.createPreference
+);
+
+router.put(
+  "/preferences/:id", // PUT : update a preference
+  [
+    param("id").isNumeric().withMessage("Valid Preference ID is required"),
+    body("type").isNumeric().withMessage("Valid type is required"),
+    body("name").notEmpty().withMessage("Name is required"),
+    body("slug").optional(),
+    validatorChecker,
+  ],
+  facilityController.updatePreference
+);
+
+router.delete(
+  "/preferences/:id", // DELETE : delete a preference
+  [
+    param("id").isNumeric().withMessage("Valid Preference ID is required"),
+    validatorChecker,
+  ],
+  facilityController.deletePreference
 );
 
 module.exports = router;

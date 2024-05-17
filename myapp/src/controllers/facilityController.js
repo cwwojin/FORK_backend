@@ -213,4 +213,180 @@ module.exports = {
       res.status(400).json({ message: err.message });
     }
   },
+  getStampRulesetByFacilityId: async (req, res, next) => {
+    try {
+      const facilityId = req.params.facilityId;
+      const ruleset = await facilityService.getStampRulesetByFacilityId(
+        facilityId
+      );
+      res.status(200).json(ruleset);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  },
+
+  createStampRuleset: async (req, res, next) => {
+    try {
+      const facilityId = Number(req.params.facilityId);
+      const ruleset = await facilityService.createStampRuleset(
+        facilityId,
+        req.body
+      );
+      res.status(201).json(ruleset);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  },
+
+  updateStampRuleset: async (req, res, next) => {
+    try {
+      const facilityId = Number(req.params.facilityId);
+      const ruleset = await facilityService.updateStampRuleset(
+        facilityId,
+        req.body
+      );
+      res.status(200).json(ruleset);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  },
+
+  deleteStampRuleset: async (req, res, next) => {
+    try {
+      const facilityId = Number(req.params.facilityId);
+      const message = await facilityService.deleteStampRuleset(facilityId);
+      res.status(200).json(message);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  },
+
+  // For stamp_reward
+  getStampRewardsByFacilityId: async (req, res, next) => {
+    try {
+      const facilityId = req.params.facilityId;
+      const rewards = await facilityService.getStampRewardsByFacilityId(
+        facilityId
+      );
+      res.status(200).json(rewards);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  },
+
+  createStampReward: async (req, res, next) => {
+    try {
+      const facilityId = Number(req.params.facilityId);
+      const reward = await facilityService.createStampReward(
+        facilityId,
+        req.body
+      );
+      res.status(201).json(reward);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  },
+
+  updateStampReward: async (req, res, next) => {
+    try {
+      const facilityId = Number(req.params.facilityId);
+      const rewardId = Number(req.params.rewardId);
+      const reward = await facilityService.updateStampReward(
+        facilityId,
+        rewardId,
+        req.body
+      );
+      res.status(200).json(reward);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  },
+
+  deleteStampReward: async (req, res, next) => {
+    try {
+      const facilityId = Number(req.params.facilityId);
+      const rewardId = Number(req.params.rewardId);
+      const message = await facilityService.deleteStampReward(
+        facilityId,
+        rewardId
+      );
+      res.status(200).json(message);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  },
+
+  getPreferencesByFacilityId: async (req, res, next) => {
+    try {
+      const preferences = await facilityService.getPreferencesByFacilityId(
+        req.params.facilityId
+      );
+      res.status(200).json(preferences);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  addPreferenceToFacility: async (req, res, next) => {
+    try {
+      const preference = await facilityService.addPreferenceToFacility(
+        req.params.facilityId,
+        req.body.preferenceId
+      );
+      res.status(201).json(preference);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  },
+
+  deletePreferenceFromFacility: async (req, res, next) => {
+    try {
+      const preference = await facilityService.deletePreferenceFromFacility(
+        req.params.facilityId,
+        req.params.preferenceId
+      );
+      res.status(200).json(preference);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  },
+
+  getAllPreferences: async (req, res, next) => {
+    try {
+      const preferences = await facilityService.getAllPreferences();
+      res.status(200).json(preferences);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  },
+
+  createPreference: async (req, res, next) => {
+    try {
+      const preference = await facilityService.createPreference(req.body);
+      res.status(201).json(preference);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  },
+
+  updatePreference: async (req, res, next) => {
+    try {
+      const preference = await facilityService.updatePreference(
+        req.params.id,
+        req.body
+      );
+      res.status(200).json(preference);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  },
+
+  deletePreference: async (req, res, next) => {
+    try {
+      const preference = await facilityService.deletePreference(req.params.id);
+      res.status(200).json(preference);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  },
 };
