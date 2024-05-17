@@ -19,18 +19,18 @@ router.get(
   facilityController.getFacilityById
 );
 
-router.post(
-  "/", // POST : create a new facility
-  [
-    body("name").notEmpty().withMessage("Name is required"),
-    body("business_id").notEmpty().withMessage("Business ID is required"),
-    body("type").optional(),
-    body("description").optional(),
-    body("url").optional().trim().isURL().withMessage("Valid URL is required"),
-    validatorChecker,
-  ],
-  facilityController.createFacility
-);
+// router.post(
+//   "/", // POST : create a new facility
+//   [
+//     body("name").notEmpty().withMessage("Name is required"),
+//     body("business_id").notEmpty().withMessage("Business ID is required"),
+//     body("type").optional(),
+//     body("description").optional(),
+//     body("url").optional().trim().isURL().withMessage("Valid URL is required"),
+//     validatorChecker,
+//   ],
+//   facilityController.createFacility
+// );
 
 router.put(
   "/:id", // PUT : update a facility

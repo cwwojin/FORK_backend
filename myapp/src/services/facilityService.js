@@ -11,7 +11,22 @@ class FacilityService {
     const query = "SELECT * FROM facility WHERE id = $1";
     const { rows } = await db.query(query, [id]);
     if (rows.length === 0) throw new Error("Facility not found");
-    return rows[0];
+    const facility = rows[0];
+    facility.openingHours = await this.getOpeningHoursByFacilityId(id);
+    facility.menu = await this.getMenuByFacilityId(id);
+
+    return facility;
+  }
+  async getOpeningHoursByFacilityId(facilityId) {
+    const query = "SELECT * FROM opening_hours WHERE facility_id = $1";
+    const { rows } = await db.query(query, [facilityId]);
+    return rows;
+  }
+
+  async getMenuByFacilityId(facilityId) {
+    const query = "SELECT * FROM menu WHERE facility_id = $1";
+    const { rows } = await db.query(query, [facilityId]);
+    return rows;
   }
 
   async createFacility(data) {
@@ -29,10 +44,12 @@ class FacilityService {
       `;
       const facilityValues = [
         data.name,
-        data.business_id,
+        data.businessId,
         data.type,
         data.description,
         data.url,
+        data.phone,
+        data.email,
       ];
       const facilityResult = await client.query(facilityQuery, facilityValues);
       const facilityId = facilityResult.rows[0].id;
@@ -48,8 +65,8 @@ class FacilityService {
       }
 
       // Other stamp_ruleset, opening_hours, menu
-      if (data.opening_hours) {
-        for (const hour of data.opening_hours) {
+      if (data.openingHours) {
+        for (const hour of data.openingHours) {
           const hoursQuery = `
             INSERT INTO opening_hours (facility_id, day, open_time, close_time)
             VALUES ($1, $2, $3, $4);
@@ -57,8 +74,8 @@ class FacilityService {
           const hoursValues = [
             facilityId,
             hour.day,
-            hour.open_time,
-            hour.close_time,
+            hour.openTime,
+            hour.closeTime,
           ];
           await client.query(hoursQuery, hoursValues);
         }
@@ -67,17 +84,16 @@ class FacilityService {
       if (data.menu) {
         for (const item of data.menu) {
           const menuQuery = `
-            INSERT INTO menu (facility_id, name, slug, img_uri, description, price, quantity)
+            INSERT INTO menu (facility_id, name, img_uri, description, price, quantity)
             VALUES ($1, $2, $3, $4, $5, $6, $7);
           `;
           const menuValues = [
             facilityId,
             item.name,
-            item.slug,
-            item.img_uri,
-            item.description,
+            item.imgUrl || "",
+            item.description || "",
             item.price,
-            item.quantity,
+            item.quantity || "",
           ];
           await client.query(menuQuery, menuValues);
         }
@@ -96,23 +112,23 @@ class FacilityService {
     }
   }
 
-  async insertAddress(facilityId, address) {
+  async insertAddress(client, facilityId, address) {
     const query = `
       INSERT INTO address (facility_id, post_number, country, city, road_address, jibun_address, english_address, lat, lng)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
     `;
     const values = [
       facilityId,
-      address.post_number,
+      address.postNumber,
       address.country,
       address.city,
-      address.road_address,
-      address.jibun_address,
-      address.english_address,
+      address.roadAddress,
+      address.jibunAddress,
+      address.englishAddress,
       address.lat,
       address.lng,
     ];
-    await db.query(query, values);
+    await client.query(query, values);
   }
 
   async insertStampRuleset(facilityId, stampRuleset) {
@@ -128,74 +144,76 @@ class FacilityService {
     await db.query(query, values);
   }
 
-  async insertOpeningHours(facilityId, openingHours) {
+  async insertOpeningHours(client, facilityId, openingHours) {
     for (const hour of openingHours) {
       const query = `
         INSERT INTO opening_hours (facility_id, day, open_time, close_time)
         VALUES ($1, $2, $3, $4);
       `;
-      const values = [facilityId, hour.day, hour.open_time, hour.close_time];
-      await db.query(query, values);
+      const values = [facilityId, hour.day, hour.openTime, hour.closeTime];
+      await client.query(query, values);
     }
   }
 
-  async insertMenuItems(facilityId, menuItems) {
+  async insertMenuItems(client, facilityId, menuItems) {
     for (const item of menuItems) {
       const query = `
-        INSERT INTO menu (facility_id, name, slug, img_uri, description, price, quantity)
+        INSERT INTO menu (facility_id, name, img_uri, description, price, quantity)
         VALUES ($1, $2, $3, $4, $5, $6, $7);
       `;
       const values = [
         facilityId,
         item.name,
-        item.slug || "",
-        item.img_uri || "",
+        item.imgUri || "",
         item.description || "",
         item.price,
         item.quantity || "",
       ];
-      await db.query(query, values);
+      await client.query(query, values);
     }
   }
 
   async updateFacility(id, data) {
+    let client;
     try {
-      await db.query("BEGIN");
+      await client.query("BEGIN");
 
       // Update facility table
-      let query = `
-        UPDATE facility SET name = $1, business_id = $2, type = $3, description = $4, url = $5
-        WHERE id = $6
+      const query = `
+        UPDATE facility SET name = $1, business_id = $2, type = $3, description = $4, url = $5, phone = $6, email = $7
+        WHERE id = $8
         RETURNING *;
       `;
-      let values = [
+      const values = [
         data.name,
-        data.business_id,
+        data.businessId,
         data.type,
         data.description,
         data.url,
+        data.phone,
+        data.email,
         id,
       ];
-      const facilityResult = await db.query(query, values);
+      const facilityResult = await client.query(query, values);
 
       // Update address table if provided
       if (data.address) {
-        query = `
+        const addressQuery = `
           UPDATE address SET post_number = $1, country = $2, city = $3, road_address = $4, jibun_address = $5, english_address = $6, lat = $7, lng = $8
           WHERE facility_id = $9;
         `;
-        values = [
-          data.address.post_number,
+        const addressValues = [
+          data.address.postNumber,
           data.address.country,
           data.address.city,
-          data.address.road_address,
-          data.address.jibun_address,
-          data.address.english_address,
+          data.address.roadAddress,
+          data.address.jibunAddress,
+          data.address.englishAddress,
           data.address.lat,
           data.address.lng,
           id,
         ];
-        await db.query(query, values);
+        await client.query(addressQuery, addressValues);
       }
 
       // Update stamp_ruleset if provided
@@ -205,60 +223,36 @@ class FacilityService {
           WHERE facility_id = $3;
         `;
         values = [
-          data.stamp_ruleset.logo_img_uri,
-          data.stamp_ruleset.total_cnt,
+          data.stamp_ruleset.logoImgUri,
+          data.stamp_ruleset.totalCnt,
           id,
         ];
         await db.query(query, values);
       }
 
       // Update opening_hours if provided
-      if (data.opening_hours && data.opening_hours.length > 0) {
-        // Clear existing opening hours
-        await db.query("DELETE FROM opening_hours WHERE facility_id = $1", [
+      if (data.openingHours) {
+        // delete existing opening hours
+        await client.query("DELETE FROM opening_hours WHERE facility_id = $1", [
           id,
         ]);
-
-        // Insert new opening hours
-        for (const hour of data.opening_hours) {
-          query = `
-            INSERT INTO opening_hours (facility_id, day, open_time, close_time)
-            VALUES ($1, $2, $3, $4);
-          `;
-          values = [id, hour.day, hour.open_time, hour.close_time];
-          await db.query(query, values);
-        }
+        await this.insertOpeningHours(client, id, data.openingHours);
       }
 
       // Update menu items if provided
-      if (data.menu && data.menu.length > 0) {
+      if (data.menu) {
         // Clear existing menu items
-        await db.query("DELETE FROM menu WHERE facility_id = $1", [id]);
-
-        // Insert new menu items
-        for (const item of data.menu) {
-          query = `
-            insert into menu (facility_id, name, slug, img_uri, description, price, quantity)
-            VALUES ($1, $2, $3, $4, $5, $6, $7);
-          `;
-          values = [
-            id,
-            item.name,
-            item.slug,
-            item.img_uri,
-            item.description,
-            item.price,
-            item.quantity,
-          ];
-          await db.query(query, values);
-        }
+        await client.query("DELETE FROM menu WHERE facility_id = $1", [id]);
+        await this.insertMenuItems(client, id, data.menu);
       }
 
-      await db.query("COMMIT");
+      await client.query("COMMIT");
       return facilityResult.rows[0];
     } catch (error) {
-      await db.query("ROLLBACK");
+      await client.query("ROLLBACK");
       throw error;
+    } finally {
+      client?.release();
     }
   }
 
@@ -269,51 +263,56 @@ class FacilityService {
     return { message: "Facility deleted successfully" };
   }
   async addOpeningHours(facilityId, hours) {
+    let client;
     try {
-      await db.query("BEGIN");
+      client = await db.connect();
+      await client.query("BEGIN");
       const query = `
-      INSERT INTO opening_hours (facility_id, day, open_time, close_time)
+      INSERT INTO "opening_hours" (facility_id, day, open_time, close_time)
       VALUES ($1, $2, $3, $4);
     `;
-      const values = [facilityId, hours.day, hours.open_time, hours.close_time];
-      await db.query(query, values);
-      await db.query("COMMIT");
+      const values = [facilityId, hours.day, hours.openTime, hours.closeTime];
+      await client.query(query, values);
+      await client.query("COMMIT");
       return { message: "Opening hours added successfully" };
     } catch (error) {
-      await db.query("ROLLBACK");
+      await client.query("ROLLBACK");
       throw error;
+    } finally {
+      client?.release();
     }
   }
   async updateMenu(facilityId, menuItems) {
+    let client;
     try {
-      await db.query("BEGIN");
-      // Optionally clear existing menu items if that's the intended logic
-      const deleteQuery = `DELETE FROM menu WHERE facility_id = $1;`;
-      await db.query(deleteQuery, [facilityId]);
+      client = await db.connect();
+      await client.query("BEGIN");
+      const deleteQuery = 'DELETE FROM "menu" WHERE facility_id = $1;';
+      await client.query(deleteQuery, [facilityId]);
 
-      // Insert new menu items
-      menuItems.forEach(async (item) => {
+      for (const item of menuItems) {
         const insertQuery = `
-        INSERT INTO menu (facility_id, name, slug, img_uri, description, price, quantity)
-        VALUES ($1, $2, $3, $4, $5, $6, $7);
+        INSERT INTO "menu" (facility_id, name, img_uri, description, price, quantity)
+        VALUES ($1, $2, $3, $4, $5, $6);
       `;
         const values = [
           facilityId,
           item.name,
-          item.slug || "",
-          item.img_uri || "",
+          item.imgUri || "",
           item.description || "",
           item.price,
           item.quantity || "",
         ];
-        await db.query(insertQuery, values);
-      });
+        await client.query(insertQuery, values);
+      }
 
-      await db.query("COMMIT");
+      await client.query("COMMIT");
       return { message: "Menu updated successfully" };
     } catch (error) {
-      await db.query("ROLLBACK");
+      await client.query("ROLLBACK");
       throw error;
+    } finally {
+      client?.release();
     }
   }
 }
