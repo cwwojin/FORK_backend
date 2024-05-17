@@ -349,6 +349,17 @@ class FacilityService {
       client?.release();
     }
   }
+  async getMenuItemById(facilityId, menuId) {
+    const query = `
+      SELECT * FROM menu WHERE facility_id = $1 AND id = $2;
+    `;
+    const values = [facilityId, menuId];
+    const { rows } = await db.query(query, values);
+    if (rows.length === 0) {
+      throw new Error("Menu item not found");
+    }
+    return rows[0];
+  }
   async createMenu(facilityId, menuItems) {
     let client;
     try {
@@ -383,18 +394,34 @@ class FacilityService {
       client?.release();
     }
   }
-
-  async updateMenu(facilityId, menuItems) {
+  async updateMenuItem(facilityId, menuId, menuItemData) {
     let client;
     try {
       client = await db.connect();
       await client.query("BEGIN");
 
-      // Upsert menu items
-      await this.upsertMenu(client, facilityId, menuItems);
+      const query = `
+        UPDATE menu
+        SET name = $1, img_uri = $2, description = $3, price = $4, quantity = $5, updated_at = NOW()
+        WHERE facility_id = $6 AND id = $7
+        RETURNING *;
+      `;
+      const values = [
+        menuItemData.name,
+        menuItemData.imgUri || "",
+        menuItemData.description || "",
+        menuItemData.price,
+        menuItemData.quantity || "",
+        facilityId,
+        menuId,
+      ];
+      const result = await client.query(query, values);
 
       await client.query("COMMIT");
-      return { message: "Menu updated successfully" };
+      if (result.rowCount === 0) {
+        throw new Error("Menu item not found or not updated");
+      }
+      return result.rows[0];
     } catch (error) {
       if (client) {
         await client.query("ROLLBACK");
@@ -404,6 +431,7 @@ class FacilityService {
       client?.release();
     }
   }
+
   async getPostsByFacilityId(facilityId) {
     let client;
     try {
@@ -434,19 +462,45 @@ class FacilityService {
     let client;
     try {
       client = await db.connect();
-      const query = `
-        INSERT INTO post (facility_id, title, content, img_uri)
-        VALUES ($1, $2, $3, $4)
-        RETURNING *;
+      await client.query("BEGIN");
+
+      // Check if author_id exists
+      const userCheckQuery = `SELECT id FROM "user" WHERE id = $1`;
+      const userCheckResult = await client.query(userCheckQuery, [
+        postData.author_id,
+      ]);
+
+      if (userCheckResult.rows.length === 0) {
+        // Insert the user if not exists - dummy case - to prevent fkey constraint
+        const insertUserQuery = `
+          INSERT INTO "user" (id, account_id, user_type, password, email, display_name) 
+          VALUES ($1, 'author_account', 0, 'password', 'author@example.com', 'dummydisplay_name')
+          ON CONFLICT (id) DO NOTHING;
+        `;
+        await client.query(insertUserQuery, [postData.author_id]);
+      }
+
+      // Insert post
+      const postQuery = `
+        INSERT INTO post (facility_id, author_id, title, content, img_uri, post_date) 
+        VALUES ($1, $2, $3, $4, $5, NOW()) RETURNING *;
       `;
-      const values = [
+      const postValues = [
         facilityId,
+        postData.author_id,
         postData.title,
         postData.content,
-        postData.imgUri || "",
+        postData.img_uri,
       ];
-      const { rows } = await client.query(query, values);
-      return rows[0];
+      const result = await client.query(postQuery, postValues);
+
+      await client.query("COMMIT");
+      return result.rows[0];
+    } catch (error) {
+      if (client) {
+        await client.query("ROLLBACK");
+      }
+      throw error;
     } finally {
       client?.release();
     }

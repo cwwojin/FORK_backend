@@ -108,7 +108,17 @@ router.get(
   ],
   facilityController.getMenuByFacilityId
 );
-
+router.get(
+  "/:facilityId/menu/:menuId",
+  [
+    param("facilityId")
+      .isNumeric()
+      .withMessage("Valid Facility ID is required"),
+    param("menuId").isNumeric().withMessage("Valid Menu ID is required"),
+    validatorChecker,
+  ],
+  facilityController.getMenuItemById
+);
 router.post(
   "/:facilityId/menu", // POST : create menu for a facility
   [
@@ -124,17 +134,17 @@ router.post(
 );
 
 router.put(
-  "/:facilityId/menu", // PUT : update menu for a facility
+  "/:facilityId/menu/:menuId",
   [
     param("facilityId")
       .isNumeric()
       .withMessage("Valid Facility ID is required"),
-    body().isArray().withMessage("Menu data should be an array"),
-    body("*.name").notEmpty().withMessage("Menu item name is required"),
-    body("*.price").isNumeric().withMessage("Price must be a number"),
+    param("menuId").isNumeric().withMessage("Valid Menu ID is required"),
+    body("name").notEmpty().withMessage("Menu item name is required"),
+    body("price").isNumeric().withMessage("Price must be a number"),
     validatorChecker,
   ],
-  facilityController.updateMenu
+  facilityController.updateMenuItem
 );
 
 router.get(

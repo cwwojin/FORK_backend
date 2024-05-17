@@ -98,6 +98,20 @@ module.exports = {
       next(err);
     }
   },
+  getMenuItemById: async (req, res, next) => {
+    try {
+      const facilityId = Number(req.params.facilityId);
+      const menuId = Number(req.params.menuId);
+
+      const menuItem = await facilityService.getMenuItemById(
+        facilityId,
+        menuId
+      );
+      res.status(200).json(menuItem);
+    } catch (err) {
+      next(err);
+    }
+  },
   createMenu: async (req, res, next) => {
     try {
       const menuItems = req.body; // Expect array of menu items
@@ -111,13 +125,20 @@ module.exports = {
     }
   },
 
-  updateMenu: async (req, res, next) => {
+  updateMenuItem: async (req, res, next) => {
     try {
-      const menuItems = req.body; // expect array of menu items which have keys of menu (e.g. name, price, etc)
-      const result = await facilityService.updateMenu(facilityId, menuItems);
-      res.status(200).json(result);
+      const facilityId = Number(req.params.facilityId);
+      const menuId = Number(req.params.menuId);
+      const menuItemData = req.body;
+
+      const updatedMenuItem = await facilityService.updateMenuItem(
+        facilityId,
+        menuId,
+        menuItemData
+      );
+      res.status(200).json(updatedMenuItem);
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      next(err);
     }
   },
   getPostsByFacilityId: async (req, res, next) => {
