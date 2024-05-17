@@ -350,43 +350,4 @@ module.exports = {
       res.status(400).json({ message: err.message });
     }
   },
-
-  getAllPreferences: async (req, res, next) => {
-    try {
-      const preferences = await facilityService.getAllPreferences();
-      res.status(200).json(preferences);
-    } catch (err) {
-      res.status(400).json({ message: err.message });
-    }
-  },
-
-  createPreference: async (req, res, next) => {
-    try {
-      const preference = await facilityService.createPreference(req.body);
-      res.status(201).json(preference);
-    } catch (err) {
-      res.status(400).json({ message: err.message });
-    }
-  },
-
-  updatePreference: async (req, res, next) => {
-    try {
-      const preference = await facilityService.updatePreference(
-        req.params.id,
-        req.body
-      );
-      res.status(200).json(preference);
-    } catch (err) {
-      res.status(400).json({ message: err.message });
-    }
-  },
-
-  deletePreference: async (req, res, next) => {
-    try {
-      const preference = await facilityService.deletePreference(req.params.id);
-      res.status(200).json(preference);
-    } catch (err) {
-      res.status(400).json({ message: err.message });
-    }
-  },
 };

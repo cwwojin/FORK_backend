@@ -19,10 +19,6 @@ router.get(
   facilityController.getFacilityById
 );
 
-router.get(
-  "/preferences", // GET : get all preferences
-  facilityController.getAllPreferences
-);
 // to be commented later
 router.post(
   "/", // POST : create a new facility
@@ -364,38 +360,6 @@ router.delete(
     validatorChecker,
   ],
   facilityController.deletePreferenceFromFacility
-);
-
-router.post(
-  "/preferences", // POST : create a new preference
-  [
-    body("type").isNumeric().withMessage("Valid type is required"),
-    body("name").notEmpty().withMessage("Name is required"),
-    body("slug").optional(),
-    validatorChecker,
-  ],
-  facilityController.createPreference
-);
-
-router.put(
-  "/preferences/:id", // PUT : update a preference
-  [
-    param("id").isNumeric().withMessage("Valid Preference ID is required"),
-    body("type").isNumeric().withMessage("Valid type is required"),
-    body("name").notEmpty().withMessage("Name is required"),
-    body("slug").optional(),
-    validatorChecker,
-  ],
-  facilityController.updatePreference
-);
-
-router.delete(
-  "/preferences/:id", // DELETE : delete a preference
-  [
-    param("id").isNumeric().withMessage("Valid Preference ID is required"),
-    validatorChecker,
-  ],
-  facilityController.deletePreference
 );
 
 module.exports = router;
