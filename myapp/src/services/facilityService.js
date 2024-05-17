@@ -68,6 +68,9 @@ class FacilityService {
       if (data.menu) {
         await this.insertMenuItems(client, facilityId, data.menu);
       }
+      if (data.posts) {
+        await this.insertPosts(client, facilityId, data.posts);
+      }
 
       // If successful, commit the transaction
       await client.query("COMMIT");
@@ -81,6 +84,23 @@ class FacilityService {
       if (client) {
         client?.release();
       }
+    }
+  }
+
+  async insertPosts(client, facilityId, posts) {
+    const query = `
+      INSERT INTO post (author_id, facility_id, title, content, img_uri)
+      VALUES ($1, $2, $3, $4, $5)
+    `;
+    for (const post of posts) {
+      const values = [
+        post.authorId,
+        facilityId,
+        post.title,
+        post.content,
+        post.imgUri || "",
+      ];
+      await client.query(query, values);
     }
   }
 
