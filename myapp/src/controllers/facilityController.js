@@ -48,12 +48,62 @@ module.exports = {
       res.status(404).json({ message: err.message });
     }
   },
-
+  getOpeningHoursByFacilityId: async (req, res, next) => {
+    try {
+      const facilityId = req.params.facilityId;
+      const openingHours = await facilityService.getOpeningHoursByFacilityId(
+        facilityId
+      );
+      res.status(200).json(openingHours);
+    } catch (err) {
+      next(err);
+    }
+  },
   addOpeningHours: async (req, res, next) => {
     try {
+      const { day, open_time, close_time } = req.body; // Destructure keys from request body
+      const openingHoursData = {
+        day,
+        openTime: open_time, // Map to camelCase
+        closeTime: close_time, // Map to camelCase
+      };
       const result = await facilityService.addOpeningHours(
         req.params.facilityId,
-        req.body
+        openingHoursData
+      );
+      res.status(201).json(result);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  },
+  updateOpeningHours: async (req, res, next) => {
+    try {
+      const facilityId = req.params.facilityId;
+      const openingHours = req.body; // Expect an array of opening hours
+      const result = await facilityService.updateOpeningHours(
+        facilityId,
+        openingHours
+      );
+      res.status(200).json(result);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  },
+  getMenuByFacilityId: async (req, res, next) => {
+    try {
+      const facilityId = req.params.facilityId;
+      const menu = await facilityService.getMenuByFacilityId(facilityId);
+      res.status(200).json(menu);
+    } catch (err) {
+      next(err);
+    }
+  },
+  createMenu: async (req, res, next) => {
+    try {
+      const menuItems = req.body; // Expect array of menu items
+      const result = await facilityService.createMenu(
+        req.params.facilityId,
+        menuItems
       );
       res.status(201).json(result);
     } catch (err) {
@@ -63,12 +113,64 @@ module.exports = {
 
   updateMenu: async (req, res, next) => {
     try {
-      const facilityId = req.params.facilityId;
-      const menuItems = req.body.menu; // This should include all necessary menu item details
-      const result = await facilityService.updateMenu(facilityId, [menuItems]); // Assuming the service expects an array of items
+      const menuItems = req.body; // expect array of menu items which have keys of menu (e.g. name, price, etc)
+      const result = await facilityService.updateMenu(facilityId, menuItems);
       res.status(200).json(result);
     } catch (err) {
-      next(err);
+      res.status(400).json({ message: err.message });
+    }
+  },
+  getPostsByFacilityId: async (req, res, next) => {
+    try {
+      const facilityId = req.params.facilityId;
+      const posts = await facilityService.getPostsByFacilityId(facilityId);
+      res.status(200).json(posts);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  },
+
+  getPostById: async (req, res, next) => {
+    try {
+      const { facilityId, postId } = req.params;
+      const post = await facilityService.getPostById(facilityId, postId);
+      res.status(200).json(post);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  },
+
+  createPost: async (req, res, next) => {
+    try {
+      const facilityId = req.params.facilityId;
+      const post = await facilityService.createPost(facilityId, req.body);
+      res.status(201).json(post);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  },
+
+  updatePost: async (req, res, next) => {
+    try {
+      const { facilityId, postId } = req.params;
+      const post = await facilityService.updatePost(
+        facilityId,
+        postId,
+        req.body
+      );
+      res.status(200).json(post);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  },
+
+  deletePost: async (req, res, next) => {
+    try {
+      const { facilityId, postId } = req.params;
+      const message = await facilityService.deletePost(facilityId, postId);
+      res.status(200).json(message);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
     }
   },
 };
