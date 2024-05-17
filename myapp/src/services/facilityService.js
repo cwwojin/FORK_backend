@@ -62,7 +62,7 @@ class FacilityService {
         await this.insertPosts(client, facility.id, data.posts);
       }
 
-      await client.query("REFRESH MATERIALIZED VIEW facility_address_avgscore");
+      // await client.query("REFRESH MATERIALIZED VIEW facility_address_avgscore");
       // If successful, commit the transaction
       await client.query("COMMIT");
       return facility;
