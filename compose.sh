@@ -1,13 +1,7 @@
 #!/usr/bin/env bash
 
-if ! [ -e ./.env.dev ]; then
-    aws s3 cp s3://fork-foodies/env/.env.dev ./.env.dev
-fi
-if ! [ -e ./.env.test ]; then
-    aws s3 cp s3://fork-foodies/env/.env.test ./.env.test
-fi
-if ! [ -e ./.env.prod ]; then
-    aws s3 cp s3://fork-foodies/env/.env.prod ./.env.prod
+if ! [ -e ./.env ]; then
+    aws s3 cp s3://fork-foodies/env/.env ./.env
 fi
 
 docker compose --profile $1 up -d --force-recreate
