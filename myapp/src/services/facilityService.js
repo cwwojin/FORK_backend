@@ -28,8 +28,8 @@ class FacilityService {
 
       // Insert into facility table, get the facility ID
       const facilityQuery = `
-        INSERT INTO facility (name, business_id, type, description, url, phone, email)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        INSERT INTO facility (name, business_id, type, description, url, phone, email, profile_img_uri)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         RETURNING *;
       `;
       const facilityValues = [
@@ -40,6 +40,7 @@ class FacilityService {
         data.url,
         data.phone,
         data.email,
+        data.profileImgUri,
       ];
       const facilityResult = await client.query(facilityQuery, facilityValues);
       const facility = facilityResult.rows[0];
@@ -61,6 +62,7 @@ class FacilityService {
         await this.insertPosts(client, facility.id, data.posts);
       }
 
+      await client.query("REFRESH MATERIALIZED VIEW facility_address_avgscore");
       // If successful, commit the transaction
       await client.query("COMMIT");
       return facility;
@@ -379,34 +381,51 @@ class FacilityService {
       client?.release();
     }
   }
+
   async updateMenuItem(facilityId, menuId, menuItemData) {
     let client;
     try {
       client = await db.connect();
       await client.query("BEGIN");
 
-      const query = `
-        UPDATE menu
-        SET name = $1, img_uri = $2, description = $3, price = $4, quantity = $5, updated_at = NOW()
-        WHERE facility_id = $6 AND id = $7
-        RETURNING *;
-      `;
-      const values = [
-        menuItemData.name,
-        menuItemData.imgUri,
-        menuItemData.description,
-        menuItemData.price,
-        menuItemData.quantity,
-        facilityId,
-        menuId,
-      ];
-      const { rows } = await client.query(query, values);
+      const updateFields = [];
+      const updateValues = [];
+      let fieldIndex = 1;
 
-      await client.query("COMMIT");
-      if (rows.length === 0) {
-        throw new Error("Menu item not found or not updated");
+      if (menuItemData.name !== undefined) {
+        updateFields.push(`name = $${fieldIndex++}`);
+        updateValues.push(menuItemData.name);
       }
-      return rows[0];
+      if (menuItemData.description !== undefined) {
+        updateFields.push(`description = $${fieldIndex++}`);
+        updateValues.push(menuItemData.description);
+      }
+      if (menuItemData.price !== undefined) {
+        updateFields.push(`price = $${fieldIndex++}`);
+        updateValues.push(menuItemData.price);
+      }
+      if (menuItemData.quantity !== undefined) {
+        updateFields.push(`quantity = $${fieldIndex++}`);
+        updateValues.push(menuItemData.quantity);
+      }
+
+      if (updateFields.length > 0) {
+        const query = `
+          UPDATE menu SET ${updateFields.join(", ")}
+          WHERE facility_id = $${fieldIndex} AND id = $${fieldIndex + 1}
+          RETURNING *;
+        `;
+        updateValues.push(facilityId, menuId);
+        const { rows } = await client.query(query, updateValues);
+
+        await client.query("COMMIT");
+        if (rows.length === 0) {
+          throw new Error("Menu item not found or not updated");
+        }
+        return rows[0];
+      } else {
+        throw new Error("No fields to update");
+      }
     } catch (error) {
       await client.query("ROLLBACK");
       throw error;
@@ -486,16 +505,11 @@ class FacilityService {
 
       const query = `
         UPDATE post
-        SET title = $1, content = $2, img_uri = $3, updated_at = NOW()
-        WHERE id = $4
+        SET title = $1, content = $2, updated_at = NOW()
+        WHERE id = $3
         RETURNING *;
       `;
-      const values = [
-        postData.title,
-        postData.content,
-        postData.imgUri || "",
-        postId,
-      ];
+      const values = [postData.title, postData.content, postId];
       const { rows } = await client.query(query, values);
 
       await client.query("COMMIT");
@@ -567,11 +581,11 @@ class FacilityService {
 
       const query = `
         UPDATE stamp_ruleset
-        SET logo_img_uri = $1, total_cnt = $2, updated_at = NOW()
-        WHERE facility_id = $3
+        SET total_cnt = $1, updated_at = NOW()
+        WHERE facility_id = $2
         RETURNING *;
       `;
-      const values = [data.logoImgUri, data.totalCnt, facilityId];
+      const values = [data.totalCnt, facilityId];
       const { rows } = await client.query(query, values);
 
       await client.query("COMMIT");

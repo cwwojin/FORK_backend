@@ -165,7 +165,7 @@ module.exports = {
   getPostById: async (req, res, next) => {
     try {
       const { facilityId, postId } = req.params;
-      const post = await facilityService.getPostById(facilityId, postId);
+      const post = await facilityService.getPostById(postId);
       res.status(200).json(post);
     } catch (err) {
       res.status(400).json({ message: err.message });

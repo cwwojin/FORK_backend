@@ -25,9 +25,14 @@ router.post(
   [
     body("name").notEmpty().withMessage("Name is required"),
     body("businessId").notEmpty().withMessage("Business ID is required"),
-    body("type").optional(),
-    body("description").optional(),
-    body("url").optional().trim().isURL().withMessage("Valid URL is required"),
+    body("type").notEmpty().withMessage("Type is required"),
+    body("description").notEmpty().withMessage("Description is required"),
+    body("url").notEmpty().trim().isURL().withMessage("Valid URL is required"),
+    body("phone").notEmpty().withMessage("Phone is required"),
+    body("email").notEmpty().withMessage("Email is required"),
+    body("profileImgUri")
+      .notEmpty()
+      .withMessage("Profile Image URI is required"),
     validatorChecker,
   ],
   facilityController.createFacility
@@ -37,11 +42,11 @@ router.put(
   "/:id", // PUT : update a facility
   [
     param("id").isNumeric().withMessage("Valid ID is required"),
-    body("name").optional(),
-    body("businessId").optional(),
-    body("type").optional(),
-    body("description").optional(),
-    body("url").optional().isURL(),
+    body("name").notEmpty().withMessage("Name is required"),
+    body("businessId").notEmpty().withMessage("Business ID is required"),
+    body("type").notEmpty().withMessage("Type is required"),
+    body("description").notEmpty().withMessage("Description is required"),
+    body("url").notEmpty().isURL().withMessage("Valid URL is required"),
     validatorChecker,
   ],
   facilityController.updateFacility
@@ -75,8 +80,8 @@ router.post(
       .trim()
       .isInt({ min: 0, max: 6 })
       .withMessage("Valid day is required"),
-    body("open_time").notEmpty().withMessage("Opening time is required"),
-    body("close_time").notEmpty().withMessage("Closing time is required"),
+    body("openTime").notEmpty().withMessage("Opening time is required"),
+    body("closeTime").notEmpty().withMessage("Closing time is required"),
     validatorChecker,
   ],
   facilityController.addOpeningHours
@@ -92,8 +97,8 @@ router.put(
     body("*.day")
       .isInt({ min: 0, max: 6 })
       .withMessage("Valid day is required"),
-    body("*.open_time").notEmpty().withMessage("Opening time is required"),
-    body("*.close_time").notEmpty().withMessage("Closing time is required"),
+    body("*.openTime").notEmpty().withMessage("Opening time is required"),
+    body("*.closeTime").notEmpty().withMessage("Closing time is required"),
     validatorChecker,
   ],
   facilityController.updateOpeningHours
@@ -127,7 +132,9 @@ router.post(
       .withMessage("Valid Facility ID is required"),
     body().isArray().withMessage("Menu data should be an array"),
     body("*.name").notEmpty().withMessage("Menu item name is required"),
+    body("*.description").notEmpty().withMessage("Description is required"),
     body("*.price").isNumeric().withMessage("Price must be a number"),
+    body("*.quantity").notEmpty().withMessage("Quantity is required"),
     validatorChecker,
   ],
   facilityController.createMenu
@@ -141,7 +148,9 @@ router.put(
       .withMessage("Valid Facility ID is required"),
     param("menuId").isNumeric().withMessage("Valid Menu ID is required"),
     body("name").notEmpty().withMessage("Menu item name is required"),
+    body("description").notEmpty().withMessage("Description is required"),
     body("price").isNumeric().withMessage("Price must be a number"),
+    body("quantity").notEmpty().withMessage("Quantity is required"),
     validatorChecker,
   ],
   facilityController.updateMenuItem
@@ -192,7 +201,7 @@ router.post(
       .withMessage("Author ID must be a positive integer"),
     body("title").notEmpty().withMessage("Title is required"),
     body("content").notEmpty().withMessage("Content is required"),
-    body("img_uri")
+    body("imgUri")
       .optional()
       .isURL()
       .withMessage("Image URI must be a valid URL"),
@@ -235,7 +244,7 @@ router.get(
       .withMessage("Valid Facility ID is required"),
     validatorChecker,
   ],
-  facilityController.getStampRulesetByFacilityId
+  facilityController.getStampRulesetRewardsByFacilityId
 );
 
 router.post(
@@ -244,7 +253,7 @@ router.post(
     param("facilityId")
       .isNumeric()
       .withMessage("Valid Facility ID is required"),
-    body("total_cnt").isNumeric().withMessage("Total count is required"),
+    body("totalCnt").isNumeric().withMessage("Total count is required"),
     validatorChecker,
   ],
   facilityController.createStampRuleset
@@ -256,34 +265,13 @@ router.put(
     param("facilityId")
       .isNumeric()
       .withMessage("Valid Facility ID is required"),
-    body("total_cnt").isNumeric().withMessage("Total count is required"),
+    body("totalCnt").isNumeric().withMessage("Total count is required"),
     validatorChecker,
   ],
   facilityController.updateStampRuleset
 );
 
-router.delete(
-  "/:facilityId/stamp-ruleset", // DELETE: delete stamp-ruleset
-  [
-    param("facilityId")
-      .isNumeric()
-      .withMessage("Valid Facility ID is required"),
-    validatorChecker,
-  ],
-  facilityController.deleteStampRuleset
-);
-
 // For stamp_reward
-router.get(
-  "/:facilityId/stamp-rewards", // GET: get all stamp-rewards
-  [
-    param("facilityId")
-      .isNumeric()
-      .withMessage("Valid Facility ID is required"),
-    validatorChecker,
-  ],
-  facilityController.getStampRewardsByFacilityId
-);
 
 router.post(
   "/:facilityId/stamp-rewards", // POST: add stamp-reward
@@ -323,6 +311,7 @@ router.delete(
   ],
   facilityController.deleteStampReward
 );
+
 router.get(
   "/:facilityId/preferences", // GET : get all preferences by facility ID
   [
