@@ -431,6 +431,35 @@ class FacilityService {
       client?.release();
     }
   }
+  async deleteMenu(facilityId, menuId) {
+    let client;
+    try {
+      client = await db.connect();
+      await client.query("BEGIN");
+
+      const deleteQuery = `
+        DELETE FROM menu
+        WHERE facility_id = $1 AND id = $2
+        RETURNING *;
+      `;
+      const values = [facilityId, menuId];
+      const result = await client.query(deleteQuery, values);
+
+      if (result.rowCount === 0) {
+        throw new Error("Menu item not found");
+      }
+
+      await client.query("COMMIT");
+      return { message: "Menu item deleted successfully" };
+    } catch (error) {
+      if (client) {
+        await client.query("ROLLBACK");
+      }
+      throw error;
+    } finally {
+      client?.release();
+    }
+  }
 
   async getPostsByFacilityId(facilityId) {
     let client;
@@ -458,54 +487,35 @@ class FacilityService {
     }
   }
 
-  async createPost(facilityId, postData) {
+  async createPost(facilityId, data) {
     let client;
     try {
       client = await db.connect();
       await client.query("BEGIN");
 
-      // Check if author_id exists
-      const userCheckQuery = `SELECT id FROM "user" WHERE id = $1`;
-      const userCheckResult = await client.query(userCheckQuery, [
-        postData.author_id,
-      ]);
-
-      if (userCheckResult.rows.length === 0) {
-        // Insert the user if not exists - dummy case - to prevent fkey constraint
-        const insertUserQuery = `
-          INSERT INTO "user" (id, account_id, user_type, password, email, display_name) 
-          VALUES ($1, 'author_account', 0, 'password', 'author@example.com', 'dummydisplay_name')
-          ON CONFLICT (id) DO NOTHING;
-        `;
-        await client.query(insertUserQuery, [postData.author_id]);
-      }
-
-      // Insert post
-      const postQuery = `
-        INSERT INTO post (facility_id, author_id, title, content, img_uri, post_date) 
-        VALUES ($1, $2, $3, $4, $5, NOW()) RETURNING *;
+      const query = `
+        INSERT INTO post (author_id, facility_id, title, content, img_uri)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING *;
       `;
-      const postValues = [
+      const values = [
+        data.authorId,
         facilityId,
-        postData.author_id,
-        postData.title,
-        postData.content,
-        postData.img_uri,
+        data.title,
+        data.content,
+        data.img_uri || "",
       ];
-      const result = await client.query(postQuery, postValues);
 
+      const { rows } = await client.query(query, values);
       await client.query("COMMIT");
-      return result.rows[0];
+      return rows[0];
     } catch (error) {
-      if (client) {
-        await client.query("ROLLBACK");
-      }
+      await client.query("ROLLBACK");
       throw error;
     } finally {
       client?.release();
     }
   }
-
   async updatePost(facilityId, postId, postData) {
     let client;
     try {

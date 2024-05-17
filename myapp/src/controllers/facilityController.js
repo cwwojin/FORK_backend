@@ -138,7 +138,18 @@ module.exports = {
       );
       res.status(200).json(updatedMenuItem);
     } catch (err) {
-      next(err);
+      res.status(400).json({ message: err.message });
+    }
+  },
+  deleteMenu: async (req, res, next) => {
+    try {
+      const facilityId = Number(req.params.facilityId);
+      const menuId = Number(req.params.menuId);
+
+      const result = await facilityService.deleteMenu(facilityId, menuId);
+      res.status(200).json(result);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
     }
   },
   getPostsByFacilityId: async (req, res, next) => {
@@ -163,8 +174,16 @@ module.exports = {
 
   createPost: async (req, res, next) => {
     try {
-      const facilityId = req.params.facilityId;
-      const post = await facilityService.createPost(facilityId, req.body);
+      const facilityId = Number(req.params.facilityId);
+      const { authorId, title, content, img_uri } = req.body;
+
+      const post = await facilityService.createPost(facilityId, {
+        authorId,
+        title,
+        content,
+        img_uri,
+      });
+
       res.status(201).json(post);
     } catch (err) {
       res.status(400).json({ message: err.message });

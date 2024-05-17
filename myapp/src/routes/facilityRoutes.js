@@ -134,7 +134,7 @@ router.post(
 );
 
 router.put(
-  "/:facilityId/menu/:menuId",
+  "/:facilityId/menu/:menuId", // PUT: update menu item with menuId
   [
     param("facilityId")
       .isNumeric()
@@ -145,6 +145,17 @@ router.put(
     validatorChecker,
   ],
   facilityController.updateMenuItem
+);
+router.delete(
+  "/:facilityId/menu/:menuId", // DELETE: delete menu item of specified menuId
+  [
+    param("facilityId")
+      .isNumeric()
+      .withMessage("Valid Facility ID is required"),
+    param("menuId").isNumeric().withMessage("Valid Menu ID is required"),
+    validatorChecker,
+  ],
+  facilityController.deleteMenu
 );
 
 router.get(
@@ -176,8 +187,15 @@ router.post(
     param("facilityId")
       .isNumeric()
       .withMessage("Valid Facility ID is required"),
+    body("authorId")
+      .isInt({ min: 1 })
+      .withMessage("Author ID must be a positive integer"),
     body("title").notEmpty().withMessage("Title is required"),
     body("content").notEmpty().withMessage("Content is required"),
+    body("img_uri")
+      .optional()
+      .isURL()
+      .withMessage("Image URI must be a valid URL"),
     validatorChecker,
   ],
   facilityController.createPost
