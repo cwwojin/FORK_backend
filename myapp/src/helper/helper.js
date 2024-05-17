@@ -28,6 +28,12 @@ module.exports = {
             return false;
         }
     },
+    validateIntArray: (data) => {
+        return data.every((e) => Number.isInteger(e));
+    },
+    validateHashtagArray: (data) => {
+        return data.every((e) => ('id' in e && 'name' in e));
+    },
     validateMapArea: (area) => {
         return ('latMin' in area) && ('lngMin' in area) && ('latMax' in area) && ('lngMax' in area);
     }
