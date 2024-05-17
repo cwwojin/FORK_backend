@@ -2,13 +2,13 @@ const db = require("../models/index");
 
 class FacilityService {
   async getAllFacilities() {
-    const query = "SELECT * FROM facility ORDER BY id ASC";
+    const query = "SELECT * FROM facility_address_avgscore ORDER BY id ASC";
     const { rows } = await db.query(query);
     return rows;
   }
 
   async getFacilityById(id) {
-    const query = "SELECT * FROM facility WHERE id = $1";
+    const query = "SELECT * FROM facility_address_avgscore WHERE id = $1";
     const { rows } = await db.query(query, [id]);
     if (rows.length === 0) throw new Error("Facility not found");
     const facility = rows[0];
@@ -17,17 +17,6 @@ class FacilityService {
     facility.posts = await this.getPostsByFacilityId(id);
 
     return facility;
-  }
-  async getOpeningHoursByFacilityId(facilityId) {
-    const query = "SELECT * FROM opening_hours WHERE facility_id = $1";
-    const { rows } = await db.query(query, [facilityId]);
-    return rows;
-  }
-
-  async getMenuByFacilityId(facilityId) {
-    const query = "SELECT * FROM menu WHERE facility_id = $1";
-    const { rows } = await db.query(query, [facilityId]);
-    return rows;
   }
 
   async createFacility(data) {
@@ -41,7 +30,7 @@ class FacilityService {
       const facilityQuery = `
         INSERT INTO facility (name, business_id, type, description, url, phone, email)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
-        RETURNING id;
+        RETURNING *;
       `;
       const facilityValues = [
         data.name,
@@ -53,28 +42,28 @@ class FacilityService {
         data.email,
       ];
       const facilityResult = await client.query(facilityQuery, facilityValues);
-      const facilityId = facilityResult.rows[0].id;
+      const facility = facilityResult.rows[0];
 
       // Insert into address table
       if (data.address) {
-        await this.insertAddress(client, facilityId, data.address);
+        await this.insertAddress(client, facility.id, data.address);
       }
 
       // Other stamp_ruleset, opening_hours, menu
       if (data.openingHours) {
-        await this.insertOpeningHours(client, facilityId, data.openingHours);
+        await this.insertOpeningHours(client, facility.id, data.openingHours);
       }
 
       if (data.menu) {
-        await this.insertMenuItems(client, facilityId, data.menu);
+        await this.insertMenuItems(client, facility.id, data.menu);
       }
       if (data.posts) {
-        await this.insertPosts(client, facilityId, data.posts);
+        await this.insertPosts(client, facility.id, data.posts);
       }
 
       // If successful, commit the transaction
       await client.query("COMMIT");
-      return facilityResult.rows[0];
+      return facility;
     } catch (error) {
       if (client) {
         await client.query("ROLLBACK");
@@ -84,23 +73,6 @@ class FacilityService {
       if (client) {
         client?.release();
       }
-    }
-  }
-
-  async insertPosts(client, facilityId, posts) {
-    const query = `
-      INSERT INTO post (author_id, facility_id, title, content, img_uri)
-      VALUES ($1, $2, $3, $4, $5)
-    `;
-    for (const post of posts) {
-      const values = [
-        post.authorId,
-        facilityId,
-        post.title,
-        post.content,
-        post.imgUri || "",
-      ];
-      await client.query(query, values);
     }
   }
 
@@ -116,8 +88,8 @@ class FacilityService {
         jibun_address = EXCLUDED.jibun_address,
         english_address = EXCLUDED.english_address,
         lat = EXCLUDED.lat,
-        lng = EXCLUDED.lng;
-
+        lng = EXCLUDED.lng
+    RETURNING *;
     `;
     const values = [
       facilityId,
@@ -130,49 +102,69 @@ class FacilityService {
       address.lat,
       address.lng,
     ];
-    await client.query(query, values);
-  }
-
-  async insertStampRuleset(facilityId, stampRuleset) {
-    const query = `
-      INSERT INTO stamp_ruleset (facility_id, logo_img_uri, total_cnt)
-      VALUES ($1, $2, $3);
-    `;
-    const values = [
-      facilityId,
-      stampRuleset.logo_img_uri,
-      stampRuleset.total_cnt,
-    ];
-    await db.query(query, values);
+    const { rows } = await client.query(query, values);
+    return rows[0];
   }
 
   async insertOpeningHours(client, facilityId, openingHours) {
+    const deleteQuery = "DELETE FROM opening_hours WHERE facility_id = $1";
+    await client.query(deleteQuery, [facilityId]);
+
+    const insertQuery = `
+      INSERT INTO opening_hours (facility_id, day, open_time, close_time)
+      VALUES ($1, $2, $3, $4)
+      RETURNING *;
+    `;
+    const result = [];
     for (const hour of openingHours) {
-      const query = `
-        INSERT INTO opening_hours (facility_id, day, open_time, close_time)
-        VALUES ($1, $2, $3, $4);
-      `;
       const values = [facilityId, hour.day, hour.openTime, hour.closeTime];
-      await client.query(query, values);
+      const { rows } = await client.query(insertQuery, values);
+      result.push(rows[0]);
     }
+    return result;
   }
 
   async insertMenuItems(client, facilityId, menuItems) {
+    const result = [];
     for (const item of menuItems) {
       const query = `
         INSERT INTO menu (facility_id, name, img_uri, description, price, quantity)
-        VALUES ($1, $2, $3, $4, $5, $6);
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING *;
       `;
       const values = [
         facilityId,
         item.name,
-        item.imgUri || "",
-        item.description || "",
+        item.imgUri,
+        item.description,
         item.price,
-        item.quantity || "",
+        item.quantity,
       ];
-      await client.query(query, values);
+      const { rows } = await client.query(query, values);
+      result.push(rows[0]);
     }
+    return result;
+  }
+
+  async insertPosts(client, facilityId, posts) {
+    const result = [];
+    for (const post of posts) {
+      const query = `
+      INSERT INTO post (author_id, facility_id, title, content, img_uri)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *;
+    `;
+      const values = [
+        post.authorId,
+        facilityId,
+        post.title,
+        post.content,
+        post.imgUri,
+      ];
+      const { rows } = await client.query(query, values);
+      result.push(rows[0]);
+    }
+    return result;
   }
 
   async updateFacility(id, data) {
@@ -181,60 +173,70 @@ class FacilityService {
       client = await db.connect();
       await client.query("BEGIN");
 
-      // Update facility table
-      const query = `
-      UPDATE facility SET name = $1, business_id = $2, type = $3, description = $4, url = $5, phone = $6, email = $7
-      WHERE id = $8
-      RETURNING *;
-      `;
-      const values = [
-        data.name,
-        data.businessId,
-        data.type,
-        data.description,
-        data.url,
-        data.phone,
-        data.email,
-        id,
-      ];
-      const facilityResult = await client.query(query, values);
+      const updateFields = [];
+      const updateValues = [];
+      let fieldIndex = 1;
 
-      // Update address table if provided
-      if (data.address) {
-        await this.insertAddress(client, id, data.address);
+      if (data.name !== undefined) {
+        updateFields.push(`name = $${fieldIndex++}`);
+        updateValues.push(data.name);
       }
-      // Update stamp_ruleset if provided
-      if (data.stampRuleset) {
-        const stampRulesetQuery = `
-          update stamp_ruleset SET logo_img_uri = $1, total_cnt = $2
-          WHERE facility_id = $3;
+      if (data.businessId !== undefined) {
+        updateFields.push(`business_id = $${fieldIndex++}`);
+        updateValues.push(data.businessId);
+      }
+      if (data.type !== undefined) {
+        updateFields.push(`type = $${fieldIndex++}`);
+        updateValues.push(data.type);
+      }
+      if (data.description !== undefined) {
+        updateFields.push(`description = $${fieldIndex++}`);
+        updateValues.push(data.description);
+      }
+      if (data.url !== undefined) {
+        updateFields.push(`url = $${fieldIndex++}`);
+        updateValues.push(data.url);
+      }
+      if (data.phone !== undefined) {
+        updateFields.push(`phone = $${fieldIndex++}`);
+        updateValues.push(data.phone);
+      }
+      if (data.email !== undefined) {
+        updateFields.push(`email = $${fieldIndex++}`);
+        updateValues.push(data.email);
+      }
+
+      if (updateFields.length > 0) {
+        const query = `
+          UPDATE facility SET ${updateFields.join(", ")}
+          WHERE id = $${fieldIndex}
+          RETURNING *;
         `;
-        const stampRulesetValues = [
-          data.stampRuleset.logoImgUri,
-          data.stampRuleset.totalCnt,
-          id,
-        ];
-        await client.query(stampRulesetQuery, stampRulesetValues);
-      }
+        updateValues.push(id);
+        const facilityResult = await client.query(query, updateValues);
+        const facility = facilityResult.rows[0];
 
-      // Update opening_hours if provided
-      if (data.openingHours) {
-        // delete existing opening hours
-        await client.query("DELETE FROM opening_hours WHERE facility_id = $1", [
-          id,
-        ]);
-        await this.insertOpeningHours(client, id, data.openingHours);
-      }
+        if (data.address) {
+          facility.address = await this.insertAddress(client, id, data.address);
+        }
 
-      // Update menu items if provided
-      if (data.menu) {
-        // Clear existing menu items
-        await client.query("DELETE FROM menu WHERE facility_id = $1", [id]);
-        await this.insertMenuItems(client, id, data.menu);
-      }
+        if (data.openingHours) {
+          facility.openingHours = await this.insertOpeningHours(
+            client,
+            id,
+            data.openingHours
+          );
+        }
 
-      await client.query("COMMIT");
-      return facilityResult.rows[0];
+        if (data.menu) {
+          facility.menu = await this.insertMenuItems(client, id, data.menu);
+        }
+
+        await client.query("COMMIT");
+        return facility;
+      } else {
+        throw new Error("No fields to update");
+      }
     } catch (error) {
       if (client) {
         await client.query("ROLLBACK");
@@ -248,79 +250,28 @@ class FacilityService {
   }
 
   async deleteFacility(id) {
-    const query = "DELETE FROM facility WHERE id = $1";
-    const { rowCount } = await db.query(query, [id]);
-    if (rowCount === 0) throw new Error("Facility not found");
-    return { message: "Facility deleted successfully" };
-  }
-  async addOpeningHours(facilityId, hours) {
     let client;
     try {
       client = await db.connect();
       await client.query("BEGIN");
-      const query = `
-      INSERT INTO "opening_hours" (facility_id, day, open_time, close_time)
-      VALUES ($1, $2, $3, $4);
-    `;
-      const values = [facilityId, hours.day, hours.openTime, hours.closeTime];
-      await client.query(query, values);
+
+      const query = "DELETE FROM facility WHERE id = $1 RETURNING *";
+      const { rows } = await client.query(query, [id]);
+
       await client.query("COMMIT");
-      return { message: "Opening hours added successfully" };
+      return rows[0] ? rows[0] : { message: "No facility to delete" };
     } catch (error) {
-      if (client) {
-        await client.query("ROLLBACK");
-      }
+      await client.query("ROLLBACK");
       throw error;
     } finally {
-      client?.release();
+      client.release();
     }
   }
-  async upsertMenuItem(client, facilityId, menuItem) {
-    // Check if menu item exists
-    const checkQuery =
-      "SELECT id FROM menu WHERE facility_id = $1 AND name = $2";
-    const { rows } = await client.query(checkQuery, [
-      facilityId,
-      menuItem.name,
-    ]);
 
-    if (rows.length > 0) {
-      // If exists, update the item
-      const updateQuery = `
-        UPDATE menu
-        SET img_uri = $1, description = $2, price = $3, quantity = $4
-        WHERE facility_id = $5 AND name = $6
-      `;
-      const values = [
-        menuItem.imgUri || "",
-        menuItem.description || "",
-        menuItem.price,
-        menuItem.quantity || "",
-        facilityId,
-        menuItem.name,
-      ];
-      await client.query(updateQuery, values);
-    } else {
-      // If not exists, insert new item
-      const insertQuery = `
-        INSERT INTO menu (facility_id, name, img_uri, description, price, quantity)
-        VALUES ($1, $2, $3, $4, $5, $6);
-      `;
-      const values = [
-        facilityId,
-        menuItem.name,
-        menuItem.imgUri || "",
-        menuItem.description || "",
-        menuItem.price,
-        menuItem.quantity || "",
-      ];
-      await client.query(insertQuery, values);
-    }
-  }
-  async upsertMenu(client, facilityId, menuItems) {
-    for (const item of menuItems) {
-      await this.upsertMenuItem(client, facilityId, item);
-    }
+  async getOpeningHoursByFacilityId(facilityId) {
+    const query = "SELECT * FROM opening_hours WHERE facility_id = $1";
+    const { rows } = await db.query(query, [facilityId]);
+    return rows;
   }
 
   async updateOpeningHours(facilityId, openingHours) {
@@ -329,57 +280,68 @@ class FacilityService {
       client = await db.connect();
       await client.query("BEGIN");
 
-      for (const hour of openingHours) {
-        // Try to update the opening hours for the given day
-        const updateQuery = `
-          UPDATE opening_hours 
-          SET open_time = $3, close_time = $4 
-          WHERE facility_id = $1 AND day = $2
-        `;
-        const updateValues = [
-          facilityId,
-          hour.day,
-          hour.open_time,
-          hour.close_time,
-        ];
-        const updateResult = await client.query(updateQuery, updateValues);
+      const deleteQuery = "DELETE FROM opening_hours WHERE facility_id = $1";
+      await client.query(deleteQuery, [facilityId]);
 
-        // If no rows were updated, insert the new opening hours
-        if (updateResult.rowCount === 0) {
-          const insertQuery = `
-            INSERT INTO opening_hours (facility_id, day, open_time, close_time)
-            VALUES ($1, $2, $3, $4)
-          `;
-          const insertValues = [
-            facilityId,
-            hour.day,
-            hour.open_time,
-            hour.close_time,
-          ];
-          await client.query(insertQuery, insertValues);
-        }
+      const insertQuery = `
+        INSERT INTO opening_hours (facility_id, day, open_time, close_time)
+        VALUES ($1, $2, $3, $4)
+        RETURNING *;
+      `;
+      const result = [];
+      for (const hour of openingHours) {
+        const values = [facilityId, hour.day, hour.openTime, hour.closeTime];
+        const { rows } = await client.query(insertQuery, values);
+        result.push(rows[0]);
       }
 
       await client.query("COMMIT");
-      return { message: "Opening hours updated successfully" };
+      return result;
     } catch (error) {
       await client.query("ROLLBACK");
       throw error;
     } finally {
-      client?.release();
+      client.release();
     }
   }
-  async getMenuItemById(facilityId, menuId) {
-    const query = `
-      SELECT * FROM menu WHERE facility_id = $1 AND id = $2;
-    `;
-    const values = [facilityId, menuId];
-    const { rows } = await db.query(query, values);
-    if (rows.length === 0) {
-      throw new Error("Menu item not found");
+
+  async addOpeningHours(facilityId, hours) {
+    let client;
+    try {
+      client = await db.connect();
+      await client.query("BEGIN");
+
+      const query = `
+        INSERT INTO opening_hours (facility_id, day, open_time, close_time)
+        VALUES ($1, $2, $3, $4)
+        RETURNING *;
+      `;
+      const values = [facilityId, hours.day, hours.openTime, hours.closeTime];
+      const { rows } = await client.query(query, values);
+
+      await client.query("COMMIT");
+      return rows[0];
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
     }
+  }
+
+  async getMenuByFacilityId(facilityId) {
+    const query = "SELECT * FROM menu WHERE facility_id = $1";
+    const { rows } = await db.query(query, [facilityId]);
+    return rows;
+  }
+
+  async getMenuItemById(menuId) {
+    const query = "SELECT * FROM menu WHERE id = $1";
+    const { rows } = await db.query(query, [menuId]);
+    if (rows.length === 0) throw new Error("Menu item not found");
     return rows[0];
   }
+
   async createMenu(facilityId, menuItems) {
     let client;
     try {
@@ -387,24 +349,27 @@ class FacilityService {
       await client.query("BEGIN");
 
       // Insert menu items
+      const result = [];
       for (const item of menuItems) {
         const query = `
           INSERT INTO menu (facility_id, name, img_uri, description, price, quantity)
-          VALUES ($1, $2, $3, $4, $5, $6);
+          VALUES ($1, $2, $3, $4, $5, $6)
+          RETURNING *;
         `;
         const values = [
           facilityId,
           item.name,
-          item.imgUri || "",
-          item.description || "",
+          item.imgUri,
+          item.description,
           item.price,
-          item.quantity || "",
+          item.quantity,
         ];
-        await client.query(query, values);
+        const { rows } = await client.query(query, values);
+        result.push(rows[0]);
       }
 
       await client.query("COMMIT");
-      return { message: "Menu created successfully" };
+      return result;
     } catch (error) {
       if (client) {
         await client.query("ROLLBACK");
@@ -428,53 +393,42 @@ class FacilityService {
       `;
       const values = [
         menuItemData.name,
-        menuItemData.imgUri || "",
-        menuItemData.description || "",
+        menuItemData.imgUri,
+        menuItemData.description,
         menuItemData.price,
-        menuItemData.quantity || "",
+        menuItemData.quantity,
         facilityId,
         menuId,
       ];
-      const result = await client.query(query, values);
+      const { rows } = await client.query(query, values);
 
       await client.query("COMMIT");
-      if (result.rowCount === 0) {
+      if (rows.length === 0) {
         throw new Error("Menu item not found or not updated");
       }
-      return result.rows[0];
+      return rows[0];
     } catch (error) {
-      if (client) {
-        await client.query("ROLLBACK");
-      }
+      await client.query("ROLLBACK");
       throw error;
     } finally {
       client?.release();
     }
   }
+
   async deleteMenu(facilityId, menuId) {
     let client;
     try {
       client = await db.connect();
       await client.query("BEGIN");
 
-      const deleteQuery = `
-        DELETE FROM menu
-        WHERE facility_id = $1 AND id = $2
-        RETURNING *;
-      `;
-      const values = [facilityId, menuId];
-      const result = await client.query(deleteQuery, values);
-
-      if (result.rowCount === 0) {
-        throw new Error("Menu item not found");
-      }
+      const deleteQuery =
+        "DELETE FROM menu WHERE facility_id = $1 AND id = $2 RETURNING *";
+      const { rows } = await client.query(deleteQuery, [facilityId, menuId]);
 
       await client.query("COMMIT");
-      return { message: "Menu item deleted successfully" };
+      return rows[0] ? rows[0] : { message: "No menu item to delete" };
     } catch (error) {
-      if (client) {
-        await client.query("ROLLBACK");
-      }
+      await client.query("ROLLBACK");
       throw error;
     } finally {
       client?.release();
@@ -482,31 +436,18 @@ class FacilityService {
   }
 
   async getPostsByFacilityId(facilityId) {
-    let client;
-    try {
-      client = await db.connect();
-      const query =
-        "SELECT * FROM post WHERE facility_id = $1 ORDER BY created_at DESC";
-      const { rows } = await client.query(query, [facilityId]);
-      return rows;
-    } finally {
-      client?.release();
-    }
+    const query =
+      "SELECT * FROM post WHERE facility_id = $1 ORDER BY created_at DESC";
+    const { rows } = await db.query(query, [facilityId]);
+    return rows;
   }
 
-  async getPostById(facilityId, postId) {
-    let client;
-    try {
-      client = await db.connect();
-      const query = "SELECT * FROM post WHERE facility_id = $1 AND id = $2";
-      const { rows } = await client.query(query, [facilityId, postId]);
-      if (rows.length === 0) throw new Error("Post not found");
-      return rows[0];
-    } finally {
-      client?.release();
-    }
+  async getPostById(postId) {
+    const query = "SELECT * FROM post WHERE id = $1";
+    const { rows } = await db.query(query, [postId]);
+    if (rows.length === 0) throw new Error("Post not found");
+    return rows[0];
   }
-
   async createPost(facilityId, data) {
     let client;
     try {
@@ -523,7 +464,7 @@ class FacilityService {
         facilityId,
         data.title,
         data.content,
-        data.img_uri || "",
+        data.imgUri,
       ];
 
       const { rows } = await client.query(query, values);
@@ -536,54 +477,64 @@ class FacilityService {
       client?.release();
     }
   }
-  async updatePost(facilityId, postId, postData) {
+
+  async updatePost(postId, postData) {
     let client;
     try {
       client = await db.connect();
+      await client.query("BEGIN");
+
       const query = `
         UPDATE post
-        SET title = $1, content = $2, img_uri = $3, updated_at = current_timestamp
-        WHERE facility_id = $4 AND id = $5
+        SET title = $1, content = $2, img_uri = $3, updated_at = NOW()
+        WHERE id = $4
         RETURNING *;
       `;
       const values = [
         postData.title,
         postData.content,
         postData.imgUri || "",
-        facilityId,
         postId,
       ];
       const { rows } = await client.query(query, values);
-      if (rows.length === 0) throw new Error("Post not found");
+
+      await client.query("COMMIT");
+      if (rows.length === 0) {
+        throw new Error("Post not found or not updated");
+      }
       return rows[0];
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
     } finally {
-      client?.release();
+      client.release();
     }
   }
 
-  async deletePost(facilityId, postId) {
+  async deletePost(postId) {
     let client;
     try {
       client = await db.connect();
-      const query =
-        "DELETE FROM post WHERE facility_id = $1 AND id = $2 RETURNING *";
-      const { rows } = await client.query(query, [facilityId, postId]);
-      if (rows.length === 0) throw new Error("Post not found");
-      return { message: "Post deleted successfully" };
+      await client.query("BEGIN");
+
+      const deleteQuery = "DELETE FROM post WHERE id = $1 RETURNING *";
+      const { rows } = await client.query(deleteQuery, [postId]);
+
+      await client.query("COMMIT");
+      return rows[0] ? rows[0] : { message: "No post to delete" };
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
     } finally {
-      client?.release();
+      client.release();
     }
   }
-
-  async getStampRulesetByFacilityId(facilityId) {
-    const query = `
-      SELECT * FROM stamp_ruleset WHERE facility_id = $1;
-    `;
+  async getStampRulesetRewardsByFacilityId(facilityId) {
+    const query = "SELECT * FROM stamp_ruleset_rewards WHERE facility_id = $1";
     const { rows } = await db.query(query, [facilityId]);
     if (rows.length === 0) throw new Error("Stamp ruleset not found");
     return rows[0];
   }
-
   async createStampRuleset(facilityId, data) {
     let client;
     try {
@@ -595,7 +546,7 @@ class FacilityService {
         VALUES ($1, $2, $3)
         RETURNING *;
       `;
-      const values = [facilityId, data.logo_img_uri || "", data.total_cnt];
+      const values = [facilityId, data.logoImgUri, data.totalCnt];
       const { rows } = await client.query(query, values);
 
       await client.query("COMMIT");
@@ -604,7 +555,7 @@ class FacilityService {
       await client.query("ROLLBACK");
       throw error;
     } finally {
-      client?.release();
+      client.release();
     }
   }
 
@@ -620,52 +571,20 @@ class FacilityService {
         WHERE facility_id = $3
         RETURNING *;
       `;
-      const values = [data.logo_img_uri || "", data.total_cnt, facilityId];
+      const values = [data.logoImgUri, data.totalCnt, facilityId];
       const { rows } = await client.query(query, values);
 
       await client.query("COMMIT");
-      if (rows.length === 0)
-        throw new Error("Stamp ruleset not found or not updated");
+      if (rows.length === 0) {
+        throw new Error("Stamp ruleset not found/not updated");
+      }
       return rows[0];
     } catch (error) {
       await client.query("ROLLBACK");
       throw error;
     } finally {
-      client?.release();
+      client.release();
     }
-  }
-
-  async deleteStampRuleset(facilityId) {
-    let client;
-    try {
-      client = await db.connect();
-      await client.query("BEGIN");
-
-      const deleteQuery = `
-        DELETE FROM stamp_ruleset
-        WHERE facility_id = $1
-        RETURNING *;
-      `;
-      const { rows } = await client.query(deleteQuery, [facilityId]);
-
-      if (rows.length === 0) throw new Error("Stamp ruleset not found");
-
-      await client.query("COMMIT");
-      return { message: "Stamp ruleset deleted successfully" };
-    } catch (error) {
-      await client.query("ROLLBACK");
-      throw error;
-    } finally {
-      client?.release();
-    }
-  }
-
-  async getStampRewardsByFacilityId(facilityId) {
-    const query = `
-      SELECT * FROM stamp_reward WHERE facility_id = $1;
-    `;
-    const { rows } = await db.query(query, [facilityId]);
-    return rows;
   }
 
   async createStampReward(facilityId, data) {
@@ -688,7 +607,7 @@ class FacilityService {
       await client.query("ROLLBACK");
       throw error;
     } finally {
-      client?.release();
+      client.release();
     }
   }
 
@@ -708,14 +627,15 @@ class FacilityService {
       const { rows } = await client.query(query, values);
 
       await client.query("COMMIT");
-      if (rows.length === 0)
+      if (rows.length === 0) {
         throw new Error("Stamp reward not found or not updated");
+      }
       return rows[0];
     } catch (error) {
       await client.query("ROLLBACK");
       throw error;
     } finally {
-      client?.release();
+      client.release();
     }
   }
 
@@ -733,17 +653,18 @@ class FacilityService {
       const values = [facilityId, rewardId];
       const { rows } = await client.query(deleteQuery, values);
 
-      if (rows.length === 0) throw new Error("Stamp reward not found");
-
       await client.query("COMMIT");
-      return { message: "Stamp reward deleted successfully" };
+      return rows[0]
+        ? { message: "Stamp reward deleted successfully" }
+        : { message: "Stamp reward not found" };
     } catch (error) {
       await client.query("ROLLBACK");
       throw error;
     } finally {
-      client?.release();
+      client.release();
     }
   }
+
   async getPreferencesByFacilityId(facilityId) {
     let client;
     try {
