@@ -1,5 +1,6 @@
 const db = require('../models/index');
 const { parseBoolean } = require('../helper/helper');
+const { removeS3File } = require('../helper/s3Engine');
 
 module.exports = {
     /** get review by review id */
@@ -58,14 +59,18 @@ module.exports = {
      */
     createReview: async (args) => {
         try {
+            let result;
             const existingHashTags = args.hashtags.filter((e) => !!e['id']);
             const newHashtags = args.hashtags.filter((e) => !e['id']);
-            const insertTagQuery = `insert into hashtag (name) 
-                values ${newHashtags.map((e) => `('${e['name']}')`).join(`, `)} 
-                returning id`;
+            let hashtagIds = existingHashTags.map((e) => e['id']);
             await db.query('BEGIN');
-            let result = await db.query(insertTagQuery);
-            const hashtagIds = [...existingHashTags.map((e) => e['id']), ...result.rows.map((e) => e['id'])];
+            if(newHashtags.length !== 0){
+                const insertTagQuery = `insert into hashtag (name) 
+                    values ${newHashtags.map((e) => `('${e['name']}')`).join(`, `)} 
+                    returning id`;
+                result = await db.query(insertTagQuery);
+                hashtagIds = [...hashtagIds, ...result.rows.map((e) => e['id'])];
+            }
             result = await db.query({
                 text: `insert into review (author_id, facility_id, score, content, img_uri)
                     values ($1, $2, $3, $4, $5) returning id`,
@@ -94,6 +99,7 @@ module.exports = {
     },
     /** 
      * Update review
+     * - can update content or hashtags
      */
     updateReview: async (id, body) => {
         try{
@@ -127,13 +133,18 @@ module.exports = {
             throw new Error(err);
         }
     },
-    /** delete a review */
+    /** delete a review 
+     * - if a review with image is deleted, delete the image from S3
+     * */
     deleteReview: async (id) => {
         const query = {
             text: `delete from review where id = $1 returning *`,
             values: [id]
         }
         const result = await db.query(query);
+        if(result.rows.length !== 0 && result.rows[0].img_uri){
+            await removeS3File(result.rows[0].img_uri);
+        }
         return result.rows;
     },
     /** get all hashtags */

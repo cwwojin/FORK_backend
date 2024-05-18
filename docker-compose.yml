@@ -1,7 +1,9 @@
 services:
   backend-dev:
     container_name: fork_backend_dev
-    env_file: .env.dev
+    env_file: .env
+    environment:
+      - NODE_ENV=development
     build:
       dockerfile: ./Dockerfile
       target: dev
@@ -13,7 +15,9 @@ services:
 
   backend-test:
     container_name: fork_backend_test
-    env_file: .env.test
+    env_file: .env
+    environment:
+      - NODE_ENV=test
     build:
       dockerfile: ./Dockerfile
       target: test
@@ -25,7 +29,9 @@ services:
 
   backend-prod:
     container_name: fork_backend_prod
-    env_file: .env.prod
+    env_file: .env
+    environment:
+      - NODE_ENV=production
     build:
       dockerfile: ./Dockerfile
       target: prod

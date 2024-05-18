@@ -1,4 +1,5 @@
 const db = require("../models/index");
+const { removeS3File } = require("../helper/s3Engine");
 
 module.exports = {
     /** 
@@ -66,6 +67,9 @@ module.exports = {
             values: [id],
         };
         const result = await db.query(query);
+        if(result.rows.length !== 0 && result.rows[0].profile_img_uri){
+            await removeS3File(result.rows[0].profile_img_uri);
+        }
         return result.rows;
     },
     // get user preferences
@@ -128,6 +132,30 @@ module.exports = {
         }
         const result = await db.query(query);
         return result.rows;
+    },
+    /** 
+     * upload / update a user profile image
+     * 1. if user already has a profile image, delete file from S3
+     * 2. update user 'profile_img_uri'
+     * */
+    uploadUserProfileImage: async (id, imageUri) => {
+        const user = await module.exports.getUserById(id);
+        if(user.length === 0){ 
+            throw ({status: 404, message: `No user with id: ${id}`});
+        }
+        if(user[0].profile_img_uri){
+            await removeS3File(user[0].profile_img_uri);
+        }
+        const result = await db.query({
+            text: `update "user" set profile_img_uri = $1 where id = $2 returning *`,
+            values: [imageUri, id],
+        });
+        return result.rows;
+    },
+    /** delete a user profile image, setting 'profile_img_uri' = '' */
+    deleteUserProfileImage: async (id) => {
+        const result = await module.exports.uploadUserProfileImage(id, '');
+        return result;
     },
     /** get all preferences - used for both user & facility */
     getAllPreferences: async () => {

@@ -4,6 +4,7 @@ const userController = require('../controllers/userController');
 const { body, param, query } = require('express-validator');
 const { validatorChecker } = require('../middleware/validator');
 const { USER_TYPES, validateUserId, validatePassword } = require("../helper/helper");
+const { s3Uploader } = require('../helper/s3Engine');
 
 
 /** Router for "/api/users" */
@@ -98,6 +99,21 @@ router
             validatorChecker,
         ],
         userController.deleteUserFavorite
+    ).post(      // POST : upload / update a user profile image
+        '/profile/image/:id',
+        s3Uploader.single('image'),
+        [
+            param('id', `route param 'id' must be a positive integer`).exists().isInt({min:1}),
+            validatorChecker,
+        ],
+        userController.uploadUserProfileImage
+    ).delete(      // DELETE : delete a user profile image
+        '/profile/image/:id',
+        [
+            param('id', `route param 'id' must be a positive integer`).exists().isInt({min:1}),
+            validatorChecker,
+        ],
+        userController.deleteUserProfileImage
     )
 ;
 

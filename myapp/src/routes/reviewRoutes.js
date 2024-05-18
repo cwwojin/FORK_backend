@@ -3,21 +3,8 @@ const router = Router();
 const reviewController = require('../controllers/reviewController');
 const { body, param, query } = require('express-validator');
 const { validatorChecker } = require('../middleware/validator');
-const multer = require('multer');
-const s3Engine = require('../helper/s3Engine');
+const { s3Uploader } = require('../helper/s3Engine');
 const { IMG_FILE_TYPES, validateJSONArray, validateHashtagArray, validateIntArray } = require('../helper/helper');
-
-const upload = multer({
-    storage: s3Engine,
-    fileFilter: (req,file,cb) => {
-        const fileExt = file.originalname.split('.').pop();
-        if(IMG_FILE_TYPES.includes(fileExt)) {
-            cb(null, true);
-        }else{
-            cb(null, false);
-        }
-    },
-});
 
 
 /** Router for "/api/reviews" */
@@ -42,7 +29,7 @@ router
         reviewController.getReviewByQuery
     ).post(     // POST : create review w/ image attachment (up to 1 file)
         '/upload',
-        upload.single('image'),
+        s3Uploader.single('image'),
         [
             body('authorId', `body field 'authorId' must be a positive integer`).exists().isInt({min: 1}),
             body('facilityId', `body field 'facilityId' must be a positive integer`).exists().isInt({min: 1}),
