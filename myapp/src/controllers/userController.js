@@ -43,6 +43,7 @@ module.exports = {
             res.status(404).json({message: `No user with id: ${id}`});
         }
     },
+    // delete user
     deleteUser: async (req,res,next) => {
         const id = Number(req.params.id);
         try{

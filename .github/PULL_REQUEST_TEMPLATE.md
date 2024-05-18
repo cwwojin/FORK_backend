@@ -12,3 +12,8 @@
 
 ## Future Works
 - What else should be done ?
+
+## Checklist
+- [ ] I have performed unit tests
+- [ ] I have added necessary docs
+- [ ] I have checked for potential bugs & issues
