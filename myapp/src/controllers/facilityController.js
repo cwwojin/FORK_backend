@@ -4,7 +4,10 @@ module.exports = {
   getAllFacilities: async (req, res, next) => {
     try {
       const facilities = await facilityService.getAllFacilities();
-      res.status(200).json(facilities);
+      res.status(200).json({
+        status: "success",
+        data: facilities,
+      });
     } catch (err) {
       next(err);
     }
@@ -13,7 +16,10 @@ module.exports = {
   getFacilityById: async (req, res, next) => {
     try {
       const facility = await facilityService.getFacilityById(req.params.id);
-      res.status(200).json(facility);
+      res.status(200).json({
+        status: "success",
+        data: facility,
+      });
     } catch (err) {
       next(err);
     }
@@ -23,9 +29,12 @@ module.exports = {
     try {
       const data = req.body;
       const facility = await facilityService.createFacility(data);
-      res.status(201).json(facility);
+      res.status(201).json({
+        status: "success",
+        data: facility,
+      });
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      next(err);
     }
   },
 
@@ -35,18 +44,24 @@ module.exports = {
         req.params.id,
         req.body
       );
-      res.status(200).json(facility);
+      res.status(201).json({
+        status: "success",
+        data: facility,
+      });
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      next(err);
     }
   },
 
   deleteFacility: async (req, res, next) => {
     try {
       const result = await facilityService.deleteFacility(req.params.id);
-      res.status(200).json(result);
+      res.status(200).json({
+        status: "success",
+        data: result,
+      });
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      next(err);
     }
   },
 
@@ -54,7 +69,10 @@ module.exports = {
     try {
       const facilityId = req.params.facilityId;
       const address = await facilityService.getAddressByFacilityId(facilityId);
-      res.status(200).json(address);
+      res.status(200).json({
+        status: "success",
+        data: address,
+      });
     } catch (err) {
       next(err);
     }
@@ -65,9 +83,12 @@ module.exports = {
       const facilityId = req.params.facilityId;
       const address = req.body;
       const result = await facilityService.addAddress(facilityId, address);
-      res.status(201).json(result);
+      res.status(201).json({
+        status: "success",
+        data: result,
+      });
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      next(err);
     }
   },
 
@@ -77,9 +98,12 @@ module.exports = {
       const result = await facilityService.deleteAddressByFacilityId(
         facilityId
       );
-      res.status(200).json(result);
+      res.status(200).json({
+        status: "success",
+        data: result,
+      });
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      next(err);
     }
   },
 
@@ -89,7 +113,10 @@ module.exports = {
       const openingHours = await facilityService.getOpeningHoursByFacilityId(
         facilityId
       );
-      res.status(200).json(openingHours);
+      res.status(200).json({
+        status: "success",
+        data: openingHours,
+      });
     } catch (err) {
       next(err);
     }
@@ -102,9 +129,12 @@ module.exports = {
         facilityId,
         openingHours
       );
-      res.status(201).json(result);
+      res.status(201).json({
+        status: "success",
+        data: result,
+      });
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      next(err);
     }
   },
 
@@ -112,16 +142,22 @@ module.exports = {
     try {
       const facilityId = req.params.facilityId;
       const result = await facilityService.deleteOpeningHours(facilityId);
-      res.status(200).json(result);
+      res.status(200).json({
+        status: "success",
+        data: result,
+      });
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      next(err);
     }
   },
   getMenuByFacilityId: async (req, res, next) => {
     try {
       const facilityId = req.params.facilityId;
       const menu = await facilityService.getMenuByFacilityId(facilityId);
-      res.status(200).json(menu);
+      res.status(200).json({
+        status: "success",
+        data: menu,
+      });
     } catch (err) {
       next(err);
     }
@@ -132,7 +168,10 @@ module.exports = {
       const menuId = Number(req.params.menuId);
 
       const menuItem = await facilityService.getMenuItemById(menuId);
-      res.status(200).json(menuItem);
+      res.status(200).json({
+        status: "success",
+        data: menuItem,
+      });
     } catch (err) {
       next(err);
     }
@@ -145,9 +184,12 @@ module.exports = {
         req.params.facilityId,
         menuItems
       );
-      res.status(201).json(result);
+      res.status(201).json({
+        status: "success",
+        data: result,
+      });
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      next(err);
     }
   },
 
@@ -162,9 +204,12 @@ module.exports = {
         menuId,
         menuItemData
       );
-      res.status(200).json(updatedMenuItem);
+      res.status(201).json({
+        status: "success",
+        data: updatedMenuItem,
+      });
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      next(err);
     }
   },
 
@@ -173,18 +218,24 @@ module.exports = {
       const facilityId = Number(req.params.facilityId);
       const menuId = Number(req.params.menuId);
       const result = await facilityService.deleteMenu(facilityId, menuId);
-      res.status(200).json(result);
+      res.status(200).json({
+        status: "success",
+        data: result,
+      });
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      next(err);
     }
   },
   getPostsByFacilityId: async (req, res, next) => {
     try {
       const facilityId = req.params.facilityId;
       const posts = await facilityService.getPostsByFacilityId(facilityId);
-      res.status(200).json(posts);
+      res.status(200).json({
+        status: "success",
+        data: posts,
+      });
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      next(err);
     }
   },
 
@@ -192,9 +243,12 @@ module.exports = {
     try {
       const { facilityId, postId } = req.params;
       const post = await facilityService.getPostById(postId);
-      res.status(200).json(post);
+      res.status(200).json({
+        status: "success",
+        data: post,
+      });
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      next(err);
     }
   },
 
@@ -210,9 +264,12 @@ module.exports = {
         imgUri,
       });
 
-      res.status(201).json(post);
+      res.status(201).json({
+        status: "success",
+        data: post,
+      });
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      next(err);
     }
   },
 
@@ -220,9 +277,12 @@ module.exports = {
     try {
       const { postId } = req.params;
       const post = await facilityService.updatePost(postId, req.body);
-      res.status(200).json(post);
+      res.status(201).json({
+        status: "success",
+        data: post,
+      });
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      next(err);
     }
   },
 
@@ -230,9 +290,12 @@ module.exports = {
     try {
       const { postId } = req.params;
       const result = await facilityService.deletePost(postId);
-      res.status(200).json(result);
+      res.status(200).json({
+        status: "success",
+        data: result,
+      });
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      next(err);
     }
   },
 
@@ -242,9 +305,12 @@ module.exports = {
       const ruleset = await facilityService.getStampRulesetRewardsByFacilityId(
         facilityId
       );
-      res.status(200).json(ruleset);
+      res.status(200).json({
+        status: "success",
+        data: ruleset,
+      });
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      next(err);
     }
   },
 
@@ -253,9 +319,12 @@ module.exports = {
       const facilityId = req.params.facilityId;
       const data = req.body;
       const result = await facilityService.createStampRuleset(facilityId, data);
-      res.status(201).json(result);
+      res.status(201).json({
+        status: "success",
+        data: result,
+      });
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      next(err);
     }
   },
 
@@ -266,9 +335,12 @@ module.exports = {
         facilityId,
         req.body
       );
-      res.status(200).json(ruleset);
+      res.status(201).json({
+        status: "success",
+        data: ruleset,
+      });
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      next(err);
     }
   },
 
@@ -280,9 +352,12 @@ module.exports = {
         facilityId,
         req.body
       );
-      res.status(201).json(reward);
+      res.status(201).json({
+        status: "success",
+        data: reward,
+      });
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      next(err);
     }
   },
 
@@ -295,9 +370,12 @@ module.exports = {
         rewardId,
         req.body
       );
-      res.status(200).json(reward);
+      res.status(201).json({
+        status: "success",
+        data: reward,
+      });
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      next(err);
     }
   },
 
@@ -309,9 +387,12 @@ module.exports = {
         facilityId,
         rewardId
       );
-      res.status(200).json(result);
+      res.status(200).json({
+        status: "success",
+        data: result,
+      });
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      next(err);
     }
   },
 
@@ -320,7 +401,10 @@ module.exports = {
       const preferences = await facilityService.getPreferencesByFacilityId(
         req.params.facilityId
       );
-      res.status(200).json(preferences);
+      res.status(200).json({
+        status: "success",
+        data: preferences,
+      });
     } catch (err) {
       next(err);
     }
@@ -332,9 +416,12 @@ module.exports = {
         req.params.facilityId,
         req.body.preferenceId
       );
-      res.status(201).json(preference);
+      res.status(201).json({
+        status: "success",
+        data: preference,
+      });
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      next(err);
     }
   },
 
@@ -344,9 +431,12 @@ module.exports = {
         req.params.facilityId,
         req.params.preferenceId
       );
-      res.status(200).json(preference);
+      res.status(200).json({
+        status: "success",
+        data: preference,
+      });
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      next(err);
     }
   },
 };

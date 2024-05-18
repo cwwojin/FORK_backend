@@ -6,7 +6,17 @@ module.exports = {
         try{
             const id = Number(req.params.id);
             const result = await adminService.getReport(id);
-            res.status(200).json(result[0]);
+            if(result.length !== 0){
+                res.status(200).json({
+                    status: "success",
+                    data: result[0],
+                });
+            }else{
+                res.status(404).json({
+                    status: "fail",
+                    message: `No report with id: ${id}`,
+                });
+            }
         }catch(err){
             next(err);
         }
@@ -15,7 +25,10 @@ module.exports = {
     getReportByQuery: async (req,res,next) => {
         try{
             const result = await adminService.getReportByQuery(req.query);
-            res.status(200).json(result);
+            res.status(200).json({
+                status: "success",
+                data: result,
+            });
         }catch(err){
             next(err);
         }
@@ -24,7 +37,17 @@ module.exports = {
     createReport: async (req,res,next) => {
         try{
             const result = await adminService.createReport(req.body);
-            res.status(201).json(result[0]);
+            if(result.length !== 0){
+                res.status(201).json({
+                    status: "success",
+                    data: result[0],
+                });
+            }else{
+                res.status(404).json({
+                    status: "fail",
+                    message: `No records were inserted`
+                });
+            }
         }catch(err){
             next(err);
         }
@@ -34,7 +57,10 @@ module.exports = {
         const id = Number(req.params.id);
         try{
             const result = await adminService.deleteReport(id);
-            res.status(200).json({message: `successfully deleted report : ${id}`});
+            res.status(200).json({
+                status: "success",
+                data: result[0],
+            });
         }catch(err){
             next(err);
         }
@@ -44,7 +70,10 @@ module.exports = {
         const id = Number(req.params.id);
         try{
             const result = await adminService.handleReport(id,req.body);
-            res.status(200).json(result[0]);
+            res.status(200).json({
+                status: "success",
+                data: result,
+            });
         }catch(err){
             next(err);
         }

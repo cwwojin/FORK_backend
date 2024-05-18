@@ -8,9 +8,14 @@ module.exports = {
         try{
             const result = await reviewService.getReview(id);
             if(result.length !== 0){
-                res.status(200).json(result[0]);
+                res.status(200).json({
+                    status: "success",
+                    data: result[0],
+                });
             }else{
-                res.status(404).json({message: `No review with id: ${id}`});
+                res.status(404).json({
+                    status: "fail",
+                    message: `No review with id: ${id}`});
             }
         }catch(err){
             next(err);
@@ -20,7 +25,10 @@ module.exports = {
     getReviewByQuery: async (req,res,next) => {
         try{
             const result = await reviewService.getReviewByQuery(req.query.facility,req.query.user,req.body);
-            res.status(200).json(result);
+            res.status(200).json({
+                status: "success",
+                data: result,
+            });
         }catch(err){
             next(err);
         }
@@ -38,7 +46,17 @@ module.exports = {
                 imageUri: imageUri,
             }
             const result = await reviewService.createReview(args);
-            res.status(201).json(result[0]);
+            if(result.length !== 0){
+                res.status(201).json({
+                    status: "success",
+                    data: result[0],
+                });
+            }else{
+                res.status(404).json({
+                    status: "fail",
+                    message: `No records were inserted`,
+                });
+            }
         }catch(err){
             next(err);
         }
@@ -48,9 +66,19 @@ module.exports = {
         const id = Number(req.params.id);
         try{
             const result = await reviewService.updateReview(id, req.body);
-            res.status(201).json(result[0]);
+            if(result.length !== 0){
+                res.status(201).json({
+                    status: "success",
+                    data: result[0],
+                });
+            }else{
+                res.status(404).json({
+                    status: "fail",
+                    message: `No review with id: ${id}`,
+                })
+            }
         }catch(err){
-            res.status(404).json({message: `No review with id: ${id}`});
+            next(err);
         }
     },
     /** delete a review */
@@ -58,7 +86,10 @@ module.exports = {
         const id = Number(req.params.id);
         try{
             const result = await reviewService.deleteReview(id);
-            res.status(200).json({message: `Successfully deleted review : ${id}`});
+            res.status(200).json({
+                status: "success",
+                data: result[0],
+            });
         }catch(err){
             next(err);
         }
@@ -67,7 +98,10 @@ module.exports = {
     getAllHashtags: async (req,res,next) => {
         try{
             const result = await reviewService.getAllHashtags();
-            res.status(200).json(result);
+            res.status(200).json({
+                status: "success",
+                data: result,
+            });
         }catch(err){
             next(err);
         }
@@ -77,7 +111,17 @@ module.exports = {
         const id = Number(req.params.id);
         try{
             const result = await reviewService.getHashtag(id);
-            res.status(200).json(result[0]);
+            if(result.length !== 0){
+                res.status(200).json({
+                    status: "success",
+                    data: result[0],
+                });
+            }else{
+                res.status(404).json({
+                    status: "fail",
+                    message: `No hashtag with id : ${id}`,
+                })
+            }
         }catch(err){
             next(err);
         }

@@ -20,18 +20,18 @@ module.exports = {
         let baseQuery = `select * from report where 1=1 `;
         if(authorId !== undefined){
             values.push(authorId);
-            baseQuery = baseQuery + `and author_id = $${values.length}`;
+            baseQuery = baseQuery + `and author_id = $${values.length} `;
         }
         if(args.type !== undefined){
             values.push(args.type);
-            baseQuery = baseQuery + `and type = $${values.length}`;
+            baseQuery = baseQuery + `and type = $${values.length} `;
         }
         if(args.status !== undefined){
             values.push(args.status);
-            baseQuery = baseQuery + `and status = $${values.length}`;
+            baseQuery = baseQuery + `and status = $${values.length} `;
         }
         const result = await db.query({
-            text: baseQuery,
+            text: baseQuery + `order by created_at desc`,
             values: values
         });
         return result.rows;
@@ -54,7 +54,7 @@ module.exports = {
     /** delete a report by id*/
     deleteReport: async (id) => {
         const query = {
-            text: `delete from report where id = $1`,
+            text: `delete from report where id = $1 returning *`,
             values: [id],
         };
         const result = await db.query(query);
@@ -69,13 +69,13 @@ module.exports = {
      * */
     handleReport: async (id, body) => {
         const report = await module.exports.getReport(id);
-        const reviewId = report[0]['review_id'];
-        if(report[0]['status'] !== 0){
-            throw new Error({message: `Report doesn't exists or is already accepted : ${id}`});
+        if(report.length === 0 || report[0]['status'] !== 0){
+            throw ({status: 409, message: `Report doesn't exists or is already accepted : ${id}`});
         }
+        const reviewId = report[0]['review_id'];
         try{
             await db.query('BEGIN');
-            const result = await db.query({
+            let result = await db.query({
                 text: `update report 
                     set status = $1, action = $2, admin_id = $3, respond_date = now()
                     where id = $4 returning *`,
@@ -86,11 +86,15 @@ module.exports = {
                     id,
                 ]
             });
+            result = {
+                report: result.rows[0],
+            };
             if(body.action === 'delete'){
-                await reviewService.deleteReview(reviewId);
+                const deleteResult = await reviewService.deleteReview(reviewId);
+                result.deleteRows = deleteResult;
             }
             await db.query('COMMIT');
-            return result.rows;
+            return result;
         }catch(err){
             await db.query('ROLLBACK');
             throw new Error(err);

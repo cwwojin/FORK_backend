@@ -6,7 +6,17 @@ module.exports = {
         const id = Number(req.params.id);
         try{
             const result = await mapService.getLocation(id);
-            res.status(200).json(result[0]);
+            if(result.length !== 0){
+                res.status(200).json({
+                    status: "success",
+                    data: result[0],
+                });
+            }else{
+                res.status(404).json({
+                    status: "fail",
+                    message: `No facility with id: ${id}`,
+                });
+            }
         }catch(err){
             next(err);
         }
@@ -20,7 +30,10 @@ module.exports = {
                 req.body.area.latMax,
                 req.body.area.lngMax,
             );
-            res.status(200).json(result);
+            res.status(200).json({
+                status: "success",
+                data: result,
+            });
         }catch(err){
             next(err);
         }
@@ -29,7 +42,10 @@ module.exports = {
     getLocationByQuery: async (req,res,next) => {
         try{
             const result = await mapService.getLocationByQuery(req.body);
-            res.status(200).json(result);
+            res.status(200).json({
+                status: "success",
+                data: result,
+            });
         }catch(err){
             next(err);
         }

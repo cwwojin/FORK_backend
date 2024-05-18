@@ -5,7 +5,7 @@ const { body, param, query } = require('express-validator');
 const { validatorChecker } = require('../middleware/validator');
 const multer = require('multer');
 const s3Engine = require('../helper/s3Engine');
-const { IMG_FILE_TYPES, validateJSONArray } = require('../helper/helper');
+const { IMG_FILE_TYPES, validateJSONArray, validateHashtagArray, validateIntArray } = require('../helper/helper');
 
 const upload = multer({
     storage: s3Engine,
@@ -25,7 +25,7 @@ router
     .get(       // GET : get review by review id
         '/:id',
         [
-            param('id').exists().isInt({min: 1}),
+            param('id', `route param 'id' must be a positive integer`).exists().isInt({min: 1}),
             validatorChecker,
         ],
         reviewController.getReview
@@ -33,10 +33,10 @@ router
     .get(       // GET : get review by query
         '/',
         [
-            query('facility').optional().isInt({min: 1}),
-            query('user').optional().isInt({min: 1}),
-            body('hasImage').optional().isBoolean(),
-            body('hashtags').optional().isArray(),
+            query('facility', `optional query field 'facility' must be a positive integer`).optional().isInt({min: 1}),
+            query('user', `optional query field 'user' must be a positive integer`).optional().isInt({min: 1}),
+            body('hasImage', `optional query field 'hasImage' must be boolean`).optional().isBoolean(),
+            body('hashtags', `optional query field 'hashtags' must be an integer array`).optional().isArray().custom(validateIntArray),
             validatorChecker,
         ],
         reviewController.getReviewByQuery
@@ -44,27 +44,28 @@ router
         '/upload',
         upload.single('image'),
         [
-            body('authorId').exists().isInt({min: 1}),
-            body('facilityId').exists().isInt({min: 1}),
-            body('score').exists().isInt({min: 0, max: 5}),
-            body('content').exists().isString(),
-            body('hashtags').exists().custom(validateJSONArray),
+            body('authorId', `body field 'authorId' must be a positive integer`).exists().isInt({min: 1}),
+            body('facilityId', `body field 'facilityId' must be a positive integer`).exists().isInt({min: 1}),
+            body('score', `body field 'score' must be an integer in range 0 ~ 5`).exists().isInt({min: 0, max: 5}),
+            body('content', `body field 'content' must be string`).exists().isString(),
+            body('hashtags', `body field 'hashtags' must be JSON_string of an array`).exists().custom(validateJSONArray),
             validatorChecker,
         ],
         reviewController.createReview
-    ).put(      // PUT : edit review contents - content, hashtags
+    ).post(      // POST : edit review contents - content, hashtags
         '/:id',
         [
-            param('id').exists().isInt({min: 1}),
-            body('content').exists().isString(),
-            body('hashtags').exists().isArray(),
+            param('id', `route param 'id' must be a positive integer`).exists().isInt({min: 1}),
+            body('content', `body field 'content' must be string`).exists().isString(),
+            body('hashtags', `body field 'hashtag' must be array of objects, each with keys {id, name}`)
+                .exists().isArray().custom(validateHashtagArray),
             validatorChecker,
         ],
         reviewController.updateReview
     ).delete(
         '/:id',
         [
-            param('id').exists().isInt({min: 1}),
+            param('id', `route param 'id' must be a postive integer`).exists().isInt({min: 1}),
             validatorChecker,
         ],
         reviewController.deleteReview
@@ -80,7 +81,7 @@ hashtagRoutes
     ).get(      // GET : get hashtag by id
         '/:id',
         [
-            param('id').exists().isInt({min: 1}),
+            param('id', `route param 'id' must be a positive integer`).exists().isInt({min: 1}),
             validatorChecker,
         ],
         reviewController.getHashtag

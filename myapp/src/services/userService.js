@@ -1,10 +1,24 @@
 const db = require("../models/index");
 
 module.exports = {
-    // get all users
-    getUsers: async () => {
+    /** 
+     * get user by query 
+     * - (args) account_id, user_type
+     * */
+    getUsers: async (args) => {
+        let baseQuery = `select * from "user" where 1=1 `;
+        let values = [];
+        if(args.accountId !== undefined){
+            values.push(args.accountId);
+            baseQuery = baseQuery + `and account_id = $${values.length} `;
+        }
+        if(args.type !== undefined){
+            values.push(args.type);
+            baseQuery = baseQuery + `and user_type = $${values.length} `;
+        }
         const query = {
-            text: 'select * from "user" order by id asc',
+            text: baseQuery,
+            values: values,
         };
         const result = await db.query(query);
         return result.rows;
@@ -48,11 +62,11 @@ module.exports = {
     // delete user
     deleteUser: async (id) => {
         const query = {
-            text: 'delete from "user" where id = $1',
+            text: 'delete from "user" where id = $1 returning *',
             values: [id],
         };
         const result = await db.query(query);
-        return result;
+        return result.rows;
     },
     // get user preferences
     getUserPreference: async (id) => {
@@ -77,11 +91,11 @@ module.exports = {
     // delete a preference of a user
     deleteUserPreference: async (userId, preferenceId) => {
         const query = {
-            text: `delete from user_preference where user_id = $1 and preference_id = $2`,
+            text: `delete from user_preference where user_id = $1 and preference_id = $2 returning *`,
             values: [userId, preferenceId],
         }
         const result = await db.query(query);
-        return result;
+        return result.rows;
     },
     // get user favorites
     getUserFavorite: async (id) => {
@@ -109,11 +123,28 @@ module.exports = {
     // delete a favorite of a user
     deleteUserFavorite: async (userId, facilityId) => {
         const query = {
-            text: `delete from favorite where user_id = $1 and facility_id = $2`,
+            text: `delete from favorite where user_id = $1 and facility_id = $2 returning *`,
             values: [userId, facilityId],
         }
         const result = await db.query(query);
-        return result;
+        return result.rows;
+    },
+    /** get all preferences - used for both user & facility */
+    getAllPreferences: async () => {
+        const query = {
+            text: `select * from preference`,
+        };
+        const result = await db.query(query);
+        return result.rows;
+    },
+    /** get preference by id*/
+    getPreference: async (id) => {
+        const query = {
+            text: `select * from preference where id = $1`,
+            values: [id],
+        };
+        const result = await db.query(query);
+        return result.rows;
     },
 
 }
