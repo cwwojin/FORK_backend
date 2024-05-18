@@ -59,14 +59,18 @@ module.exports = {
      */
     createReview: async (args) => {
         try {
+            let result;
             const existingHashTags = args.hashtags.filter((e) => !!e['id']);
             const newHashtags = args.hashtags.filter((e) => !e['id']);
-            const insertTagQuery = `insert into hashtag (name) 
-                values ${newHashtags.map((e) => `('${e['name']}')`).join(`, `)} 
-                returning id`;
+            let hashtagIds = existingHashTags.map((e) => e['id']);
             await db.query('BEGIN');
-            let result = await db.query(insertTagQuery);
-            const hashtagIds = [...existingHashTags.map((e) => e['id']), ...result.rows.map((e) => e['id'])];
+            if(newHashtags.length !== 0){
+                const insertTagQuery = `insert into hashtag (name) 
+                    values ${newHashtags.map((e) => `('${e['name']}')`).join(`, `)} 
+                    returning id`;
+                result = await db.query(insertTagQuery);
+                hashtagIds = [...hashtagIds, ...result.rows.map((e) => e['id'])];
+            }
             result = await db.query({
                 text: `insert into review (author_id, facility_id, score, content, img_uri)
                     values ($1, $2, $3, $4, $5) returning id`,

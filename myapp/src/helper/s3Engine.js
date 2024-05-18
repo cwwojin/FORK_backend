@@ -42,11 +42,11 @@ module.exports = {
     s3Uploader: s3Uploader,
     /** helper : delete a single file from S3 */
     removeS3File: async (uri) => {
-        const path = splitS3Uri(uri);
         try{
+            const path = splitS3Uri(uri);
             await s3.send(new DeleteObjectCommand(path));
         }catch(err){
-            throw new Error(err);
+            if(!['ERR_INVALID_URL','ENOTFOUND'].includes(err.code)) throw new Error(err);
         }
     },
 };

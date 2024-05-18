@@ -67,6 +67,9 @@ module.exports = {
             values: [id],
         };
         const result = await db.query(query);
+        if(result.rows.length !== 0 && result.rows[0].profile_img_uri){
+            await removeS3File(result.rows[0].profile_img_uri);
+        }
         return result.rows;
     },
     // get user preferences
@@ -138,7 +141,7 @@ module.exports = {
     uploadUserProfileImage: async (id, imageUri) => {
         const user = await module.exports.getUserById(id);
         if(user.length === 0){ 
-            throw new Error({status: 404, message: `No user with id: ${id}`});
+            throw ({status: 404, message: `No user with id: ${id}`});
         }
         if(user[0].profile_img_uri){
             await removeS3File(user[0].profile_img_uri);
