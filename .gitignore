@@ -133,3 +133,6 @@ dist
 *.http
 database/
 *tmp*
+# Custom files
+code_context.txt
+get_code_context.sh
