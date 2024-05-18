@@ -14,7 +14,7 @@ class FacilityService {
     const facility = rows[0];
     facility.openingHours = await this.getOpeningHoursByFacilityId(id);
     facility.menu = await this.getMenuByFacilityId(id);
-    facility.posts = await this.getPostsByFacilityId(id);
+    // facility.posts = await this.getPostsByFacilityId(id);
 
     return facility;
   }

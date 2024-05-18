@@ -31,8 +31,7 @@ router.post(
     body("phone").notEmpty().withMessage("Phone is required"),
     body("email").isEmail().withMessage("Valid email is required"),
     body("profileImgUri")
-      .notEmpty()
-      .withMessage("Profile image URI is required"),
+      .exists().isString().withMessage("Profile image URI is required"),
     body("address.postNumber")
       .notEmpty()
       .withMessage("Post number is required"),
@@ -267,7 +266,8 @@ router.post(
       .withMessage("Author ID must be a positive integer"),
     body("title").notEmpty().withMessage("Title is required"),
     body("content").notEmpty().withMessage("Content is required"),
-    body("imgUri").notEmpty().withMessage("Image URI must be a valid URL"),
+    body("imgUri")
+      .exists().isString().withMessage("Image URI must be a valid URL"),
     validatorChecker,
   ],
   facilityController.createPost
@@ -300,7 +300,7 @@ router.delete(
 );
 
 router.get(
-  "/:facilityId/stamp-ruleset-rewards", // GET: get a stamp-ruleset
+  "/:facilityId/stamp-ruleset", // GET: get a stamp-ruleset
   [
     param("facilityId")
       .isNumeric()
@@ -316,7 +316,8 @@ router.post(
     param("facilityId")
       .isNumeric()
       .withMessage("Valid Facility ID is required"),
-    body("logoImgUri").notEmpty().withMessage("Logo Image URI is required"),
+    body("logoImgUri")
+      .exists().isString().withMessage("Logo Image URI is required"),
     body("totalCnt").isNumeric().withMessage("Total count is required"),
     body("rewards").isArray().withMessage("Rewards must be an array"),
     body("rewards.*.cnt")
