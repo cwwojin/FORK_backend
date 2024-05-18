@@ -758,7 +758,7 @@
 
 ### URL
 
-`/api/facilities/:facilityId/stamp-ruleset-rewards`
+`/api/facilities/:facilityId/stamp-ruleset`
 
 ### Request Format
 
