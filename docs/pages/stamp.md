@@ -43,8 +43,8 @@
 
 | Location | Field Name | Data Type | Required | Description |
 | --- | --- | --- | --- | --- |
-| body | userId | int | - | unique id of `user` which is the stamp-book owner |
-| body | facilityId | int | - | unique id of `facility` to which the stamp-book belongs |
+| body | userId | int | O | unique id of `user` which is the stamp-book owner |
+| body | facilityId | int | O | unique id of `facility` to which the stamp-book belongs |
 
 ### Response Format
 - HTTP Status Code: `201`
