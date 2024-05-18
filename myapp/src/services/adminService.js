@@ -69,10 +69,10 @@ module.exports = {
      * */
     handleReport: async (id, body) => {
         const report = await module.exports.getReport(id);
-        const reviewId = report[0]['review_id'];
-        if(report[0]['status'] !== 0){
-            throw new Error({message: `Report doesn't exists or is already accepted : ${id}`});
+        if(report.length === 0 || report[0]['status'] !== 0){
+            throw ({status: 409, message: `Report doesn't exists or is already accepted : ${id}`});
         }
+        const reviewId = report[0]['review_id'];
         try{
             await db.query('BEGIN');
             let result = await db.query({

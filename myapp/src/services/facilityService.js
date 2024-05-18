@@ -10,7 +10,10 @@ class FacilityService {
   async getFacilityById(id) {
     const query = "SELECT * FROM facility_address_avgscore WHERE id = $1";
     const { rows } = await db.query(query, [id]);
-    if (rows.length === 0) throw new Error("Facility not found");
+    if (rows.length === 0) throw ({
+      status: 404,
+      message: "Facility not found",
+    });
     const facility = rows[0];
     facility.openingHours = await this.getOpeningHoursByFacilityId(id);
     facility.menu = await this.getMenuByFacilityId(id);
@@ -230,7 +233,10 @@ class FacilityService {
         await client.query("COMMIT");
         return facility;
       } else {
-        throw new Error("No fields to update");
+        throw ({
+          status: 404,
+          message: "No fields to update"
+        });
       }
     } catch (error) {
       if (client) {
@@ -399,7 +405,10 @@ class FacilityService {
   async getMenuItemById(menuId) {
     const query = "SELECT * FROM menu WHERE id = $1";
     const { rows } = await db.query(query, [menuId]);
-    if (rows.length === 0) throw new Error("Menu item not found");
+    if (rows.length === 0) throw ({
+      status: 404,
+      message: "Menu item not found"
+    });
     return rows[0];
   }
 
@@ -479,11 +488,17 @@ class FacilityService {
 
         await client.query("COMMIT");
         if (rows.length === 0) {
-          throw new Error("Menu item not found or not updated");
+          throw ({
+            status: 404,
+            message: "Menu item not found or not updated"
+          });
         }
         return rows[0];
       } else {
-        throw new Error("No fields to update");
+        throw ({
+          status: 404,
+          message: "No fields to update"
+        });
       }
     } catch (error) {
       await client.query("ROLLBACK");
@@ -524,7 +539,10 @@ class FacilityService {
   async getPostById(postId) {
     const query = "SELECT * FROM post WHERE id = $1";
     const { rows } = await db.query(query, [postId]);
-    if (rows.length === 0) throw new Error("Post not found");
+    if (rows.length === 0) throw ({
+      status: 404,
+      message: "Post not found"
+    });
     return rows[0];
   }
   async createPost(facilityId, data) {
@@ -574,7 +592,10 @@ class FacilityService {
 
       await client.query("COMMIT");
       if (rows.length === 0) {
-        throw new Error("Post not found or not updated");
+        throw ({
+          status: 404,
+          message: "Post not found or not updated"
+        });
       }
       return rows[0];
     } catch (error) {
@@ -607,7 +628,10 @@ class FacilityService {
   async getStampRulesetRewardsByFacilityId(facilityId) {
     const query = "SELECT * FROM stamp_ruleset_rewards WHERE facility_id = $1";
     const { rows } = await db.query(query, [facilityId]);
-    if (rows.length === 0) throw new Error("Stamp ruleset not found");
+    if (rows.length === 0) throw ({
+      status: 404,
+      message: "Stamp ruleset not found"
+    });
     return rows[0];
   }
   async createStampRuleset(facilityId, data) {
@@ -637,7 +661,10 @@ class FacilityService {
       const { rows } = await client.query(insertQuery, values);
 
       if (rows.length === 0) {
-        throw new Error("Stamp ruleset not created");
+        throw ({
+          status: 404,
+          message: "Stamp ruleset not created"
+        });
       }
 
       // Insert rewards if provided
@@ -680,7 +707,10 @@ class FacilityService {
 
       await client.query("COMMIT");
       if (rows.length === 0) {
-        throw new Error("Stamp ruleset not found/not updated");
+        throw ({
+          status: 404,
+          message: "Stamp ruleset not found/not updated"
+        });
       }
       return rows[0];
     } catch (error) {
@@ -732,7 +762,10 @@ class FacilityService {
 
       await client.query("COMMIT");
       if (rows.length === 0) {
-        throw new Error("Stamp reward not found or not updated");
+        throw ({
+          status: 404,
+          message: "Stamp reward not found or not updated"
+        });
       }
       return rows[0];
     } catch (error) {
