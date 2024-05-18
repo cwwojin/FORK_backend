@@ -14,13 +14,13 @@ Click on each element for detailed API usage guides
 
 | Service Name | Description | 
 | --- | --- |
-| [Admin](pages/admin.html) | Admin features, including bugs & content report, facility registration request handling. |
-| [Authorization](pages/auth.html) | User account authorization |
-| [Facility](pages/facility.html) | Facility information, including address, preferences, menu, stamp program, etc. Also handles facility posts management|
-| [Map](pages/map.html) | Facility location / coordinates, GET requests only |
-| [Review](pages/review.html) | Managing facility reviews, hashtags |
-| [Stamp](pages/stamp.html) | Stamp-book data & stamp transactions. A stamp-book is a collection of stamps that corresponds to a `(user, facility)` |
-| [User](pages/user.html) | User account information, profile, preferences, favorites. Also handles managing `my facilities` which is feature for facility-users
+| [Admin](pages/admin.md) | Admin features, including bugs & content report, facility registration request handling. |
+| [Authorization](pages/auth.md) | User account authorization |
+| [Facility](pages/facility.md) | Facility information, including address, preferences, menu, stamp program, etc. Also handles facility posts management|
+| [Map](pages/map.md) | Facility location / coordinates, GET requests only |
+| [Review](pages/review.md) | Managing facility reviews, hashtags |
+| [Stamp](pages/stamp.md) | Stamp-book data & stamp transactions. A stamp-book is a collection of stamps that corresponds to a `(user, facility)` |
+| [User](pages/user.md) | User account information, profile, preferences, favorites. Also handles managing `my facilities` which is feature for facility-users
 
 ## HTTP Status codes & Errors
 Here are the example error codes and HTTP status codes for all API responses.
