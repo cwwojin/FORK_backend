@@ -21,7 +21,6 @@ module.exports = {
         data: facility,
       });
     } catch (err) {
-      console.log(err);
       next(err);
     }
   },
