@@ -256,7 +256,7 @@ class FacilityService {
       text: `delete from facility where id = $1 returning *`,
       values: [id],
     });
-    if(rows && rows[0].profile_img_uri){
+    if(rows.length !== 0 && rows[0].profile_img_uri){
       await removeS3File(rows[0].profile_img_uri);
     }
     return rows;
@@ -506,7 +506,7 @@ class FacilityService {
       text: `delete from menu where facility_id = $1 and id = $2 returning *`,
       values: [facilityId, menuId],
     });
-    if(rows && rows[0].img_uri){
+    if(rows.length !== 0 && rows[0].img_uri){
       await removeS3File(rows[0].img_uri);
     }
     return rows;
@@ -594,7 +594,7 @@ class FacilityService {
       text: `delete from post where id = $1 returning *`,
       values: [postId],
     });
-    if(rows && rows[0].img_uri){
+    if(rows.length !== 0 && rows[0].img_uri){
       await removeS3File(rows[0].img_uri);
     }
     return rows;
