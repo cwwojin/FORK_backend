@@ -1,4 +1,5 @@
 const db = require("../models/index");
+const { removeS3File } = require("../helper/s3Engine");
 
 class FacilityService {
   async getAllFacilities() {
@@ -251,22 +252,14 @@ class FacilityService {
   }
 
   async deleteFacility(id) {
-    let client;
-    try {
-      client = await db.connect();
-      await client.query("BEGIN");
-
-      const query = "DELETE FROM facility WHERE id = $1 RETURNING *";
-      const { rows } = await client.query(query, [id]);
-
-      await client.query("COMMIT");
-      return rows; // Return the deleted rows or an empty array if none
-    } catch (error) {
-      await client.query("ROLLBACK");
-      throw error;
-    } finally {
-      client.release();
+    const { rows } = await db.query({
+      text: `delete from facility where id = $1 returning *`,
+      values: [id],
+    });
+    if(rows && rows[0].profile_img_uri){
+      await removeS3File(rows[0].profile_img_uri);
     }
+    return rows;
   }
 
   async getAddressByFacilityId(facilityId) {
@@ -509,24 +502,14 @@ class FacilityService {
   }
 
   async deleteMenu(facilityId, menuId) {
-    let client;
-    try {
-      client = await db.connect();
-      await client.query("BEGIN");
-
-      const deleteQuery = `
-        DELETE FROM menu WHERE facility_id = $1 AND id = $2 RETURNING *;
-      `;
-      const { rows } = await client.query(deleteQuery, [facilityId, menuId]);
-
-      await client.query("COMMIT");
-      return rows; // Return the deleted rows or an empty array if none
-    } catch (error) {
-      await client.query("ROLLBACK");
-      throw error;
-    } finally {
-      client.release();
+    const { rows } = await db.query({
+      text: `delete from menu where facility_id = $1 and id = $2 returning *`,
+      values: [facilityId, menuId],
+    });
+    if(rows && rows[0].img_uri){
+      await removeS3File(rows[0].img_uri);
     }
+    return rows;
   }
 
   async getPostsByFacilityId(facilityId) {
@@ -607,22 +590,14 @@ class FacilityService {
   }
 
   async deletePost(postId) {
-    let client;
-    try {
-      client = await db.connect();
-      await client.query("BEGIN");
-
-      const deleteQuery = "DELETE FROM post WHERE id = $1 RETURNING *";
-      const { rows } = await client.query(deleteQuery, [postId]);
-
-      await client.query("COMMIT");
-      return rows; // Return the deleted rows or an empty array if none
-    } catch (error) {
-      await client.query("ROLLBACK");
-      throw error;
-    } finally {
-      client.release();
+    const { rows } = await db.query({
+      text: `delete from post where id = $1 returning *`,
+      values: [postId],
+    });
+    if(rows && rows[0].img_uri){
+      await removeS3File(rows[0].img_uri);
     }
+    return rows;
   }
 
   async getStampRulesetRewardsByFacilityId(facilityId) {
@@ -859,6 +834,80 @@ class FacilityService {
       client.release();
     }
   }
+
+  /** 
+   * upload / update facility profile image 
+   * 1. if facility profile image already exists, delete file from S3
+   * 2. update img_uri column
+   * */
+  async uploadFacilityProfileImage (id, imageUri) {
+    const facility = await this.getFacilityById(id);
+    if(facility.profile_img_uri){
+      await removeS3File(facility.profile_img_uri);
+    }
+    const result = await db.query({
+      text: `update facility set profile_img_uri = $1 where id = $2 returning *`,
+      values: [imageUri, id],
+    });
+    if(result.rows.length === 0) throw ({
+      status: 404,
+      message: `No records were updated`
+    });
+    return result.rows[0];
+  }
+
+  /** delete facility profile image */
+  async deleteFacilityProfileImage (id) {
+    const result = await this.uploadFacilityProfileImage(id, '');
+    return result;
+  }
+
+  /** upload / update stamp logo image */
+  async uploadStampLogoImage (id, imageUri) {
+    const stampRuleset = await this.getStampRulesetRewardsByFacilityId(id);
+    if(stampRuleset.logo_img_uri){
+      await removeS3File(stampRuleset.logo_img_uri);
+    }
+    const result = await db.query({
+      text: `update stamp_ruleset set logo_img_uri = $1 where facility_id = $2 returning *`,
+      values: [imageUri, id],
+    });
+    if(result.rows.length === 0) throw ({
+      status: 404,
+      message: `No records were updated`
+    });
+    return result.rows[0];
+  }
+
+  /** delete stamp logo image */
+  async deleteStampLogoImage (id) {
+    const result = await this.uploadStampLogoImage(id, '');
+    return result;
+  }
+
+  /** upload / update menu item image */
+  async uploadMenuImage (facilityId, menuId, imageUri) {
+    const menuItem = await this.getMenuItemById(menuId);
+    if(menuItem.img_uri){
+      await removeS3File(menuItem.img_uri);
+    }
+    const result = await db.query({
+      text: `update menu set img_uri = $1 where facility_id = $2 and id = $3 returning *`,
+      values: [imageUri, facilityId, menuId],
+    });
+    if(result.rows.length === 0) throw ({
+      status: 404,
+      message: `No records were updated`
+    });
+    return result.rows[0];
+  }
+
+  /** delete menu item image */
+  async deleteMenuImage (facilityId, menuId) {
+    const result = await this.uploadMenuImage(facilityId, menuId, '');
+    return result;
+  }
+
 }
 
 module.exports = new FacilityService();

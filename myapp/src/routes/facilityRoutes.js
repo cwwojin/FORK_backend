@@ -2,6 +2,7 @@ const { Router } = require("express");
 const facilityController = require("../controllers/facilityController");
 const { body, param } = require("express-validator");
 const { validatorChecker } = require("../middleware/validator");
+const { s3Uploader } = require("../helper/s3Engine");
 
 const router = Router();
 
@@ -257,6 +258,7 @@ router.get(
 
 router.post(
   "/:facilityId/post", // POST : create a new post for a facility
+  s3Uploader.single('image'),
   [
     param("facilityId")
       .isNumeric()
@@ -266,8 +268,6 @@ router.post(
       .withMessage("Author ID must be a positive integer"),
     body("title").notEmpty().withMessage("Title is required"),
     body("content").notEmpty().withMessage("Content is required"),
-    body("imgUri")
-      .exists().isString().withMessage("Image URI must be a valid URL"),
     validatorChecker,
   ],
   facilityController.createPost
@@ -422,5 +422,59 @@ router.delete(
   ],
   facilityController.deletePreferenceFromFacility
 );
+
+/** image upload methods */
+router
+  .post(      // POST : upload facility profile image
+    '/:id/profile/image',
+    s3Uploader.single('image'),
+    [
+        param('id', `route param 'id' must be a positive integer`).exists().isInt({min:1}),
+        validatorChecker,
+    ],
+    facilityController.uploadFacilityProfileImage
+  ).delete(   // DELETE : delete facility profile image
+    '/:id/profile/image',
+    [
+      param('id', `route param 'id' must be a positive integer`).exists().isInt({min:1}),
+      validatorChecker,
+    ],
+    facilityController.deleteFacilityProfileImage
+  ).post(     // POST : upload stamp logo image
+    '/:id/stamp-ruleset/logo',
+    s3Uploader.single('image'),
+    [
+      param('id', `route param 'id' must be a positive integer`).exists().isInt({min:1}),
+      validatorChecker,
+    ],
+    facilityController.uploadStampLogoImage
+  ).delete(   // DELETE : delete stamp logo image
+    '/:id/stamp-ruleset/logo',
+    [
+      param('id', `route param 'id' must be a positive integer`).exists().isInt({min:1}),
+      validatorChecker,
+    ],
+    facilityController.deleteStampLogoImage
+  ).post(     // POST : upload menu image
+    '/:facilityId/menu/:menuId/image',
+    s3Uploader.single('image'),
+    [
+      param('facilityId', `route param 'facilityId' must be a positive integer`).exists().isInt({min:1}),
+      param('menuId', `route param 'menuId' must be a positive integer`).exists().isInt({min:1}),
+      validatorChecker,
+    ],
+    facilityController.uploadMenuImage
+  ).delete(   // DELETE : delete menu image
+    '/:facilityId/menu/:menuId/image',
+    [
+      param('facilityId', `route param 'facilityId' must be a positive integer`).exists().isInt({min:1}),
+      param('menuId', `route param 'menuId' must be a positive integer`).exists().isInt({min:1}),
+      validatorChecker,
+    ],
+    facilityController.deleteMenuImage
+  )
+
+
+
 
 module.exports = router;
