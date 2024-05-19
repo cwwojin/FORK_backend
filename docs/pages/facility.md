@@ -582,6 +582,7 @@
 ## POST : create a new post for a facility
 
 - Create a new post for a facility
+- a post can contain up to 1 image attachment
 
 ### URL
 
@@ -589,7 +590,7 @@
 
 ### Request Format
 
-- Content-Type: `application/json`
+- Content-Type: `multipart/form-data`
 
 | Location | Field Name | Data Type | Required | Description                 |
 | -------- | ---------- | --------- | -------- | --------------------------- |
@@ -597,7 +598,7 @@
 | body     | authorId   | int       | O        | ID of the post author       |
 | body     | title      | string    | O        | title of the post           |
 | body     | content    | string    | O        | content of the post         |
-| body     | imgUri     | string    | O        | image URI of the post       |
+| body - FormData | image | file | - | the image file to be uploaded |
 
 ### Response Format
 
@@ -607,6 +608,9 @@
 | ------ | ------------------------- |
 | status | `success`                 |
 | data   | the created `post` object |
+
+### Notes
+- If a post should be made without an image, leave the `image` field undefined or omit it.
 
 ---
 
@@ -933,7 +937,20 @@
 `/api/facilities/:id/profile/image`
 
 ### Request Format
-- Content-Type : `multipart/form-data`
+- Content-Type: `multipart/form-data`
+
+| Location | Field Name | Data Type | Required | Description |
+| --- | --- | --- | --- | --- |
+| param | id | int | O | the unique id of the `facility` |
+| body - FormData | image | file | O | image file to be uploaded |
+
+### Response Format
+- HTTP Status Code: `201`
+
+| Key | Description |
+| --- | --- |
+| status | `success` |
+| data | the updated `facility` object |
 
 ---
 
@@ -946,7 +963,19 @@
 `/api/facilities/:id/profile/image`
 
 ### Request Format
-- Content-Type : `application/json`
+- Content-Type: `application/json`
+
+| Location | Field Name | Data Type | Required | Description |
+| --- | --- | --- | --- | --- |
+| param | id | int | O | the unique id of the `facility` |
+
+### Response Format
+- HTTP Status Code: `200`
+
+| Key | Description |
+| --- | --- |
+| status | `success` |
+| data | the updated `facility` object |
 
 ---
 
@@ -960,7 +989,20 @@
 `/api/facilities/:id/stamp-ruleset/logo`
 
 ### Request Format
-- Content-Type : `multipart/form-data`
+- Content-Type: `multipart/form-data`
+
+| Location | Field Name | Data Type | Required | Description |
+| --- | --- | --- | --- | --- |
+| param | id | int | O | the unique id of the `facility` |
+| body - FormData | image | file | O | image file to be uploaded |
+
+### Response Format
+- HTTP Status Code: `201`
+
+| Key | Description |
+| --- | --- |
+| status | `success` |
+| data | the updated `stamp_ruleset` object |
 
 ---
 
@@ -974,6 +1016,18 @@
 
 ### Request Format
 - Content-Type : `application/json`
+
+| Location | Field Name | Data Type | Required | Description |
+| --- | --- | --- | --- | --- |
+| param | id | int | O | the unique id of the `facility` |
+
+### Response Format
+- HTTP Status Code: `200`
+
+| Key | Description |
+| --- | --- |
+| status | `success` |
+| data | the updated `stamp_ruleset` object |
 
 ---
 
@@ -989,6 +1043,20 @@
 ### Request Format
 - Content-Type : `multipart/form-data`
 
+| Location | Field Name | Data Type | Required | Description |
+| --- | --- | --- | --- | --- |
+| param | facilityId | int | O | the unique id of the `facility` |
+| param | menuId | int | O | the unique id of the `menu` |
+| body - FormData | image | file | O | image file to be uploaded |
+
+### Response Format
+- HTTP Status Code: `201`
+
+| Key | Description |
+| --- | --- |
+| status | `success` |
+| data | the updated `menu` object |
+
 ---
 
 ## DELETE : delete menu image
@@ -1001,3 +1069,16 @@
 
 ### Request Format
 - Content-Type : `application/json`
+
+| Location | Field Name | Data Type | Required | Description |
+| --- | --- | --- | --- | --- |
+| param | facilityId | int | O | the unique id of the `facility` |
+| param | menuId | int | O | the unique id of the `menu` |
+
+### Response Format
+- HTTP Status Code: `200`
+
+| Key | Description |
+| --- | --- |
+| status | `success` |
+| data | the updated `menu` object |
