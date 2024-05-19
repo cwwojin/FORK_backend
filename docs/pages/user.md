@@ -7,6 +7,16 @@
 3. [POST create user](#post--create-a-new-user)
 4. [PUT update user profile](#put--update-user-profile)
 5. [DELETE user](#delete--delete-a-user)
+6. [GET user preferences](#get--get-user-preferences)
+7. [PUT add a preference](#put--add-a-user-preference)
+8. [DELETE a preference](#delete--delete-a-user-preference)
+9. [GET user favorites](#get--get-user-favorites)
+10. [PUT add a favorite](#put--add-a-user-favorite)
+11. [DELETE a favorite](#delete--delete-a-user-favorite)
+12. [POST upload profile image](#post--upload-a-user-profile-image)
+13. [DELETE profile image](#delete--delete-a-user-profile-image)
+14. [GET all preferences](#get--get-all-preferences-from-the-system)
+15. [GET preference by id](#get--get-preference-by-preference-id)
 
 ---
 
@@ -133,3 +143,250 @@
 | data | the deleted `user` object |
 
 ---
+
+## GET : get user preferences
+- get all preferences of a single user
+
+### URL
+`/api/users/preference/:id`
+
+### Request Format
+- Content-Type: `application/json`
+
+| Location | Field Name | Data Type | Required | Description |
+| --- | --- | --- | --- | --- |
+| param | id | int | O | the unique id of the `user` |
+
+### Response Format
+- HTTP Status Code: `200`
+
+| Key | Description |
+| --- | --- |
+| status | `success` |
+| data | the array of `preference` rows |
+
+---
+
+## PUT : add a user preference
+- add a preference to a user, given preference ID
+
+### URL
+`/api/users/preference/:id`
+
+### Request Format
+- Content-Type: `application/json`
+
+| Location | Field Name | Data Type | Required | Description |
+| --- | --- | --- | --- | --- |
+| param | id | int | O | the unique id of the `user` |
+| body | preferenceId | int | O | the unique id of the `preference` |
+
+### Response Format
+- HTTP Status Code: `201`
+
+| Key | Description |
+| --- | --- |
+| status | `success` |
+| data | the created junction object which has keys `{"user_id", "preference_id"}` |
+
+### Notes
+- If the preference requested already exists (already is one of user's preferences), then the request will still succeed without returning `data`
+
+---
+
+## DELETE : delete a user preference
+- remove a preference of a user, given preference ID
+
+### URL
+`/api/users/preference/:id`
+
+### Request Format
+- Content-Type: `application/json`
+
+| Location | Field Name | Data Type | Required | Description |
+| --- | --- | --- | --- | --- |
+| param | id | int | O | the unique id of the `user` |
+| body | preferenceId | int | O | the unique id of the `preference` |
+
+### Response Format
+- HTTP Status Code: `200`
+
+| Key | Description |
+| --- | --- |
+| status | `success` |
+| data | the deleted junction object which has keys `{"user_id", "preference_id"}` |
+
+---
+
+## GET : get user favorites
+- get all favorites of a single user
+
+### URL
+`/api/users/favorite/:id`
+
+### Request Format
+- Content-Type: `application/json`
+
+| Location | Field Name | Data Type | Required | Description |
+| --- | --- | --- | --- | --- |
+| param | id | int | O | the unique id of the `user` |
+
+### Response Format
+- HTTP Status Code: `200`
+
+| Key | Description |
+| --- | --- |
+| status | `success` |
+| data | the array of `facility` rows |
+
+---
+
+## PUT : add a user favorite
+- add a favorite to user, given facility ID
+
+### URL
+`/api/users/favorite/:id`
+
+### Request Format
+- Content-Type: `application/json`
+
+| Location | Field Name | Data Type | Required | Description |
+| --- | --- | --- | --- | --- |
+| param | id | int | O | the unique id of the `user` |
+| body | facilityId | int | O | the unique id of the `facility` to be added as a favorite |
+
+### Response Format
+- HTTP Status Code: `201`
+
+| Key | Description |
+| --- | --- |
+| status | `success` |
+| data | the created junction object which has keys `{"user_id", "facility_id"}` |
+
+### Notes
+- If the facility requested already is one of user's favorites, then the request will still succeed without returning `data`
+
+---
+
+## DELETE : delete a user favorite
+- remove a favorite of a user, given facility ID
+
+### URL
+`/api/users/favorite/:id`
+
+### Request Format
+- Content-Type: `application/json`
+
+| Location | Field Name | Data Type | Required | Description |
+| --- | --- | --- | --- | --- |
+| param | id | int | O | the unique id of the `user` |
+| body | facilityId | int | O | the unique id of the `facility` |
+
+### Response Format
+- HTTP Status Code: `200`
+
+| Key | Description |
+| --- | --- |
+| status | `success` |
+| data | the deleted junction object which has keys `{"user_id", "facility_id"}` |
+
+---
+
+## POST : upload a user profile image
+- upload an image and set it as user profile image.
+- if user already had a profile image, it will be replaced.
+- `profile_img_uri` column will be updated as the URI of the new profile image
+
+### URL
+`/api/users/profile/image/:id`
+
+### Request Format
+- Content-Type: `multipart/form-data`
+
+| Location | Field Name | Data Type | Required | Description |
+| --- | --- | --- | --- | --- |
+| param | id | int | O | the unique id of the `user` |
+| body - FormData | image | file | O | image file to be uploaded |
+
+### Response Format
+- HTTP Status Code: `201`
+
+| Key | Description |
+| --- | --- |
+| status | `success` |
+| data | the updated `user` object |
+
+---
+
+## DELETE : delete a user profile image
+- delete a user profile image, and delete the file from the system
+- `profile_img_uri` column value will be reset
+
+### URL
+`/api/users/profile/image/:id`
+
+### Request Format
+- Content-Type: `application/json`
+
+| Location | Field Name | Data Type | Required | Description |
+| --- | --- | --- | --- | --- |
+| param | id | int | O | the unique id of the `user` |
+
+### Response Format
+- HTTP Status Code: `201`
+
+| Key | Description |
+| --- | --- |
+| status | `success` |
+| data | the updated `user` object |
+
+---
+
+# Preference Methods
+
+---
+
+## GET : get all preferences from the system
+- get ALL `preference` rows that are in the database
+
+### URL
+`/api/preferences`
+
+### Request Format
+- Content-Type: `application/json`
+
+| Location | Field Name | Data Type | Required | Description |
+| --- | --- | --- | --- | --- |
+| - | - | - | - | - |
+
+### Response Format
+- HTTP Status Code: `200`
+
+| Key | Description |
+| --- | --- |
+| status | `success` |
+| data | array of `preference` rows |
+
+---
+
+## GET : get preference by preference ID
+- get a single `preference` given preference ID
+
+### URL
+`/api/preferences/:id`
+
+### Request Format
+- Content-Type: `application/json`
+
+| Location | Field Name | Data Type | Required | Description |
+| --- | --- | --- | --- | --- |
+| param | id | int | O | the unique id of the `preference` |
+
+### Response Format
+- HTTP Status Code: `200`
+
+| Key | Description |
+| --- | --- |
+| status | `success` |
+| data | array of `preference` rows |
+
