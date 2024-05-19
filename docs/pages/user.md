@@ -2,21 +2,23 @@
 
 ### Table of Contents
 
-1. [GET users by query](#get--get-users-by-query)
-2. [GET user by id](#get--get-user-by-id)
-3. [POST create user](#post--create-a-new-user)
-4. [PUT update user profile](#put--update-user-profile)
-5. [DELETE user](#delete--delete-a-user)
-6. [GET user preferences](#get--get-user-preferences)
-7. [PUT add a preference](#put--add-a-user-preference)
-8. [DELETE a preference](#delete--delete-a-user-preference)
-9. [GET user favorites](#get--get-user-favorites)
-10. [PUT add a favorite](#put--add-a-user-favorite)
-11. [DELETE a favorite](#delete--delete-a-user-favorite)
-12. [POST upload profile image](#post--upload-a-user-profile-image)
-13. [DELETE profile image](#delete--delete-a-user-profile-image)
-14. [GET all preferences](#get--get-all-preferences-from-the-system)
-15. [GET preference by id](#get--get-preference-by-preference-id)
+- [User API](#user-api)
+  - [GET : get users by query](#get--get-users-by-query)
+  - [GET : get user by ID](#get--get-user-by-id)
+  - [POST : create a new user](#post--create-a-new-user)
+  - [PUT : update user profile](#put--update-user-profile)
+  - [DELETE : delete a user](#delete--delete-a-user)
+  - [GET : get user preferences](#get--get-user-preferences)
+  - [PUT : add a user preference](#put--add-a-user-preference)
+  - [DELETE : delete a user preference](#delete--delete-a-user-preference)
+  - [GET : get user favorites](#get--get-user-favorites)
+  - [PUT : add a user favorite](#put--add-a-user-favorite)
+  - [DELETE : delete a user favorite](#delete--delete-a-user-favorite)
+  - [POST : upload a user profile image](#post--upload-a-user-profile-image)
+  - [DELETE : delete a user profile image](#delete--delete-a-user-profile-image)
+- [Preference Methods](#preference-methods)
+  - [GET : get all preferences from the system](#get--get-all-preferences-from-the-system)
+  - [GET : get preference by preference ID](#get--get-preference-by-preference-id)
 
 ---
 
@@ -356,8 +358,8 @@
 - Content-Type: `application/json`
 
 | Location | Field Name | Data Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| - | - | - | - | - |
+| ----- | ----- | ----- | ----- | ----- |
+| . | . | . | . | . |
 
 ### Response Format
 - HTTP Status Code: `200`

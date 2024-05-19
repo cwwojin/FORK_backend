@@ -2,12 +2,9 @@
 ### Table of Contents
 
 - [FORK\_Backend API Documentation](#fork_backend-api-documentation)
-    - [Table of Contents](#table-of-contents)
   - [Getting Started](#getting-started)
   - [HTTP Status codes \& Errors](#http-status-codes--errors)
   - [Reponse Format](#reponse-format)
-    - [Response Content](#response-content)
-    - [Example Response](#example-response)
   - [Author](#author)
 
 ## Getting Started

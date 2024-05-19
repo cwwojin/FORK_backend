@@ -2,9 +2,10 @@
 
 ### Table of Contents
 
-1. [GET locations by area](#get--get-locations-by-area)
-2. [GET location by id](#get--get-location-by-id)
-3. [GET locations by search & query](#get--get-location-by-query--search)
+- [Map API](#map-api)
+  - [GET : get locations by area](#get--get-locations-by-area)
+  - [GET : get location by id](#get--get-location-by-id)
+  - [GET : get location by query / search](#get--get-location-by-query--search)
 
 ---
 

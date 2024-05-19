@@ -2,9 +2,10 @@
 
 ### Table of Contents
 
-1. [GET stamp-book by query](#get--get-stamp-book-by-query)
-2. [POST create stamp-book](#post--create-stamp-book)
-3. [POST transaction](#post--stamp-transaction)
+- [Stamp API](#stamp-api)
+  - [GET : get stamp-book by query](#get--get-stamp-book-by-query)
+  - [POST : create stamp-book](#post--create-stamp-book)
+  - [POST : stamp transaction](#post--stamp-transaction)
 
 ---
 

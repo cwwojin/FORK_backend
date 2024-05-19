@@ -2,11 +2,12 @@
 
 ### Table of Contents
 
-1. [GET report by query](#get--get-report-by-query)
-2. [GET report by id](#get--get-report-by-id)
-3. [POST create report](#post--create-report)
-4. [DELETE delete report](#delete--delete-report)
-5. [POST handle report](#post--handle-report-by-admin)
+- [Admin API](#admin-api)
+  - [GET : get report by query](#get--get-report-by-query)
+  - [GET : get report by id](#get--get-report-by-id)
+  - [POST : create report](#post--create-report)
+  - [DELETE : delete report](#delete--delete-report)
+  - [POST : handle report (by admin)](#post--handle-report-by-admin)
 
 ---
 
