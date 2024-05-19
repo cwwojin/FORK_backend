@@ -9,7 +9,7 @@
 ---
 
 ## GET : get locations by area
-- Get all `pin: includes {coordinates, id, name, avg_score} of a facility` that are in a given area
+- Get all `pin: includes {lat, lng, id, name, avg_score} of a facility` that are in a given area
 - 2 corner point coordinates are given
 
 ### URL
@@ -20,7 +20,10 @@
 
 | Location | Field Name | Data Type | Required | Description |
 | --- | --- | --- | --- | --- |
-| body | area | object | O | Object with keys `{latMin, lngMin, latMax, lngMax}` all values are float |
+| query | latMin | float | O | latitude minimum |
+| query | lngMin | float | O | longitude minimum |
+| query | latMax | float | O | latitude maximum |
+| query | lngMax | float | O | longitude maximum |
 
 ### Response Format
 - HTTP Status Code: `200`
@@ -66,9 +69,12 @@
 
 | Location | Field Name | Data Type | Required | Description |
 | --- | --- | --- | --- | --- |
-| body | name | string | - | name of the facility to search for |
-| body | openNow | bool | - | if TRUE, then return only facilities that are currently open |
-| body | preferences | array | - | array of `preference.id` (integer). If provided, then search for facilities that contain at least one of the preferences queried |
+| query | name | string | - | name of the facility to search for |
+| query | openNow | bool | - | if TRUE, then return only facilities that are currently open |
+| query | preferences | array | - | comma-seperated array of `preference.id` (integer). If provided, then search for facilities that contain at least one of the preferences queried |
+
+### Example Request URL
+`http://{BASE_URL}/api/map/search?name=restaurant&openNow=true&preferences=1,2,3`
 
 ### Response Format
 - HTTP Status Code: `200`
