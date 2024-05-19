@@ -25,10 +25,10 @@ module.exports = {
     getLocationByArea: async (req,res,next) => {
         try{
             const result = await mapService.getLocationByArea(
-                req.body.area.latMin,
-                req.body.area.lngMin,
-                req.body.area.latMax,
-                req.body.area.lngMax,
+                req.query.latMin,
+                req.query.lngMin,
+                req.query.latMax,
+                req.query.lngMax,
             );
             res.status(200).json({
                 status: "success",
@@ -41,7 +41,7 @@ module.exports = {
     /** get location by query (name, openNow, preferences) */
     getLocationByQuery: async (req,res,next) => {
         try{
-            const result = await mapService.getLocationByQuery(req.body);
+            const result = await mapService.getLocationByQuery(req.query);
             res.status(200).json({
                 status: "success",
                 data: result,

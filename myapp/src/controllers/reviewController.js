@@ -24,7 +24,7 @@ module.exports = {
     /** get reviews by query : userId, facilityId & hashtags, image */
     getReviewByQuery: async (req,res,next) => {
         try{
-            const result = await reviewService.getReviewByQuery(req.query.facility,req.query.user,req.body);
+            const result = await reviewService.getReviewByQuery(req.query);
             res.status(200).json({
                 status: "success",
                 data: result,
