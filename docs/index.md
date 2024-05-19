@@ -44,6 +44,7 @@ Here are the example error codes and HTTP status codes for all API responses.
 Responses are designed to follow [JSEND format](https://github.com/omniti-labs/jsend)
 
 ### Response Content
+
 | Key | Data Type | Description |
 | --- | --- | --- |
 | status | string | status is one of - `success, fail, error` |
