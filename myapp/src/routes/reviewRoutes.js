@@ -22,8 +22,12 @@ router
         [
             query('facility', `optional query field 'facility' must be a positive integer`).optional().isInt({min: 1}),
             query('user', `optional query field 'user' must be a positive integer`).optional().isInt({min: 1}),
-            body('hasImage', `optional query field 'hasImage' must be boolean`).optional().isBoolean(),
-            body('hashtags', `optional query field 'hashtags' must be an integer array`).optional().isArray().custom(validateIntArray),
+            query('hasImage', `optional query field 'hasImage' must be boolean`).optional().isBoolean(),
+            query('hashtags', `optional query field 'hashtags' must be an integer array`)
+                .optional()
+                .isString()
+                .customSanitizer((e) => e.split(',').map((e) => Number(e)))
+                .custom(validateIntArray),
             validatorChecker,
         ],
         reviewController.getReviewByQuery

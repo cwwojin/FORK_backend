@@ -55,7 +55,6 @@ module.exports = {
             text: queries.join(' intersect '),
             values: values,
         };
-        console.log(query.text);
         const result = await db.query(query);
         return result.rows;
     },
