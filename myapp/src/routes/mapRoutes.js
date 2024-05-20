@@ -16,17 +16,23 @@ router
     ).get(      // GET - get location by area
         '/',
         [
-            body('area', `body field 'area' must be an object with keys {latMin, lngMin, latMax, lngMax}`)
-                .exists().isObject().custom(validateMapArea),
+            query('latMin', `query field 'latMin' should be float`).exists().isFloat(),
+            query('lngMin', `query field 'lngMin' should be float`).exists().isFloat(),
+            query('latMax', `query field 'latMax' should be float`).exists().isFloat(),
+            query('lngMax', `query field 'lngMax' should be float`).exists().isFloat(),
             validatorChecker,
         ],
         mapController.getLocationByArea
     ).get(      // GET - get location by query
         '/search',
         [
-            body('name', `optional body field 'name' must be a string`).optional().isString(),
-            body('openNow', `optional body field 'openNow' must be boolean`).optional().isBoolean(),
-            body('preferences', `optional body field 'preferences' must be an integer array`).optional().isArray().custom(validateIntArray),
+            query('name', `optional query field 'name' must be a string`).optional().isString(),
+            query('openNow', `optional query field 'openNow' must be boolean`).optional().isBoolean(),
+            query('preferences', `optional query field 'preferences' must be an integer array`)
+                .optional()
+                .isString()
+                .customSanitizer((e) => e.split(',').map((e) => Number(e)))
+                .custom(validateIntArray),
             validatorChecker,
         ],
         mapController.getLocationByQuery
