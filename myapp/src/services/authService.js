@@ -33,6 +33,6 @@ module.exports = {
             }, 
             process.env.JWT_SECRET
         );
-        return token;
+        return `Bearer ${token}`;   // for Bearer authentication
     },
 }
