@@ -5,11 +5,11 @@ const { body, param, query } = require("express-validator");
 const { validatorChecker } = require("../middleware/validator");
 
 router
-    .post(
+    .post(      // POST : login
         '/login',
         [
-            body('userId').exists().notEmpty().isLength({max: 20}),
-            body('password').exists().notEmpty().isLength({min: 6, max: 20}),
+            body('userId').exists().isString(),
+            body('password').exists().isString(),
             validatorChecker,
         ],
         authController.loginUser
