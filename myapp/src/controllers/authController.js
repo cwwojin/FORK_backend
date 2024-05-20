@@ -6,8 +6,11 @@ module.exports = {
         try{
             const result = await authService.loginUser(req.body);
             res.status(200).json({
-                status: "successs",
-                data: result,
+                status: "success",
+                data: {
+                    token: result,
+                },
+                message: `login successful`,
             });
         }catch(err){
             next(err);

@@ -1,4 +1,6 @@
+const bcrypt = require("bcrypt");
 const db = require("../models/index");
+const { BCRYPT_SALTROUNDS } = require("../helper/helper");
 const { removeS3File } = require("../helper/s3Engine");
 
 module.exports = {
@@ -35,12 +37,13 @@ module.exports = {
     },
     // create new user
     createUser: async (info) => {
+        const passwordHash = await bcrypt.hash(info.password, BCRYPT_SALTROUNDS);
         const query = {
             text: 'insert into "user" (account_id, user_type, password, email) values ($1, $2, $3, $4) returning *',
             values: [
                 info.userId,
                 info.userType,
-                info.password,
+                passwordHash,
                 info.email,
             ]
         };
@@ -49,10 +52,11 @@ module.exports = {
     },
     // update user - profile (password, email, display_name)
     updateUserProfile: async (info, id) => {
+        const passwordHash = await bcrypt.hash(info.password, BCRYPT_SALTROUNDS);
         const query = {
             text: 'update "user" set password = $1, email = $2 where id = $3 returning *',
             values: [
-                info.password,
+                passwordHash,
                 info.email,
                 id,
             ]
