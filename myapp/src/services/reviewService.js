@@ -18,18 +18,18 @@ module.exports = {
      * - (optional) hasImage : reviews that contain an image attachment
      * - (optional) hashtags : reviews that contain at least one of given hashtags
      */
-    getReviewByQuery: async (facilityId, userId, body) => {
+    getReviewByQuery: async (args) => {
         let values = [];
         let baseQuery = `select r.* from review_with_hashtag r where 1=1 `
-        if(facilityId !== undefined){
-            values.push(facilityId);
+        if(args.facility !== undefined){
+            values.push(args.facility);
             baseQuery = baseQuery + `and r.facility_id = $${values.length} `;
         }
-        if(userId !== undefined){
-            values.push(userId);
+        if(args.user !== undefined){
+            values.push(args.user);
             baseQuery = baseQuery + `and r.author_id = $${values.length} `;
         }
-        switch(parseBoolean(body.hasImage)){
+        switch(parseBoolean(args.hasImage)){
             case true:
                 baseQuery = baseQuery + `and r.img_uri <> '' `;
                 break;
@@ -39,8 +39,8 @@ module.exports = {
             case undefined:
                 break;
         }
-        if(body.hashtags){
-            values.push(body.hashtags)
+        if(Array.isArray(args.hashtags) && args.hashtags.length !== 0){
+            values.push(args.hashtags)
             baseQuery = baseQuery + `and r.hashtag_ids && $${values.length} `;
         }
         const result = await db.query({

@@ -13,21 +13,22 @@ FROM node:lts-slim as base
 # App setup & dependencies
 WORKDIR /usr/myapp
 COPY ./myapp/package.json ./
-RUN npm install --omit=dev
 COPY ./myapp .
 
 # Dev image
 FROM base as dev
 EXPOSE 3000
-RUN npm install -D
-CMD [ "npm", "run", "dev" ]
+RUN yarn install
+CMD [ "yarn", "run", "dev" ]
 
 # Test image
 FROM base as test
 EXPOSE 3000
-CMD [ "npm", "run", "test" ]
+RUN yarn install
+CMD [ "yarn", "run", "test" ]
 
 # Prod image
 FROM base as prod
 EXPOSE 3000
-CMD [ "npm", "run", "prod" ]
+RUN yarn install --prod
+CMD [ "yarn", "run", "prod" ]
