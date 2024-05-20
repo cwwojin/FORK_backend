@@ -53,7 +53,7 @@ router
             validatorChecker,
         ],
         reviewController.updateReview
-    ).delete(
+    ).delete(   // DELETE : delete review
         '/:id',
         [
             param('id', `route param 'id' must be a postive integer`).exists().isInt({min: 1}),
