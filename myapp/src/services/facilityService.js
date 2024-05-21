@@ -3,24 +3,19 @@ const { removeS3File } = require("../helper/s3Engine");
 
 class FacilityService {
   async getAllFacilities() {
-    const query = "SELECT * FROM facility_address_avgscore ORDER BY id ASC";
+    const query = "SELECT * FROM facility_detailed ORDER BY id ASC";
     const { rows } = await db.query(query);
     return rows;
   }
 
   async getFacilityById(id) {
-    const query = "SELECT * FROM facility_address_avgscore WHERE id = $1";
+    const query = "SELECT * FROM facility_detailed WHERE id = $1";
     const { rows } = await db.query(query, [id]);
     if (rows.length === 0) throw ({
       status: 404,
       message: "Facility not found",
     });
-    const facility = rows[0];
-    facility.openingHours = await this.getOpeningHoursByFacilityId(id);
-    facility.menu = await this.getMenuByFacilityId(id);
-    // facility.posts = await this.getPostsByFacilityId(id);
-
-    return facility;
+    return rows[0];
   }
 
   async createFacility(data) {

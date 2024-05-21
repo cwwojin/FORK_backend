@@ -101,7 +101,7 @@ module.exports = {
         const result = await db.query(query);
         return result.rows;
     },
-    // get user favorites
+    /** get user favorites*/
     getUserFavorite: async (id) => {
         const query = {
             text: `select f.* from favorite fv 
@@ -112,6 +112,16 @@ module.exports = {
         }
         const result = await db.query(query);
         return result.rows;
+    },
+    /** check if a facility is in user's favorites. return boolean */
+    isUserFavorite: async (userId, facilityId) => {
+        const { rows } = await db.query({
+            text: `select * from favorite fv
+                where user_id = $1 and facility_id = $2`,
+            values: [userId, facilityId],
+        });
+        const result = (rows.length !== 0);
+        return result;
     },
     // add a favorite to user (if it isn't already added)
     addUserFavorite: async (userId, facilityId) => {
