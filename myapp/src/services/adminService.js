@@ -147,8 +147,8 @@ module.exports = {
     }
 
     const query = {
-      text: `UPDATE facility_registration_request SET status = $1, respond_date = NOW(), updated_at = NOW(), admin_id = $2 WHERE id = $3 RETURNING *`,
-      values: [2, adminId, id],
+      text: `UPDATE facility_registration_request SET status = $1, respond_date = NOW(), updated_at = NOW() WHERE id = $2 RETURNING *`,
+      values: [2, id],
     };
     const result = await db.query(query);
     return result.rows[0];
