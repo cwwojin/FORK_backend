@@ -83,6 +83,14 @@ router
             validatorChecker,
         ],
         userController.getUserFavorite
+    ).get(      // GET : check if a facility is user's favorite
+        '/favorite/:user/has/:facility',
+        [
+            param('user', `route param 'id' must be a positive integer`).exists().isInt({min:1}),
+            param('facility', `route param 'facility' must be a positive integer`).exists().isInt({min: 1}),
+            validatorChecker,
+        ],
+        userController.isUserFavorite
     ).put(      // PUT : add a user favorite, if not already added
         '/favorite/:id',
         [
