@@ -31,10 +31,6 @@ router.post(
     body("url").notEmpty().isURL().withMessage("Valid URL is required"),
     body("phone").notEmpty().withMessage("Phone is required"),
     body("email").isEmail().withMessage("Valid email is required"),
-    body("profileImgUri")
-      .exists()
-      .isString()
-      .withMessage("Profile image URI is required"),
     body("address.postNumber")
       .notEmpty()
       .withMessage("Post number is required"),
@@ -318,10 +314,6 @@ router.post(
     param("facilityId")
       .isNumeric()
       .withMessage("Valid Facility ID is required"),
-    body("logoImgUri")
-      .exists()
-      .isString()
-      .withMessage("Logo Image URI is required"),
     body("totalCnt").isNumeric().withMessage("Total count is required"),
     body("rewards").isArray().withMessage("Rewards must be an array"),
     body("rewards.*.cnt")
@@ -528,10 +520,6 @@ router
         .exists()
         .isString()
         .withMessage("Business ID is required and must be a string"),
-      body("content.profileImgUri")
-        .exists()
-        .isString()
-        .withMessage("Profile Image URI is required and must be a valid URL"),
       body("content.phone")
         .exists()
         .isString()

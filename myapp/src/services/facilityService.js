@@ -32,8 +32,8 @@ class FacilityService {
 
       // Insert into facility table, get the facility ID
       const facilityQuery = `
-        INSERT INTO facility (name, business_id, type, description, url, phone, email, profile_img_uri)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        INSERT INTO facility (name, business_id, type, description, url, phone, email)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING *;
       `;
       const facilityValues = [
@@ -44,7 +44,6 @@ class FacilityService {
         data.url,
         data.phone,
         data.email,
-        data.profileImgUri,
       ];
       const facilityResult = await client.query(facilityQuery, facilityValues);
       const facility = facilityResult.rows[0];
@@ -128,14 +127,13 @@ class FacilityService {
     const result = [];
     for (const item of menuItems) {
       const query = `
-        INSERT INTO menu (facility_id, name, img_uri, description, price, quantity)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        INSERT INTO menu (facility_id, name, description, price, quantity)
+        VALUES ($1, $2, $3, $4, $5)
         RETURNING *;
       `;
       const values = [
         facilityId,
         item.name,
-        item.imgUri,
         item.description,
         item.price,
         item.quantity,
@@ -150,8 +148,8 @@ class FacilityService {
     const result = [];
     for (const post of posts) {
       const query = `
-      INSERT INTO post (author_id, facility_id, title, content, img_uri)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO post (author_id, facility_id, title, content)
+      VALUES ($1, $2, $3, $4)
       RETURNING *;
     `;
       const values = [
@@ -159,7 +157,6 @@ class FacilityService {
         facilityId,
         post.title,
         post.content,
-        post.imgUri,
       ];
       const { rows } = await client.query(query, values);
       result.push(rows[0]);
@@ -433,14 +430,13 @@ class FacilityService {
       const result = [];
       for (const item of menuItems) {
         const query = `
-          INSERT INTO menu (facility_id, name, img_uri, description, price, quantity)
-          VALUES ($1, $2, $3, $4, $5, $6)
+          INSERT INTO menu (facility_id, name, description, price, quantity)
+          VALUES ($1, $2, $3, $4, $5)
           RETURNING *;
         `;
         const values = [
           facilityId,
           item.name,
-          item.imgUri,
           item.description,
           item.price,
           item.quantity,
@@ -648,11 +644,11 @@ class FacilityService {
 
       // Insert the new stamp ruleset
       const insertQuery = `
-        INSERT INTO stamp_ruleset (facility_id, logo_img_uri, total_cnt)
-        VALUES ($1, $2, $3)
+        INSERT INTO stamp_ruleset (facility_id, total_cnt)
+        VALUES ($1, $2)
         RETURNING *;
       `;
-      const values = [facilityId, data.logoImgUri, data.totalCnt];
+      const values = [facilityId, data.totalCnt];
       const { rows } = await client.query(insertQuery, values);
 
       if (rows.length === 0) {
