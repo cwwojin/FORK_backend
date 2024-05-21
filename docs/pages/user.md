@@ -12,6 +12,7 @@
   - [PUT : add a user preference](#put--add-a-user-preference)
   - [DELETE : delete a user preference](#delete--delete-a-user-preference)
   - [GET : get user favorites](#get--get-user-favorites)
+  - [GET : check if a facility is user's favorite](#get--check-if-a-facility-is-users-favorite)
   - [PUT : add a user favorite](#put--add-a-user-favorite)
   - [DELETE : delete a user favorite](#delete--delete-a-user-favorite)
   - [POST : upload a user profile image](#post--upload-a-user-profile-image)
@@ -240,6 +241,31 @@
 | --- | --- |
 | status | `success` |
 | data | the array of `facility` rows |
+
+---
+
+## GET : check if a facility is user's favorite
+- check if a certain facility is a user's favorite
+- return a boolean flag
+
+### URL
+`/api/users/favorite/:user/has/:facility`
+
+### Request Format
+- Content-Type: `application/json`
+
+| Location | Field Name | Data Type | Required | Description |
+| --- | --- | --- | --- | --- |
+| param | user | int | O | the unique id of the `user` |
+| param | facility | int | O | the unique id of the `facility` |
+
+### Response Format
+- HTTP Status Code: `200`
+
+| Key | Description |
+| --- | --- |
+| status | `success` |
+| data | boolean `True : the user has the facility favorite-d, False : otherwise` |
 
 ---
 
