@@ -1,8 +1,9 @@
 const { Router } = require("express");
 const facilityController = require("../controllers/facilityController");
-const { body, param } = require("express-validator");
+const { body, param, check } = require("express-validator");
 const { validatorChecker } = require("../middleware/validator");
 const { s3Uploader } = require("../helper/s3Engine");
+const { checkPermission } = require("../middleware/authMiddleware")
 
 const router = Router();
 
@@ -23,6 +24,7 @@ router.get(
 // to be commented later
 router.post(
   "/", // POST: create a new facility
+  checkPermission([0]),
   [
     body("name").notEmpty().withMessage("Name is required"),
     body("businessId").notEmpty().withMessage("Business ID is required"),
@@ -62,6 +64,7 @@ router.post(
 
 router.put(
   "/:id", // PUT : update a facility
+  checkPermission([0,2]),
   [
     param("id").isNumeric().withMessage("Valid ID is required"),
     body("name").notEmpty().withMessage("Name is required"),
@@ -76,6 +79,7 @@ router.put(
 
 router.delete(
   "/:id", // DELETE : delete a facility
+  checkPermission([0]),
   [
     param("id").isNumeric().withMessage("Valid ID is required"),
     validatorChecker,
@@ -95,6 +99,7 @@ router.get(
 
 router.post(
   "/:facilityId/address", // POST : add or update address for a facility
+  checkPermission([0,2]),
   [
     param("facilityId")
       .isNumeric()
@@ -116,6 +121,7 @@ router.post(
 
 router.delete(
   "/:facilityId/address", // DELETE : delete address for a facility
+  checkPermission([0,2]),
   [
     param("facilityId")
       .isNumeric()
@@ -137,6 +143,7 @@ router.get(
 );
 router.post(
   "/:facilityId/opening-hours", // POST : add opening hours for a facility
+  checkPermission([0,2]),
   [
     param("facilityId")
       .isNumeric()
@@ -160,6 +167,7 @@ router.post(
 );
 router.delete(
   "/:facilityId/opening-hours", // DELETE : delete opening hours for a facility
+  checkPermission([0,2]),
   [
     param("facilityId")
       .isNumeric()
@@ -192,6 +200,7 @@ router.get(
 );
 router.post(
   "/:facilityId/menu", // POST : create menu for a facility
+  checkPermission([0,2]),
   [
     param("facilityId")
       .isNumeric()
@@ -208,6 +217,7 @@ router.post(
 
 router.put(
   "/:facilityId/menu/:menuId", // PUT: update menu item with menuId
+  checkPermission([0,2]),
   [
     param("facilityId")
       .isNumeric()
@@ -223,6 +233,7 @@ router.put(
 );
 router.delete(
   "/:facilityId/menu/:menuId", // DELETE: delete menu item of specified menuId
+  checkPermission([0,2]),
   [
     param("facilityId")
       .isNumeric()
@@ -258,6 +269,7 @@ router.get(
 
 router.post(
   "/:facilityId/post", // POST : create a new post for a facility
+  checkPermission([0,2]),
   s3Uploader.single('image'),
   [
     param("facilityId")
@@ -275,6 +287,7 @@ router.post(
 
 router.put(
   "/:facilityId/post/:postId", // PUT : update a post for a facility
+  checkPermission([0,2]),
   [
     param("facilityId")
       .isNumeric()
@@ -289,6 +302,7 @@ router.put(
 
 router.delete(
   "/:facilityId/post/:postId", // DELETE : delete a post for a facility
+  checkPermission([0,2]),
   [
     param("facilityId")
       .isNumeric()
@@ -312,6 +326,7 @@ router.get(
 
 router.post(
   "/:facilityId/stamp-ruleset", // POST: create stamp-ruleset
+  checkPermission([0,2]),
   [
     param("facilityId")
       .isNumeric()
@@ -333,6 +348,7 @@ router.post(
 
 router.put(
   "/:facilityId/stamp-ruleset", // PUT: update existing stamp-ruleset
+  checkPermission([0,2]),
   [
     param("facilityId")
       .isNumeric()
@@ -347,6 +363,7 @@ router.put(
 
 router.post(
   "/:facilityId/stamp-rewards", // POST: add stamp-reward
+  checkPermission([0,2]),
   [
     param("facilityId")
       .isNumeric()
@@ -360,6 +377,7 @@ router.post(
 
 router.put(
   "/:facilityId/stamp-rewards/:rewardId", // PUT: update existing stamp-reward
+  checkPermission([0,2]),
   [
     param("facilityId")
       .isNumeric()
@@ -374,6 +392,7 @@ router.put(
 
 router.delete(
   "/:facilityId/stamp-rewards/:rewardId", // DELETE : delete stamp-reward with specified rewardId
+  checkPermission([0,2]),
   [
     param("facilityId")
       .isNumeric()
@@ -397,6 +416,7 @@ router.get(
 
 router.post(
   "/:facilityId/preferences", // POST : add a preference to a facility
+  checkPermission([0,2]),
   [
     param("facilityId")
       .isNumeric()
@@ -411,6 +431,7 @@ router.post(
 
 router.delete(
   "/:facilityId/preferences/:preferenceId", // DELETE : remove a preference from a facility
+  checkPermission([0,2]),
   [
     param("facilityId")
       .isNumeric()
@@ -427,6 +448,7 @@ router.delete(
 router
   .post(      // POST : upload facility profile image
     '/:id/profile/image',
+    checkPermission([0,2]),
     s3Uploader.single('image'),
     [
         param('id', `route param 'id' must be a positive integer`).exists().isInt({min:1}),
@@ -435,6 +457,7 @@ router
     facilityController.uploadFacilityProfileImage
   ).delete(   // DELETE : delete facility profile image
     '/:id/profile/image',
+    checkPermission([0,2]),
     [
       param('id', `route param 'id' must be a positive integer`).exists().isInt({min:1}),
       validatorChecker,
@@ -442,6 +465,7 @@ router
     facilityController.deleteFacilityProfileImage
   ).post(     // POST : upload stamp logo image
     '/:id/stamp-ruleset/logo',
+    checkPermission([0,2]),
     s3Uploader.single('image'),
     [
       param('id', `route param 'id' must be a positive integer`).exists().isInt({min:1}),
@@ -450,6 +474,7 @@ router
     facilityController.uploadStampLogoImage
   ).delete(   // DELETE : delete stamp logo image
     '/:id/stamp-ruleset/logo',
+    checkPermission([0,2]),
     [
       param('id', `route param 'id' must be a positive integer`).exists().isInt({min:1}),
       validatorChecker,
@@ -457,6 +482,7 @@ router
     facilityController.deleteStampLogoImage
   ).post(     // POST : upload menu image
     '/:facilityId/menu/:menuId/image',
+    checkPermission([0,2]),
     s3Uploader.single('image'),
     [
       param('facilityId', `route param 'facilityId' must be a positive integer`).exists().isInt({min:1}),
@@ -466,6 +492,7 @@ router
     facilityController.uploadMenuImage
   ).delete(   // DELETE : delete menu image
     '/:facilityId/menu/:menuId/image',
+    checkPermission([0,2]),
     [
       param('facilityId', `route param 'facilityId' must be a positive integer`).exists().isInt({min:1}),
       param('menuId', `route param 'menuId' must be a positive integer`).exists().isInt({min:1}),
