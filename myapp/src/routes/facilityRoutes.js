@@ -530,7 +530,7 @@ router
         .withMessage("Business ID is required and must be a string"),
       body("content.profileImgUri")
         .exists()
-        .isURL()
+        .isString()
         .withMessage("Profile Image URI is required and must be a valid URL"),
       body("content.phone")
         .exists()
