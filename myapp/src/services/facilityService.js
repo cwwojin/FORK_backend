@@ -11,10 +11,11 @@ class FacilityService {
   async getFacilityById(id) {
     const query = "SELECT * FROM facility_address_avgscore WHERE id = $1";
     const { rows } = await db.query(query, [id]);
-    if (rows.length === 0) throw ({
-      status: 404,
-      message: "Facility not found",
-    });
+    if (rows.length === 0)
+      throw {
+        status: 404,
+        message: "Facility not found",
+      };
     const facility = rows[0];
     facility.openingHours = await this.getOpeningHoursByFacilityId(id);
     facility.menu = await this.getMenuByFacilityId(id);
@@ -167,6 +168,14 @@ class FacilityService {
   }
 
   async updateFacility(id, data) {
+    const facility = await this.getFacilityById(id);
+    const status = await this.getFacilityRegistrationStatus(facility.authorId);
+    if (status !== 1) {
+      throw {
+        status: 404,
+        message: "Facility registration request not accepted",
+      };
+    }
     let client;
     try {
       client = await db.connect();
@@ -213,14 +222,18 @@ class FacilityService {
         `;
         updateValues.push(id);
         const facilityResult = await client.query(query, updateValues);
-        const facility = facilityResult.rows[0];
+        const updatedFacility = facilityResult.rows[0];
 
         if (data.address) {
-          facility.address = await this.insertAddress(client, id, data.address);
+          updatedFacility.address = await this.insertAddress(
+            client,
+            id,
+            data.address
+          );
         }
 
         if (data.openingHours) {
-          facility.openingHours = await this.insertOpeningHours(
+          updatedFacility.openingHours = await this.insertOpeningHours(
             client,
             id,
             data.openingHours
@@ -228,16 +241,20 @@ class FacilityService {
         }
 
         if (data.menu) {
-          facility.menu = await this.insertMenuItems(client, id, data.menu);
+          updatedFacility.menu = await this.insertMenuItems(
+            client,
+            id,
+            data.menu
+          );
         }
 
         await client.query("COMMIT");
-        return facility;
+        return updatedFacility;
       } else {
-        throw ({
+        throw {
           status: 404,
-          message: "No fields to update"
-        });
+          message: "No fields to update",
+        };
       }
     } catch (error) {
       if (client) {
@@ -256,7 +273,7 @@ class FacilityService {
       text: `delete from facility where id = $1 returning *`,
       values: [id],
     });
-    if(rows.length !== 0 && rows[0].profile_img_uri){
+    if (rows.length !== 0 && rows[0].profile_img_uri) {
       await removeS3File(rows[0].profile_img_uri);
     }
     return rows;
@@ -398,10 +415,11 @@ class FacilityService {
   async getMenuItemById(menuId) {
     const query = "SELECT * FROM menu WHERE id = $1";
     const { rows } = await db.query(query, [menuId]);
-    if (rows.length === 0) throw ({
-      status: 404,
-      message: "Menu item not found"
-    });
+    if (rows.length === 0)
+      throw {
+        status: 404,
+        message: "Menu item not found",
+      };
     return rows[0];
   }
 
@@ -481,17 +499,17 @@ class FacilityService {
 
         await client.query("COMMIT");
         if (rows.length === 0) {
-          throw ({
+          throw {
             status: 404,
-            message: "Menu item not found or not updated"
-          });
+            message: "Menu item not found or not updated",
+          };
         }
         return rows[0];
       } else {
-        throw ({
+        throw {
           status: 404,
-          message: "No fields to update"
-        });
+          message: "No fields to update",
+        };
       }
     } catch (error) {
       await client.query("ROLLBACK");
@@ -506,7 +524,7 @@ class FacilityService {
       text: `delete from menu where facility_id = $1 and id = $2 returning *`,
       values: [facilityId, menuId],
     });
-    if(rows.length !== 0 && rows[0].img_uri){
+    if (rows.length !== 0 && rows[0].img_uri) {
       await removeS3File(rows[0].img_uri);
     }
     return rows;
@@ -522,10 +540,11 @@ class FacilityService {
   async getPostById(postId) {
     const query = "SELECT * FROM post WHERE id = $1";
     const { rows } = await db.query(query, [postId]);
-    if (rows.length === 0) throw ({
-      status: 404,
-      message: "Post not found"
-    });
+    if (rows.length === 0)
+      throw {
+        status: 404,
+        message: "Post not found",
+      };
     return rows[0];
   }
   async createPost(facilityId, data) {
@@ -575,10 +594,10 @@ class FacilityService {
 
       await client.query("COMMIT");
       if (rows.length === 0) {
-        throw ({
+        throw {
           status: 404,
-          message: "Post not found or not updated"
-        });
+          message: "Post not found or not updated",
+        };
       }
       return rows[0];
     } catch (error) {
@@ -594,7 +613,7 @@ class FacilityService {
       text: `delete from post where id = $1 returning *`,
       values: [postId],
     });
-    if(rows.length !== 0 && rows[0].img_uri){
+    if (rows.length !== 0 && rows[0].img_uri) {
       await removeS3File(rows[0].img_uri);
     }
     return rows;
@@ -603,10 +622,11 @@ class FacilityService {
   async getStampRulesetRewardsByFacilityId(facilityId) {
     const query = "SELECT * FROM stamp_ruleset_rewards WHERE facility_id = $1";
     const { rows } = await db.query(query, [facilityId]);
-    if (rows.length === 0) throw ({
-      status: 404,
-      message: "Stamp ruleset not found"
-    });
+    if (rows.length === 0)
+      throw {
+        status: 404,
+        message: "Stamp ruleset not found",
+      };
     return rows[0];
   }
   async createStampRuleset(facilityId, data) {
@@ -636,10 +656,10 @@ class FacilityService {
       const { rows } = await client.query(insertQuery, values);
 
       if (rows.length === 0) {
-        throw ({
+        throw {
           status: 404,
-          message: "Stamp ruleset not created"
-        });
+          message: "Stamp ruleset not created",
+        };
       }
 
       // Insert rewards if provided
@@ -682,10 +702,10 @@ class FacilityService {
 
       await client.query("COMMIT");
       if (rows.length === 0) {
-        throw ({
+        throw {
           status: 404,
-          message: "Stamp ruleset not found/not updated"
-        });
+          message: "Stamp ruleset not found/not updated",
+        };
       }
       return rows[0];
     } catch (error) {
@@ -737,10 +757,10 @@ class FacilityService {
 
       await client.query("COMMIT");
       if (rows.length === 0) {
-        throw ({
+        throw {
           status: 404,
-          message: "Stamp reward not found or not updated"
-        });
+          message: "Stamp reward not found or not updated",
+        };
       }
       return rows[0];
     } catch (error) {
@@ -835,79 +855,102 @@ class FacilityService {
     }
   }
 
-  /** 
-   * upload / update facility profile image 
+  /**
+   * upload / update facility profile image
    * 1. if facility profile image already exists, delete file from S3
    * 2. update img_uri column
    * */
-  async uploadFacilityProfileImage (id, imageUri) {
+  async uploadFacilityProfileImage(id, imageUri) {
     const facility = await this.getFacilityById(id);
-    if(facility.profile_img_uri){
+    if (facility.profile_img_uri) {
       await removeS3File(facility.profile_img_uri);
     }
     const result = await db.query({
       text: `update facility set profile_img_uri = $1 where id = $2 returning *`,
       values: [imageUri, id],
     });
-    if(result.rows.length === 0) throw ({
-      status: 404,
-      message: `No records were updated`
-    });
+    if (result.rows.length === 0)
+      throw {
+        status: 404,
+        message: `No records were updated`,
+      };
     return result.rows[0];
   }
 
   /** delete facility profile image */
-  async deleteFacilityProfileImage (id) {
-    const result = await this.uploadFacilityProfileImage(id, '');
+  async deleteFacilityProfileImage(id) {
+    const result = await this.uploadFacilityProfileImage(id, "");
     return result;
   }
 
   /** upload / update stamp logo image */
-  async uploadStampLogoImage (id, imageUri) {
+  async uploadStampLogoImage(id, imageUri) {
     const stampRuleset = await this.getStampRulesetRewardsByFacilityId(id);
-    if(stampRuleset.logo_img_uri){
+    if (stampRuleset.logo_img_uri) {
       await removeS3File(stampRuleset.logo_img_uri);
     }
     const result = await db.query({
       text: `update stamp_ruleset set logo_img_uri = $1 where facility_id = $2 returning *`,
       values: [imageUri, id],
     });
-    if(result.rows.length === 0) throw ({
-      status: 404,
-      message: `No records were updated`
-    });
+    if (result.rows.length === 0)
+      throw {
+        status: 404,
+        message: `No records were updated`,
+      };
     return result.rows[0];
   }
 
   /** delete stamp logo image */
-  async deleteStampLogoImage (id) {
-    const result = await this.uploadStampLogoImage(id, '');
+  async deleteStampLogoImage(id) {
+    const result = await this.uploadStampLogoImage(id, "");
     return result;
   }
 
   /** upload / update menu item image */
-  async uploadMenuImage (facilityId, menuId, imageUri) {
+  async uploadMenuImage(facilityId, menuId, imageUri) {
     const menuItem = await this.getMenuItemById(menuId);
-    if(menuItem.img_uri){
+    if (menuItem.img_uri) {
       await removeS3File(menuItem.img_uri);
     }
     const result = await db.query({
       text: `update menu set img_uri = $1 where facility_id = $2 and id = $3 returning *`,
       values: [imageUri, facilityId, menuId],
     });
-    if(result.rows.length === 0) throw ({
-      status: 404,
-      message: `No records were updated`
-    });
+    if (result.rows.length === 0)
+      throw {
+        status: 404,
+        message: `No records were updated`,
+      };
     return result.rows[0];
   }
 
   /** delete menu item image */
-  async deleteMenuImage (facilityId, menuId) {
-    const result = await this.uploadMenuImage(facilityId, menuId, '');
+  async deleteMenuImage(facilityId, menuId) {
+    const result = await this.uploadMenuImage(facilityId, menuId, "");
     return result;
   }
 
+  /** create facility registration request */
+  async createFacilityRegistrationRequest(data) {
+    const query = `
+      INSERT INTO facility_registration_request (author_id, title, content)
+      VALUES ($1, $2, $3)
+      RETURNING *;
+    `;
+    const values = [data.authorId, data.title, JSON.stringify(data.content)];
+    const { rows } = await db.query(query, values);
+    return rows[0];
+  }
+  /** get facility registration request status by author ID*/
+  async getFacilityRegistrationStatus(authorId) {
+    const query = {
+      text: `SELECT status FROM facility_registration_request WHERE author_id = $1 AND status = 1`,
+      values: [authorId],
+    };
+    const result = await db.query(query);
+    return result.rows.length > 0 ? result.rows[0].status : null;
+  }
 }
 
 module.exports = new FacilityService();

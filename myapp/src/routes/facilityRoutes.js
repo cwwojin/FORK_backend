@@ -32,7 +32,9 @@ router.post(
     body("phone").notEmpty().withMessage("Phone is required"),
     body("email").isEmail().withMessage("Valid email is required"),
     body("profileImgUri")
-      .exists().isString().withMessage("Profile image URI is required"),
+      .exists()
+      .isString()
+      .withMessage("Profile image URI is required"),
     body("address.postNumber")
       .notEmpty()
       .withMessage("Post number is required"),
@@ -258,7 +260,7 @@ router.get(
 
 router.post(
   "/:facilityId/post", // POST : create a new post for a facility
-  s3Uploader.single('image'),
+  s3Uploader.single("image"),
   [
     param("facilityId")
       .isNumeric()
@@ -317,7 +319,9 @@ router.post(
       .isNumeric()
       .withMessage("Valid Facility ID is required"),
     body("logoImgUri")
-      .exists().isString().withMessage("Logo Image URI is required"),
+      .exists()
+      .isString()
+      .withMessage("Logo Image URI is required"),
     body("totalCnt").isNumeric().withMessage("Total count is required"),
     body("rewards").isArray().withMessage("Rewards must be an array"),
     body("rewards.*.cnt")
@@ -425,56 +429,128 @@ router.delete(
 
 /** image upload methods */
 router
-  .post(      // POST : upload facility profile image
-    '/:id/profile/image',
-    s3Uploader.single('image'),
+  .post(
+    // POST : upload facility profile image
+    "/:id/profile/image",
+    s3Uploader.single("image"),
     [
-        param('id', `route param 'id' must be a positive integer`).exists().isInt({min:1}),
-        validatorChecker,
+      param("id", `route param 'id' must be a positive integer`)
+        .exists()
+        .isInt({ min: 1 }),
+      validatorChecker,
     ],
     facilityController.uploadFacilityProfileImage
-  ).delete(   // DELETE : delete facility profile image
-    '/:id/profile/image',
+  )
+  .delete(
+    // DELETE : delete facility profile image
+    "/:id/profile/image",
     [
-      param('id', `route param 'id' must be a positive integer`).exists().isInt({min:1}),
+      param("id", `route param 'id' must be a positive integer`)
+        .exists()
+        .isInt({ min: 1 }),
       validatorChecker,
     ],
     facilityController.deleteFacilityProfileImage
-  ).post(     // POST : upload stamp logo image
-    '/:id/stamp-ruleset/logo',
-    s3Uploader.single('image'),
+  )
+  .post(
+    // POST : upload stamp logo image
+    "/:id/stamp-ruleset/logo",
+    s3Uploader.single("image"),
     [
-      param('id', `route param 'id' must be a positive integer`).exists().isInt({min:1}),
+      param("id", `route param 'id' must be a positive integer`)
+        .exists()
+        .isInt({ min: 1 }),
       validatorChecker,
     ],
     facilityController.uploadStampLogoImage
-  ).delete(   // DELETE : delete stamp logo image
-    '/:id/stamp-ruleset/logo',
+  )
+  .delete(
+    // DELETE : delete stamp logo image
+    "/:id/stamp-ruleset/logo",
     [
-      param('id', `route param 'id' must be a positive integer`).exists().isInt({min:1}),
+      param("id", `route param 'id' must be a positive integer`)
+        .exists()
+        .isInt({ min: 1 }),
       validatorChecker,
     ],
     facilityController.deleteStampLogoImage
-  ).post(     // POST : upload menu image
-    '/:facilityId/menu/:menuId/image',
-    s3Uploader.single('image'),
+  )
+  .post(
+    // POST : upload menu image
+    "/:facilityId/menu/:menuId/image",
+    s3Uploader.single("image"),
     [
-      param('facilityId', `route param 'facilityId' must be a positive integer`).exists().isInt({min:1}),
-      param('menuId', `route param 'menuId' must be a positive integer`).exists().isInt({min:1}),
+      param("facilityId", `route param 'facilityId' must be a positive integer`)
+        .exists()
+        .isInt({ min: 1 }),
+      param("menuId", `route param 'menuId' must be a positive integer`)
+        .exists()
+        .isInt({ min: 1 }),
       validatorChecker,
     ],
     facilityController.uploadMenuImage
-  ).delete(   // DELETE : delete menu image
-    '/:facilityId/menu/:menuId/image',
+  )
+  .delete(
+    // DELETE : delete menu image
+    "/:facilityId/menu/:menuId/image",
     [
-      param('facilityId', `route param 'facilityId' must be a positive integer`).exists().isInt({min:1}),
-      param('menuId', `route param 'menuId' must be a positive integer`).exists().isInt({min:1}),
+      param("facilityId", `route param 'facilityId' must be a positive integer`)
+        .exists()
+        .isInt({ min: 1 }),
+      param("menuId", `route param 'menuId' must be a positive integer`)
+        .exists()
+        .isInt({ min: 1 }),
       validatorChecker,
     ],
     facilityController.deleteMenuImage
   )
-
-
-
+  .post(
+    // POST: send facility registration request to admin to create facility
+    "/facility-requests",
+    [
+      body("authorId")
+        .exists()
+        .isInt({ min: 1 })
+        .withMessage("Author ID is required and must be a positive integer"),
+      body("title")
+        .exists()
+        .isString()
+        .withMessage("Title is required and must be a string"),
+      body("content.name")
+        .exists()
+        .isString()
+        .withMessage("Content name is required and must be a string"),
+      body("content.type")
+        .exists()
+        .isString()
+        .withMessage("Content type is required and must be a string"),
+      body("content.businessId")
+        .exists()
+        .isString()
+        .withMessage("Business ID is required and must be a string"),
+      body("content.profileImgUri")
+        .exists()
+        .isURL()
+        .withMessage("Profile Image URI is required and must be a valid URL"),
+      body("content.phone")
+        .exists()
+        .isString()
+        .withMessage("Phone is required and must be a string"),
+      body("content.email")
+        .exists()
+        .isEmail()
+        .withMessage("Email is required and must be a valid email"),
+      body("content.url")
+        .exists()
+        .isURL()
+        .withMessage("URL is required and must be a valid URL"),
+      body("content.description")
+        .exists()
+        .isString()
+        .withMessage("Description is required and must be a string"),
+      validatorChecker,
+    ],
+    facilityController.createFacilityRegistrationRequest
+  );
 
 module.exports = router;

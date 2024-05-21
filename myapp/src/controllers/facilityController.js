@@ -35,7 +35,14 @@ module.exports = {
         data: facility,
       });
     } catch (err) {
-      next(err);
+      if (err.status === 404) {
+        res.status(404).json({
+          status: "fail",
+          message: err.message,
+        });
+      } else {
+        next(err);
+      }
     }
   },
 
@@ -50,7 +57,14 @@ module.exports = {
         data: facility,
       });
     } catch (err) {
-      next(err);
+      if (err.status === 404) {
+        res.status(404).json({
+          status: "fail",
+          message: err.message,
+        });
+      } else {
+        next(err);
+      }
     }
   },
 
@@ -255,7 +269,8 @@ module.exports = {
 
   createPost: async (req, res, next) => {
     try {
-      const imgUri = (req.file !== undefined) ? makeS3Uri(req.file.bucket, req.file.key) : '';
+      const imgUri =
+        req.file !== undefined ? makeS3Uri(req.file.bucket, req.file.key) : "";
       const facilityId = Number(req.params.facilityId);
       const { authorId, title, content } = req.body;
 
@@ -443,90 +458,112 @@ module.exports = {
   },
 
   /** upload facility profile image */
-  uploadFacilityProfileImage: async (req,res,next) => {
+  uploadFacilityProfileImage: async (req, res, next) => {
     const id = Number(req.params.id);
-    try{
-      const imageUri = (req.file !== undefined) ? makeS3Uri(req.file.bucket, req.file.key) : '';
-      const result = await facilityService.uploadFacilityProfileImage(id, imageUri);
+    try {
+      const imageUri =
+        req.file !== undefined ? makeS3Uri(req.file.bucket, req.file.key) : "";
+      const result = await facilityService.uploadFacilityProfileImage(
+        id,
+        imageUri
+      );
       res.status(201).json({
         status: "success",
         data: result,
       });
-    }catch(err){
+    } catch (err) {
       next(err);
     }
   },
   /** delete facility profile image */
-  deleteFacilityProfileImage: async (req,res,next) => {
+  deleteFacilityProfileImage: async (req, res, next) => {
     const id = Number(req.params.id);
-    try{
+    try {
       const result = await facilityService.deleteFacilityProfileImage(id);
       res.status(200).json({
         status: "success",
         data: result,
       });
-    }catch(err){
+    } catch (err) {
       next(err);
     }
   },
   /** upload stamp logo image */
-  uploadStampLogoImage: async (req,res,next) => {
+  uploadStampLogoImage: async (req, res, next) => {
     const id = Number(req.params.id);
-    try{
-      const imageUri = (req.file !== undefined) ? makeS3Uri(req.file.bucket, req.file.key) : '';
+    try {
+      const imageUri =
+        req.file !== undefined ? makeS3Uri(req.file.bucket, req.file.key) : "";
       const result = await facilityService.uploadStampLogoImage(id, imageUri);
       res.status(201).json({
         status: "success",
         data: result,
       });
-    }catch(err){
+    } catch (err) {
       next(err);
     }
   },
   /** delete stamp logo image */
-  deleteStampLogoImage: async (req,res,next) => {
+  deleteStampLogoImage: async (req, res, next) => {
     const id = Number(req.params.id);
-    try{
+    try {
       const result = await facilityService.deleteStampLogoImage(id);
       res.status(200).json({
         status: "success",
         data: result,
       });
-    }catch(err){
+    } catch (err) {
       next(err);
     }
   },
   /** upload menu image */
-  uploadMenuImage: async (req,res,next) => {
-    try{
-      const imageUri = (req.file !== undefined) ? makeS3Uri(req.file.bucket, req.file.key) : '';
+  uploadMenuImage: async (req, res, next) => {
+    try {
+      const imageUri =
+        req.file !== undefined ? makeS3Uri(req.file.bucket, req.file.key) : "";
       const result = await facilityService.uploadMenuImage(
-        req.params.facilityId, 
-        req.params.menuId, 
-        imageUri,
+        req.params.facilityId,
+        req.params.menuId,
+        imageUri
       );
       res.status(201).json({
         status: "success",
         data: result,
       });
-    }catch(err){
+    } catch (err) {
       next(err);
     }
   },
   /** delete menu image */
-  deleteMenuImage: async (req,res,next) => {
-    try{
+  deleteMenuImage: async (req, res, next) => {
+    try {
       const result = await facilityService.deleteMenuImage(
         req.params.facilityId,
-        req.params.menuId,
+        req.params.menuId
       );
       res.status(200).json({
         status: "success",
         data: result,
       });
-    }catch(err){
+    } catch (err) {
       next(err);
     }
   },
-
+  /** create facility registration request */
+  createFacilityRegistrationRequest: async (req, res, next) => {
+    try {
+      const { authorId, title, content } = req.body;
+      const request = await facilityService.createFacilityRegistrationRequest({
+        authorId,
+        title,
+        content,
+      });
+      res.status(201).json({
+        status: "success",
+        data: request,
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
 };
