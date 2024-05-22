@@ -1,5 +1,6 @@
 const userNamePattern = new RegExp("^[a-zA-Z0-9._\-]+$");
 const passwordPattern = new RegExp("^[a-zA-Z0-9._\-]+$");
+const KAISTMailPattern = new RegExp("@kaist.ac.kr$");
 
 module.exports = {
     /** CONSTANTS */
@@ -32,6 +33,10 @@ module.exports = {
             Key: url.pathname.startsWith('/') ? url.pathname.slice(1) : url.pathname
         };
     },
+    generateRandomCode: () => {
+        const num = Math.floor(Math.random() * 1000000);
+        return num.toString().padStart(6, '0');
+    },
     /** request validation */
     validateUserId: (userId) => 
         userNamePattern.test(userId),
@@ -53,4 +58,7 @@ module.exports = {
     validateMapArea: (area) => {
         return ('latMin' in area) && ('lngMin' in area) && ('latMax' in area) && ('lngMax' in area);
     },
+    validateKAISTMail: (email) => 
+        KAISTMailPattern.test(email),
+    
 }

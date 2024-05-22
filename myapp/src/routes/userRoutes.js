@@ -27,7 +27,7 @@ router
         userController.getUserById
     ).post(     // POST : create new user
         '/create',
-        checkPermission([-1,0]),    // guest -> registration
+        checkPermission([0]),    // only admin can call directly
         [
             body('userId', `body field 'userId' violates account id constraints`)
                 .exists().isString().isLength({min: 6, max: 20}).custom(validateUserId),
