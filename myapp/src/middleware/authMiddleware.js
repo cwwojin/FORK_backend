@@ -19,6 +19,7 @@ module.exports = {
                         message: `One or more invalid userType, id, accountId headers. Check authorization`
                     });
                 }
+                next();
             }
         ];
     },
@@ -28,7 +29,6 @@ module.exports = {
     checkPermission: (allowedTypes) => {
         return (req,res,next) => {
             const allowed = allowedTypes.includes(Number(req.header('userType')));
-            // const allowed = allowedTypes.includes(req.header('userType'));
             if(!allowed){
                 return res.status(403).json({
                     status: "fail",

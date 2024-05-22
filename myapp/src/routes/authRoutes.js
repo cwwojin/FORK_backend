@@ -8,7 +8,7 @@ const { checkPermission } = require("../middleware/authMiddleware");
 router
     .post(      // POST : login
         '/login',
-        checkPermission([-1]),  // only guests can login
+        checkPermission([-1,0]),
         [
             body('userId').exists().isString(),
             body('password').exists().isString(),
