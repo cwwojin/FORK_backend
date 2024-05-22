@@ -2,6 +2,8 @@ const userNamePattern = new RegExp("^[a-zA-Z0-9._\-]+$");
 const passwordPattern = new RegExp("^[a-zA-Z0-9._\-]+$");
 
 module.exports = {
+    /** CONSTANTS */
+    BCRYPT_SALTROUNDS: 5,
     /** ENUM */
     USER_TYPES: [0,1,2],
     TRANSACTION_TYPES: [0,1],

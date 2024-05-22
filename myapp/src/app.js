@@ -10,6 +10,7 @@ const { reviewRoutes, hashtagRoutes } = require("./routes/reviewRoutes");
 const stampRoutes = require("./routes/stampRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const errorMiddleware = require("./middleware/errorMiddleware");
+const { checkUserTypeHeader } = require("./middleware/authMiddleware");
 
 const app = express();
 
@@ -17,7 +18,8 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(morgan("dev")); // Logging middleware
+app.use(morgan("dev"));             // Logging middleware
+// app.use(checkUserTypeHeader());     // middleware for checking userType header
 
 // Routes
 app.use("/api/auth", authRoutes);

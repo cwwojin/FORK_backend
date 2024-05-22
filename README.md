@@ -4,7 +4,8 @@
 1. [Introduction](#introduction)
 2. [Installation](#installation)
 3. [Contribution](#contribution)
-3. [Team](#team)
+4. [API Docs](#api-documentation)
+5. [Team](#team)
 
 ## This is the introduction <a name="introduction"></a>
 2024 Spring CS350 Project - FORK
@@ -25,6 +26,9 @@ $ bash compose.sh dev
 - feature/{$feature_branch_name}
 - hotfix/{$hotfix_branch_name}
 - release/{$release_ver}
+
+## API Documentation <a name="api-documentation"></a>
+#### [Click here for detailed API documentation](https://cwwojin.github.io/FORK_backend/)
 
 ## Team <a name="team"></a>
 Woojin Choi <cwwojin@gmail.com> <br/>
