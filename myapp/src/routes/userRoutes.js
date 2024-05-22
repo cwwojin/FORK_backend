@@ -205,7 +205,7 @@ router
     userController.deleteUserProfileImage
   )
   .get(
-    "/:id/facility", // GET: get facility with id
+    "/:id/myfacility", // GET: get facility with id
     [
       param("id")
         .exists()
@@ -213,16 +213,19 @@ router
         .withMessage("Valid account ID is required"),
       validatorChecker,
     ],
-    userController.getFacilityById
+    userController.getMyFacility
   )
-  .put(
+  .post(
     // PUT: update facility with id
-    "/:id/facility",
+    "/:user/myfacility/:facility",
     [
-      param("id")
+      param("user")
         .exists()
         .isInt({ min: 1 })
         .withMessage("Valid account ID is required"),
+      param("facility", `route param 'facility' must be a positive integer`)
+        .exists()
+        .isInt({ min: 1 }),
       body("name").exists().isString().withMessage("Name is required"),
       body("businessId")
         .exists()
@@ -234,13 +237,22 @@ router
         .isString()
         .withMessage("Description is required"),
       body("url").exists().isURL().withMessage("Valid URL is required"),
+      body("phone", `body field 'phone' must be string`).exists().isString(),
+      body("email", `body field 'email' must be string`).exists().isString(),
+      /** optionally update address, opening-hours, menus, preferences */
+      body("address", `optional body field 'address' must be an object`).optional().isObject(),
+      body("openingHours", `optional body field 'openingHours' must be an array`).optional().isArray(),
+      body("menu", `optional body field 'menu' must be an array`).optional().isArray(),
+      body("preferences", `optional body field 'preferences' must be an array`).optional().isArray(),
+      body("stampRuleset", `optional body field 'stampRuleset' must be an object`).optional().isObject(),
+      body("stampRuleset.rewards", `optional body field 'stampRuleset.rewards' must be an array`).optional().isArray(),
       validatorChecker,
     ],
-    userController.updateFacilityById
+    userController.updateMyFacility
   )
   .delete(
     // DELETE: delete facility with id
-    "/:id/facility/:facilityId",
+    "/:id/myfacility/:facilityId",
     [
       param("id")
         .exists()

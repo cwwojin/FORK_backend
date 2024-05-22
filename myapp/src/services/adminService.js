@@ -117,7 +117,7 @@ module.exports = {
       throw { status: 404, message: `Request doesn't exist or is not pending` };
     }
 
-    const data = JSON.parse(request.content);
+    const data = request.content;
     try {
       await db.query("BEGIN");
 
@@ -130,6 +130,12 @@ module.exports = {
         values: [1, id],
       };
       const result = await db.query(query);
+
+      // Add the author as manager
+      await db.query({
+        text: `insert into manages (user_id, facility_id) values ($1, $2)`,
+        values: [request.author_id, facility.id],
+      });
 
       await db.query("COMMIT");
       return { request: result.rows[0], facility };

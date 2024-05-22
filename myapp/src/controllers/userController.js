@@ -247,10 +247,10 @@ module.exports = {
       next(err);
     }
   },
-  /** get facility by ID */
-  getFacilityById: async (req, res, next) => {
+  /** get my facilities */
+  getMyFacility: async (req, res, next) => {
     try {
-      const facility = await userService.getFacilityById(req.params.id);
+      const facility = await userService.getMyFacility(req.params.id);
       if (facility) {
         res.status(200).json({ status: "success", data: facility });
       } else {
@@ -260,11 +260,12 @@ module.exports = {
       next(err);
     }
   },
-  /** update facility by ID */
-  updateFacilityById: async (req, res, next) => {
+  /** update my facility by ID */
+  updateMyFacility: async (req, res, next) => {
     try {
-      const facility = await userService.updateFacilityById(
-        req.params.id,
+      const facility = await userService.updateMyFacility(
+        req.params.user,
+        req.params.facility,
         req.body
       );
       res.status(200).json({ status: "success", data: facility });
