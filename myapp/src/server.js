@@ -4,6 +4,8 @@ const port = process.env.PORT || 3000; // Set the port from environment or defau
 
 const server = http.createServer(app); // Create server using the Express app
 
+const { indexFacilities } = require("./models/meiliSetup");
+
 server.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });

@@ -25,6 +25,7 @@
     "express": "^4.19.2",
     "express-validator": "^7.0.1",
     "jsonwebtoken": "^9.0.2",
+    "meilisearch": "^0.40.0",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "multer-s3": "^3.0.1",
