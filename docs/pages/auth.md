@@ -17,8 +17,9 @@
 `/api/auth/login`
 
 ### Permissions
+
 | userType | Guest | 0 (Admin) | 1 (KAIST) | 2 (Facility) |
-| ---- | ---- | ---- | ---- | ---- |
+| --- | --- | --- | --- | --- |
 | Permission | O | O | X | X |
 
 ### Request Format
@@ -49,8 +50,9 @@
 `/api/auth/register`
 
 ### Permissions
+
 | userType | Guest | 0 (Admin) | 1 (KAIST) | 2 (Facility) |
-| ---- | ---- | ---- | ---- | ---- |
+| --- | --- | --- | --- | --- |
 | Permission | O | O | X | X |
 
 ### Request Format
@@ -89,8 +91,9 @@
 `/api/auth/resend-verification-mail`
 
 ### Permissions
+
 | userType | Guest | 0 (Admin) | 1 (KAIST) | 2 (Facility) |
-| ---- | ---- | ---- | ---- | ---- |
+| --- | --- | --- | --- | --- |
 | Permission | O | O | X | X |
 
 ### Request Format
@@ -121,8 +124,9 @@
 `/api/auth/verify-kaist`
 
 ### Permissions
+
 | userType | Guest | 0 (Admin) | 1 (KAIST) | 2 (Facility) |
-| ---- | ---- | ---- | ---- | ---- |
+| --- | --- | --- | --- | --- |
 | Permission | O | O | X | X |
 
 ### Request Format
