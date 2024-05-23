@@ -165,14 +165,6 @@ class FacilityService {
   }
 
   async updateFacility(id, data) {
-    const facility = await this.getFacilityById(id);
-    const status = await this.getFacilityRegistrationStatus(facility.authorId);
-    if (status !== 1) {
-      throw {
-        status: 404,
-        message: "Facility registration request not accepted",
-      };
-    }
     let client;
     try {
       client = await db.connect();

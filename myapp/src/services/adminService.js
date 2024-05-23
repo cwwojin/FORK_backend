@@ -137,8 +137,8 @@ module.exports = {
             const facility = await facilityService.createFacility(data);
 
             // Handle preferences
-            if (data.preferences) {
-                for (const preferenceId of data.preferences) {
+            if (data.preferences && data.preferences.length !== 0) {
+                for await (const preferenceId of data.preferences) {
                     await facilityService.addPreferenceToFacility(facility.id, preferenceId);
                 }
             }
@@ -147,6 +147,12 @@ module.exports = {
             if (data.stampRuleset) {
                 await facilityService.createStampRuleset(facility.id, data.stampRuleset);
             }
+
+            // Add the author as manager
+            await db.query({
+                text: `insert into manages (user_id, facility_id) values ($1, $2)`,
+                values: [request.author_id, facility.id],
+            });
 
             // Update the registration request status
             const query = {
