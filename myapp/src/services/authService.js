@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+
 const { validateKAISTMail, BCRYPT_SALTROUNDS } = require('../helper/helper');
 const db = require('../models/index');
 const { sendAuthMail } = require('../helper/mailSender');
@@ -100,16 +101,18 @@ module.exports = {
      */
     registerNewUser: async (args) => {
         // check duplicate with account-ID
-        let users;
-        users = await userService.getUsers({ accountId: args.userId });
+        const users = await userService.getUsers({ accountId: args.userId });
         if (users.length !== 0)
             throw { status: 409, message: `User with the same account-ID already exists` };
 
         switch (Number(args.userType)) {
-            case 1:
+            case 1: {
                 // check duplicate with userType and email
-                users = await userService.getUsers({ type: args.userType, email: args.email });
-                if (users.length !== 0)
+                const KAISTUsers = await userService.getUsers({
+                    type: args.userType,
+                    email: args.email,
+                });
+                if (KAISTUsers.length !== 0)
                     throw {
                         status: 409,
                         message: `A KAIST User with the same email already exists`,
@@ -120,11 +123,13 @@ module.exports = {
                 if (pending.length === 0)
                     throw { status: 404, message: `Couldn't cache KAIST user info` };
                 return { type: 1, user: pending[0] };
-            case 2:
+            }
+            case 2: {
                 const result = await userService.createUser(args);
                 if (result.length === 0)
                     throw { status: 404, message: `Couldn't insert facility user` };
                 return { type: 2, user: result[0] };
+            }
         }
     },
     /** insert KAIST user info into the cache table
