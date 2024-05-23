@@ -32,7 +32,7 @@ module.exports = {
                 "userType": payload.user_type,
             }, 
             process.env.JWT_SECRET,
-            { expiresIn: "1h" },    // set expiration time
+            { expiresIn: "1d" },    // set expiration time
         );
         return `Bearer ${token}`;   // for Bearer authentication
     },
@@ -83,6 +83,7 @@ module.exports = {
     /**
      * Register a new user into the system
      * 1. First, check if user already exists, using account-id
+     *      - KAIST user : no duplicate email allowed
      * 1. allowed users : KAIST(1), facility(2)
      * 2. (facility user) call createUser() directly
      * 3. (KAIST user) insert user into a pending-users table, along with verification code
