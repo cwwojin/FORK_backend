@@ -9,7 +9,7 @@ module.exports = {
      * - (args) account_id, user_type
      * */
     getUsers: async (args) => {
-        let baseQuery = `select * from "user" where 1=1 `;
+        let baseQuery = `select id, account_id, user_type, email, profile_img_uri, register_date from "user" where 1=1 `;
         let values = [];
         if(args.accountId !== undefined){
             values.push(args.accountId);
@@ -33,7 +33,7 @@ module.exports = {
     // get user by id
     getUserById: async (id) => {
         const query = {
-            text: 'select * from "user" where id = $1',
+            text: 'select id, account_id, user_type, email, profile_img_uri, register_date from "user" where id = $1',
             values: [id],
         };
         const result = await db.query(query);
