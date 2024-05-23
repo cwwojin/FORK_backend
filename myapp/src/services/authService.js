@@ -24,17 +24,21 @@ module.exports = {
      */
     loginUser: async (body) => {
         const { userId, password } = body;
-        const payload = await validateAccount(userId, password);
+        const user = await validateAccount(userId, password);
+        const payload = {
+            "id": user.id,
+            "accountId": user.account_id,
+            "userType": user.user_type,
+        };
         const token = jwt.sign(
-            {
-                "id": payload.id,
-                "accountId": payload.account_id,
-                "userType": payload.user_type,
-            }, 
+            payload,
             process.env.JWT_SECRET,
             { expiresIn: "1d" },    // set expiration time
         );
-        return `Bearer ${token}`;   // for Bearer authentication
+        return {
+            token: `Bearer ${token}`,
+            user: payload,
+        };   // for Bearer authentication
     },
     /** 
      * Send verification mail to KAIST user
