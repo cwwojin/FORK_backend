@@ -19,7 +19,7 @@ module.exports = {
      * - (optional) hashtags : reviews that contain at least one of given hashtags
      */
     getReviewByQuery: async (args) => {
-        let values = [];
+        const values = [];
         let baseQuery = `select r.* from review_with_hashtag r where 1=1 `;
         if (args.facility !== undefined) {
             values.push(args.facility);

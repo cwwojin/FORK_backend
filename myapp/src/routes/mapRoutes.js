@@ -1,9 +1,11 @@
 const { Router } = require('express');
-const router = Router();
-const mapController = require('../controllers/mapController');
 const { body, param, query } = require('express-validator');
+
+const mapController = require('../controllers/mapController');
 const { validatorChecker } = require('../middleware/validator');
 const { validateIntArray, validateMapArea } = require('../helper/helper');
+
+const router = Router();
 
 router
     .get(

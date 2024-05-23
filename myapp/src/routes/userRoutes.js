@@ -1,7 +1,7 @@
 const { Router } = require('express');
-const router = Router();
-const userController = require('../controllers/userController');
 const { body, param, query } = require('express-validator');
+
+const userController = require('../controllers/userController');
 const { validatorChecker } = require('../middleware/validator');
 const {
     USER_TYPES,
@@ -11,6 +11,8 @@ const {
 } = require('../helper/helper');
 const { s3Uploader } = require('../helper/s3Engine');
 const { checkPermission } = require('../middleware/authMiddleware');
+
+const router = Router();
 
 /** Router for "/api/users" */
 router

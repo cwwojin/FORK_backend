@@ -1,10 +1,12 @@
 const { Router } = require('express');
-const router = Router();
-const adminController = require('../controllers/adminController');
 const { body, param, query } = require('express-validator');
+
+const adminController = require('../controllers/adminController');
 const { validatorChecker } = require('../middleware/validator');
 const { REPORT_TYPES, REPORT_STATUS } = require('../helper/helper');
 const { checkPermission } = require('../middleware/authMiddleware');
+
+const router = Router();
 
 router
     .get(

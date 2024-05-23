@@ -3,7 +3,7 @@ const db = require('../models/index');
 module.exports = {
     /** get stampbooks by query - user_id, facility_id */
     getStampBook: async (userId, facilityId) => {
-        values = [];
+        const values = [];
         let baseQuery = `select * from stampbook where 1=1 `;
         if (userId !== undefined) {
             values.push(userId);
@@ -21,7 +21,7 @@ module.exports = {
     },
     /** create stampbook with user_id, facility_id */
     createStampBook: async (body) => {
-        query = {
+        const query = {
             text: `insert into stampbook (user_id, facility_id) values ($1, $2) returning *`,
             values: [body.userId, body.facilityId],
         };
@@ -38,7 +38,7 @@ module.exports = {
      * */
     stampTransaction: async (args) => {
         try {
-            const amountDiff = (!!args.type ? 1 : -1) * args.amount;
+            const amountDiff = (args.type ? 1 : -1) * args.amount;
             await db.query('BEGIN');
             let result = await db.query({
                 text: `insert into transaction (buyer_id, facility_id, seller_id, type, amount)
