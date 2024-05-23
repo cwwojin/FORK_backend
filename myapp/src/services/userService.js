@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+
 const db = require('../models/index');
 const { BCRYPT_SALTROUNDS } = require('../helper/helper');
 const { removeS3File } = require('../helper/s3Engine');
@@ -11,7 +12,7 @@ module.exports = {
      * */
     getUsers: async (args) => {
         let baseQuery = `select id, account_id, user_type, email, profile_img_uri, register_date from "user" where 1=1 `;
-        let values = [];
+        const values = [];
         if (args.accountId !== undefined) {
             values.push(args.accountId);
             baseQuery = baseQuery + `and account_id = $${values.length} `;

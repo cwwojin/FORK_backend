@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+
 const { nodeMailConfig, mailTemplate } = require('../config/email');
 const { generateRandomCode } = require('../helper/helper');
 

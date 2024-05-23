@@ -1,7 +1,7 @@
 const { Router } = require('express');
-const router = Router();
-const reviewController = require('../controllers/reviewController');
 const { body, param, query } = require('express-validator');
+
+const reviewController = require('../controllers/reviewController');
 const { validatorChecker } = require('../middleware/validator');
 const { s3Uploader } = require('../helper/s3Engine');
 const {
@@ -11,6 +11,8 @@ const {
     validateIntArray,
 } = require('../helper/helper');
 const { checkPermission } = require('../middleware/authMiddleware');
+
+const router = Router();
 
 /** Router for "/api/reviews" */
 router
