@@ -1,22 +1,22 @@
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
-const { BCRYPT_SALTROUNDS } = require("../helper/helper");
-const db = require("../models/index");
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+
+const db = require('../models/index');
 
 const validateAccount = async (userId, password) => {
     const { rows } = await db.query({
         text: `select id, account_id, password, user_type from "user" where account_id = $1`,
         values: [userId],
     });
-    if(!rows || rows.length === 0) throw ({status: 401, message: `Invalid user ID`});
+    if (!rows || rows.length === 0) throw { status: 401, message: `Invalid user ID` };
     const pwMatch = await bcrypt.compare(password, rows[0].password);
-    if(!pwMatch) throw ({status: 401, message: `Invalid password`});
+    if (!pwMatch) throw { status: 401, message: `Invalid password` };
 
     return rows[0];
 };
 
 module.exports = {
-    /** 
+    /**
      * login : attempt to log in with account-ID & password
      * SUCCESS -> create token
      */
@@ -25,14 +25,14 @@ module.exports = {
         const payload = await validateAccount(userId, password);
         const token = jwt.sign(
             {
-                "id": payload.id,
-                "accountId": payload.account_id,
-                "userType": payload.user_type,
-            }, 
+                id: payload.id,
+                accountId: payload.account_id,
+                userType: payload.user_type,
+            },
             process.env.JWT_SECRET,
-            { expiresIn: "1h" },    // set expiration time
+            { expiresIn: '1h' } // set expiration time
         );
-        return `Bearer ${token}`;   // for Bearer authentication
+        return `Bearer ${token}`; // for Bearer authentication
     },
     /** logout : remove user's access token */
-}
+};

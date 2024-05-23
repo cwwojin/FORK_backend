@@ -1,5 +1,5 @@
-const db = require("../models/index");
-const reviewService = require("./reviewService");
+const db = require('../models/index');
+const reviewService = require('./reviewService');
 
 module.exports = {
     /** get report by id */
@@ -11,28 +11,28 @@ module.exports = {
         const result = await db.query(query);
         return result.rows;
     },
-    /** get report by query 
+    /** get report by query
      * (args) authorId, type, status
-    */
+     */
     getReportByQuery: async (args) => {
         const authorId = args.user;
-        let values = [];
+        const values = [];
         let baseQuery = `select * from report where 1=1 `;
-        if(authorId !== undefined){
+        if (authorId !== undefined) {
             values.push(authorId);
             baseQuery = baseQuery + `and author_id = $${values.length} `;
         }
-        if(args.type !== undefined){
+        if (args.type !== undefined) {
             values.push(args.type);
             baseQuery = baseQuery + `and type = $${values.length} `;
         }
-        if(args.status !== undefined){
+        if (args.status !== undefined) {
             values.push(args.status);
             baseQuery = baseQuery + `and status = $${values.length} `;
         }
         const result = await db.query({
             text: baseQuery + `order by created_at desc`,
-            values: values
+            values: values,
         });
         return result.rows;
     },
@@ -41,12 +41,7 @@ module.exports = {
         const query = {
             text: `insert into report (author_id, type, content, review_id) 
                 values ($1, $2, $3, $4) returning *`,
-            values: [
-                body.authorId,
-                body.type,
-                body.content,
-                body.reviewId,
-            ],
+            values: [body.authorId, body.type, body.content, body.reviewId],
         };
         const result = await db.query(query);
         return result.rows;
@@ -60,8 +55,8 @@ module.exports = {
         const result = await db.query(query);
         return result.rows;
     },
-    /** 
-     * handle report - accept a report and perform follow-up action 
+    /**
+     * handle report - accept a report and perform follow-up action
      * - (param) id
      * - (body) admin_id, action ("delete", etc.)
      *  1. update report -> set status = 1, admin_id, respond_date, action
@@ -69,36 +64,30 @@ module.exports = {
      * */
     handleReport: async (id, body) => {
         const report = await module.exports.getReport(id);
-        if(report.length === 0 || report[0]['status'] !== 0){
-            throw ({status: 409, message: `Report doesn't exists or is already accepted : ${id}`});
+        if (report.length === 0 || report[0]['status'] !== 0) {
+            throw { status: 409, message: `Report doesn't exists or is already accepted : ${id}` };
         }
         const reviewId = report[0]['review_id'];
-        try{
+        try {
             await db.query('BEGIN');
             let result = await db.query({
                 text: `update report 
                     set status = $1, action = $2, admin_id = $3, respond_date = now()
                     where id = $4 returning *`,
-                values: [
-                    1,
-                    body.action,
-                    body.adminId,
-                    id,
-                ]
+                values: [1, body.action, body.adminId, id],
             });
             result = {
                 report: result.rows[0],
             };
-            if(body.action === 'delete'){
+            if (body.action === 'delete') {
                 const deleteResult = await reviewService.deleteReview(reviewId);
                 result.deleteRows = deleteResult;
             }
             await db.query('COMMIT');
             return result;
-        }catch(err){
+        } catch (err) {
             await db.query('ROLLBACK');
             throw new Error(err);
         }
     },
-
-}
+};
