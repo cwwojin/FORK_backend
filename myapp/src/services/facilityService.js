@@ -902,7 +902,7 @@ class FacilityService {
      * - (args) preferences : filter by list of preferences
      */
     async getTrendingFacilities(args) {
-        let values = [];
+        const values = [];
         let baseQuery = `select fp.* from facility_pin fp where fp.avg_score is not null `;
         if (args.preferences && args.preferences.length !== 0) {
             values.push(args.preferences);

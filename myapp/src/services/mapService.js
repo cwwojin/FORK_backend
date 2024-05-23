@@ -4,7 +4,7 @@ const { parseBoolean } = require('../helper/helper');
 module.exports = {
     /** get location by facility id */
     getLocation: async (id) => {
-        query = {
+        const query = {
             text: `select * from facility_pin where id = $1`,
             values: [id],
         };
@@ -18,7 +18,7 @@ module.exports = {
      * - return (id, name, slug, lat, lng, avg_score) for each row
      * */
     getLocationByArea: async (latMin, lngMin, latMax, lngMax) => {
-        query = {
+        const query = {
             text: `select fpa.* from facility_pin fpa
                 where lat between $1 and $2
                 and lng between $3 and $4`,
@@ -32,7 +32,7 @@ module.exports = {
      * name is searched as case-insensitive substring search
      */
     getLocationByQuery: async (args) => {
-        let values = [];
+        const values = [];
         let baseQuery = `select 
                             fpe.id,
                             fpe.name,

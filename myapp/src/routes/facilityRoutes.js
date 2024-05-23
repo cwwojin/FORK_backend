@@ -1,6 +1,7 @@
 const { Router } = require('express');
-const facilityController = require('../controllers/facilityController');
 const { body, param, query } = require('express-validator');
+
+const facilityController = require('../controllers/facilityController');
 const { validatorChecker } = require('../middleware/validator');
 const { s3Uploader } = require('../helper/s3Engine');
 const { checkPermission } = require('../middleware/authMiddleware');

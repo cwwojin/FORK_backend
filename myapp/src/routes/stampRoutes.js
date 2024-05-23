@@ -1,10 +1,12 @@
 const { Router } = require('express');
-const router = Router();
-const stampController = require('../controllers/stampController');
 const { body, param, query } = require('express-validator');
+
+const stampController = require('../controllers/stampController');
 const { validatorChecker } = require('../middleware/validator');
 const { TRANSACTION_TYPES } = require('../helper/helper');
 const { checkPermission } = require('../middleware/authMiddleware');
+
+const router = Router();
 
 router
     .get(

@@ -17,7 +17,7 @@ module.exports = {
      */
     getReportByQuery: async (args) => {
         const authorId = args.user;
-        let values = [];
+        const values = [];
         let baseQuery = `select * from report where 1=1 `;
         if (authorId !== undefined) {
             values.push(authorId);
@@ -103,7 +103,7 @@ module.exports = {
 
     /** get all facility registration requests */
     getAllFacilityRegistrationRequests: async (args) => {
-        let values = [];
+        const values = [];
         let baseQuery = `SELECT * FROM facility_registration_request WHERE 1=1 `;
         if (args.authorId !== undefined) {
             values.push(args.authorId);

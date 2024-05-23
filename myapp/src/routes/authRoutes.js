@@ -1,10 +1,12 @@
 const { Router } = require('express');
-const router = Router();
-const authController = require('../controllers/authController');
 const { body, param, query } = require('express-validator');
+
+const authController = require('../controllers/authController');
 const { validatorChecker } = require('../middleware/validator');
 const { checkPermission } = require('../middleware/authMiddleware');
 const { USER_TYPES, validateUserId, validatePassword } = require('../helper/helper');
+
+const router = Router();
 
 router
     .post(
