@@ -4,11 +4,13 @@ const adminController = require('../controllers/adminController');
 const { body, param, query } = require('express-validator');
 const { validatorChecker } = require('../middleware/validator');
 const { REPORT_TYPES, REPORT_STATUS } = require('../helper/helper');
+const { checkPermission } = require('../middleware/authMiddleware');
 
 router
     .get(
         // GET : get report by id
         '/reports/:id',
+        checkPermission([0]),
         [
             param('id', `route param 'id' must be a positive integer`).exists().isInt({ min: 1 }),
             validatorChecker,
@@ -18,6 +20,7 @@ router
     .get(
         // GET : get report by query - author_id, type, status
         '/reports',
+        checkPermission([0]),
         [
             query('user', `optional query field 'user' must be a positive integer`)
                 .optional()
@@ -35,6 +38,7 @@ router
     .post(
         // POST : create a report
         '/reports/upload',
+        checkPermission([0, 1, 2]),
         [
             body('authorId', `body field 'authorId' must be a positive integer`)
                 .exists()
@@ -53,6 +57,7 @@ router
     .delete(
         // DELETE : delete a report
         '/reports/delete/:id',
+        checkPermission([0]),
         [
             param('id', `route param 'id' must be a positive integer`).exists().isInt({ min: 1 }),
             validatorChecker,
@@ -62,6 +67,7 @@ router
     .post(
         // POST : handle report and perform follow-up action
         '/reports/handle/:id',
+        checkPermission([0]),
         [
             param('id', `route param 'id' must be a positive integer`).exists().isInt({ min: 1 }),
             body('adminId', `body field 'adminId' must be a positive integer`)

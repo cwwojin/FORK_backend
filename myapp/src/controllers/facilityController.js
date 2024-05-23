@@ -35,14 +35,7 @@ module.exports = {
                 data: facility,
             });
         } catch (err) {
-            if (err.status === 404) {
-                res.status(404).json({
-                    status: 'fail',
-                    message: err.message,
-                });
-            } else {
-                next(err);
-            }
+            next(err);
         }
     },
 
@@ -54,14 +47,7 @@ module.exports = {
                 data: facility,
             });
         } catch (err) {
-            if (err.status === 404) {
-                res.status(404).json({
-                    status: 'fail',
-                    message: err.message,
-                });
-            } else {
-                next(err);
-            }
+            next(err);
         }
     },
 

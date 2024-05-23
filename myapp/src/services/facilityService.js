@@ -3,25 +3,20 @@ const { removeS3File } = require('../helper/s3Engine');
 
 class FacilityService {
     async getAllFacilities() {
-        const query = 'SELECT * FROM facility_address_avgscore ORDER BY id ASC';
+        const query = 'SELECT * FROM facility_detailed ORDER BY id ASC';
         const { rows } = await db.query(query);
         return rows;
     }
 
     async getFacilityById(id) {
-        const query = 'SELECT * FROM facility_address_avgscore WHERE id = $1';
+        const query = 'SELECT * FROM facility_detailed WHERE id = $1';
         const { rows } = await db.query(query, [id]);
         if (rows.length === 0)
             throw {
                 status: 404,
                 message: 'Facility not found',
             };
-        const facility = rows[0];
-        facility.openingHours = await this.getOpeningHoursByFacilityId(id);
-        facility.menu = await this.getMenuByFacilityId(id);
-        // facility.posts = await this.getPostsByFacilityId(id);
-
-        return facility;
+        return rows[0];
     }
 
     async createFacility(data) {
@@ -200,14 +195,14 @@ class FacilityService {
         `;
                 updateValues.push(id);
                 const facilityResult = await client.query(query, updateValues);
-                const updatedFacility = facilityResult.rows[0];
+                const facility = facilityResult.rows[0];
 
                 if (data.address) {
-                    updatedFacility.address = await this.insertAddress(client, id, data.address);
+                    facility.address = await this.insertAddress(client, id, data.address);
                 }
 
                 if (data.openingHours) {
-                    updatedFacility.openingHours = await this.insertOpeningHours(
+                    facility.openingHours = await this.insertOpeningHours(
                         client,
                         id,
                         data.openingHours
@@ -215,11 +210,11 @@ class FacilityService {
                 }
 
                 if (data.menu) {
-                    updatedFacility.menu = await this.insertMenuItems(client, id, data.menu);
+                    facility.menu = await this.insertMenuItems(client, id, data.menu);
                 }
 
                 await client.query('COMMIT');
-                return updatedFacility;
+                return facility;
             } else {
                 throw {
                     status: 404,

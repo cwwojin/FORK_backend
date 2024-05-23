@@ -138,6 +138,18 @@ module.exports = {
             next(err);
         }
     },
+    /** check if a facility is a user's favorite */
+    isUserFavorite: async (req, res, next) => {
+        try {
+            const result = await userService.isUserFavorite(req.params.user, req.params.facility);
+            res.status(200).json({
+                status: 'success',
+                data: result,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
     // add a favorite
     addUserFavorite: async (req, res, next) => {
         const id = Number(req.params.id);

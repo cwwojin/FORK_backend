@@ -10,6 +10,7 @@ const {
     validateHashtagArray,
     validateIntArray,
 } = require('../helper/helper');
+const { checkPermission } = require('../middleware/authMiddleware');
 
 /** Router for "/api/reviews" */
 router
@@ -47,6 +48,7 @@ router
     .post(
         // POST : create review w/ image attachment (up to 1 file)
         '/upload',
+        checkPermission([0, 1]),
         s3Uploader.single('image'),
         [
             body('authorId', `body field 'authorId' must be a positive integer`)
@@ -69,6 +71,7 @@ router
     .post(
         // POST : edit review contents - content, hashtags
         '/:id',
+        checkPermission([0, 1]),
         [
             param('id', `route param 'id' must be a positive integer`).exists().isInt({ min: 1 }),
             body('content', `body field 'content' must be string`).exists().isString(),
@@ -84,7 +87,9 @@ router
         reviewController.updateReview
     )
     .delete(
+        // DELETE : delete a review
         '/:id',
+        checkPermission([0, 1]),
         [
             param('id', `route param 'id' must be a postive integer`).exists().isInt({ min: 1 }),
             validatorChecker,

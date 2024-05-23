@@ -1,8 +1,9 @@
 const { Router } = require('express');
 const facilityController = require('../controllers/facilityController');
-const { body, param } = require('express-validator');
+const { body, param, check } = require('express-validator');
 const { validatorChecker } = require('../middleware/validator');
 const { s3Uploader } = require('../helper/s3Engine');
+const { checkPermission } = require('../middleware/authMiddleware');
 const { validateOptionalURL } = require('../helper/helper');
 
 const router = Router();
@@ -21,6 +22,7 @@ router.get(
 // to be commented later
 router.post(
     '/', // POST: create a new facility
+    checkPermission([0]),
     [
         body('name').exists().isString().withMessage('Name is required'),
         body('businessId').exists().notEmpty().withMessage('Business ID is required'),
@@ -69,6 +71,7 @@ router.put(
 
 router.delete(
     '/:id', // DELETE : delete a facility
+    checkPermission([0]),
     [param('id').isNumeric().withMessage('Valid ID is required'), validatorChecker],
     facilityController.deleteFacility
 );
@@ -83,6 +86,7 @@ router.get(
 
 router.post(
     '/:facilityId/address', // POST : add or update address for a facility
+    checkPermission([0, 2]),
     [
         param('facilityId').isNumeric().withMessage('Valid Facility ID is required'),
         body('postNumber').exists().isString().withMessage('Post number is required'),
@@ -100,6 +104,7 @@ router.post(
 
 router.delete(
     '/:facilityId/address', // DELETE : delete address for a facility
+    checkPermission([0, 2]),
     [
         param('facilityId').isNumeric().withMessage('Valid Facility ID is required'),
         validatorChecker,
@@ -117,6 +122,7 @@ router.get(
 );
 router.post(
     '/:facilityId/opening-hours', // POST : add opening hours for a facility
+    checkPermission([0, 2]),
     [
         param('facilityId').isNumeric().withMessage('Valid Facility ID is required'),
         body('day')
@@ -132,6 +138,7 @@ router.post(
 );
 router.delete(
     '/:facilityId/opening-hours', // DELETE : delete opening hours for a facility
+    checkPermission([0, 2]),
     [
         param('facilityId').isNumeric().withMessage('Valid Facility ID is required'),
         validatorChecker,
@@ -158,6 +165,7 @@ router.get(
 );
 router.post(
     '/:facilityId/menu', // POST : create menu for a facility
+    checkPermission([0, 2]),
     [
         param('facilityId').isNumeric().withMessage('Valid Facility ID is required'),
         body().isArray().withMessage('Menu data should be an array'),
@@ -172,6 +180,7 @@ router.post(
 
 router.put(
     '/:facilityId/menu/:menuId', // PUT: update menu item with menuId
+    checkPermission([0, 2]),
     [
         param('facilityId').isNumeric().withMessage('Valid Facility ID is required'),
         param('menuId').isNumeric().withMessage('Valid Menu ID is required'),
@@ -185,6 +194,7 @@ router.put(
 );
 router.delete(
     '/:facilityId/menu/:menuId', // DELETE: delete menu item of specified menuId
+    checkPermission([0, 2]),
     [
         param('facilityId').isNumeric().withMessage('Valid Facility ID is required'),
         param('menuId').isNumeric().withMessage('Valid Menu ID is required'),
@@ -214,6 +224,7 @@ router.get(
 
 router.post(
     '/:facilityId/post', // POST : create a new post for a facility
+    checkPermission([0, 2]),
     s3Uploader.single('image'),
     [
         param('facilityId').isNumeric().withMessage('Valid Facility ID is required'),
@@ -227,6 +238,7 @@ router.post(
 
 router.put(
     '/:facilityId/post/:postId', // PUT : update a post for a facility
+    checkPermission([0, 2]),
     [
         param('facilityId').isNumeric().withMessage('Valid Facility ID is required'),
         param('postId').isNumeric().withMessage('Valid Post ID is required'),
@@ -239,6 +251,7 @@ router.put(
 
 router.delete(
     '/:facilityId/post/:postId', // DELETE : delete a post for a facility
+    checkPermission([0, 2]),
     [
         param('facilityId').isNumeric().withMessage('Valid Facility ID is required'),
         param('postId').isNumeric().withMessage('Valid Post ID is required'),
@@ -258,6 +271,7 @@ router.get(
 
 router.post(
     '/:facilityId/stamp-ruleset', // POST: create stamp-ruleset
+    checkPermission([0, 2]),
     [
         param('facilityId').isNumeric().withMessage('Valid Facility ID is required'),
         body('totalCnt').isNumeric().withMessage('Total count is required'),
@@ -271,6 +285,7 @@ router.post(
 
 router.put(
     '/:facilityId/stamp-ruleset', // PUT: update existing stamp-ruleset
+    checkPermission([0, 2]),
     [
         param('facilityId').isNumeric().withMessage('Valid Facility ID is required'),
         body('totalCnt').isNumeric().withMessage('Total count is required'),
@@ -283,6 +298,7 @@ router.put(
 
 router.post(
     '/:facilityId/stamp-rewards', // POST: add stamp-reward
+    checkPermission([0, 2]),
     [
         param('facilityId').isNumeric().withMessage('Valid Facility ID is required'),
         body('cnt').isNumeric().withMessage('Count is required'),
@@ -294,6 +310,7 @@ router.post(
 
 router.put(
     '/:facilityId/stamp-rewards/:rewardId', // PUT: update existing stamp-reward
+    checkPermission([0, 2]),
     [
         param('facilityId').isNumeric().withMessage('Valid Facility ID is required'),
         param('rewardId').isNumeric().withMessage('Valid Reward ID is required'),
@@ -306,6 +323,7 @@ router.put(
 
 router.delete(
     '/:facilityId/stamp-rewards/:rewardId', // DELETE : delete stamp-reward with specified rewardId
+    checkPermission([0, 2]),
     [
         param('facilityId').isNumeric().withMessage('Valid Facility ID is required'),
         param('rewardId').isNumeric().withMessage('Valid Reward ID is required'),
@@ -325,6 +343,7 @@ router.get(
 
 router.post(
     '/:facilityId/preferences', // POST : add a preference to a facility
+    checkPermission([0, 2]),
     [
         param('facilityId').isNumeric().withMessage('Valid Facility ID is required'),
         body('preferenceId').isNumeric().withMessage('Valid Preference ID is required'),
@@ -335,6 +354,7 @@ router.post(
 
 router.delete(
     '/:facilityId/preferences/:preferenceId', // DELETE : remove a preference from a facility
+    checkPermission([0, 2]),
     [
         param('facilityId').isNumeric().withMessage('Valid Facility ID is required'),
         param('preferenceId').isNumeric().withMessage('Valid Preference ID is required'),
@@ -348,6 +368,7 @@ router
     .post(
         // POST : upload facility profile image
         '/:id/profile/image',
+        checkPermission([0, 2]),
         s3Uploader.single('image'),
         [
             param('id', `route param 'id' must be a positive integer`).exists().isInt({ min: 1 }),
@@ -358,6 +379,7 @@ router
     .delete(
         // DELETE : delete facility profile image
         '/:id/profile/image',
+        checkPermission([0, 2]),
         [
             param('id', `route param 'id' must be a positive integer`).exists().isInt({ min: 1 }),
             validatorChecker,
@@ -367,6 +389,7 @@ router
     .post(
         // POST : upload stamp logo image
         '/:id/stamp-ruleset/logo',
+        checkPermission([0, 2]),
         s3Uploader.single('image'),
         [
             param('id', `route param 'id' must be a positive integer`).exists().isInt({ min: 1 }),
@@ -377,6 +400,7 @@ router
     .delete(
         // DELETE : delete stamp logo image
         '/:id/stamp-ruleset/logo',
+        checkPermission([0, 2]),
         [
             param('id', `route param 'id' must be a positive integer`).exists().isInt({ min: 1 }),
             validatorChecker,
@@ -386,6 +410,7 @@ router
     .post(
         // POST : upload menu image
         '/:facilityId/menu/:menuId/image',
+        checkPermission([0, 2]),
         s3Uploader.single('image'),
         [
             param('facilityId', `route param 'facilityId' must be a positive integer`)
@@ -401,6 +426,7 @@ router
     .delete(
         // DELETE : delete menu image
         '/:facilityId/menu/:menuId/image',
+        checkPermission([0, 2]),
         [
             param('facilityId', `route param 'facilityId' must be a positive integer`)
                 .exists()

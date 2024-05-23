@@ -1,4 +1,6 @@
+const bcrypt = require('bcrypt');
 const db = require('../models/index');
+const { BCRYPT_SALTROUNDS } = require('../helper/helper');
 const { removeS3File } = require('../helper/s3Engine');
 const facilityService = require('./facilityService');
 
@@ -8,7 +10,7 @@ module.exports = {
      * - (args) account_id, user_type
      * */
     getUsers: async (args) => {
-        let baseQuery = `select * from "user" where 1=1 `;
+        let baseQuery = `select id, account_id, user_type, email, profile_img_uri, register_date from "user" where 1=1 `;
         let values = [];
         if (args.accountId !== undefined) {
             values.push(args.accountId);
@@ -17,6 +19,10 @@ module.exports = {
         if (args.type !== undefined) {
             values.push(args.type);
             baseQuery = baseQuery + `and user_type = $${values.length} `;
+        }
+        if (args.email !== undefined) {
+            values.push(args.email);
+            baseQuery = baseQuery + `and email = $${values.length} `;
         }
         const query = {
             text: baseQuery,
@@ -28,7 +34,7 @@ module.exports = {
     // get user by id
     getUserById: async (id) => {
         const query = {
-            text: 'select * from "user" where id = $1',
+            text: 'select id, account_id, user_type, email, profile_img_uri, register_date from "user" where id = $1',
             values: [id],
         };
         const result = await db.query(query);
@@ -36,18 +42,20 @@ module.exports = {
     },
     // create new user
     createUser: async (info) => {
+        const passwordHash = await bcrypt.hash(info.password, BCRYPT_SALTROUNDS);
         const query = {
             text: 'insert into "user" (account_id, user_type, password, email) values ($1, $2, $3, $4) returning *',
-            values: [info.userId, info.userType, info.password, info.email],
+            values: [info.userId, info.userType, passwordHash, info.email],
         };
         const result = await db.query(query);
         return result.rows;
     },
     // update user - profile (password, email, display_name)
     updateUserProfile: async (info, id) => {
+        const passwordHash = await bcrypt.hash(info.password, BCRYPT_SALTROUNDS);
         const query = {
             text: 'update "user" set password = $1, email = $2 where id = $3 returning *',
-            values: [info.password, info.email, id],
+            values: [passwordHash, info.email, id],
         };
         const result = await db.query(query);
         return result.rows;
@@ -93,7 +101,7 @@ module.exports = {
         const result = await db.query(query);
         return result.rows;
     },
-    // get user favorites
+    /** get user favorites*/
     getUserFavorite: async (id) => {
         const query = {
             text: `select f.* from favorite fv 
@@ -104,6 +112,16 @@ module.exports = {
         };
         const result = await db.query(query);
         return result.rows;
+    },
+    /** check if a facility is in user's favorites. return boolean */
+    isUserFavorite: async (userId, facilityId) => {
+        const { rows } = await db.query({
+            text: `select * from favorite fv
+                where user_id = $1 and facility_id = $2`,
+            values: [userId, facilityId],
+        });
+        const result = rows.length !== 0;
+        return result;
     },
     // add a favorite to user (if it isn't already added)
     addUserFavorite: async (userId, facilityId) => {
@@ -166,6 +184,7 @@ module.exports = {
         const result = await db.query(query);
         return result.rows;
     },
+};
 
     // Get my facilities with id
     getMyFacility: async (id) => {

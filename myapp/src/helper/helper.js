@@ -1,7 +1,10 @@
 const userNamePattern = new RegExp('^[a-zA-Z0-9._-]+$');
 const passwordPattern = new RegExp('^[a-zA-Z0-9._-]+$');
+const KAISTMailPattern = new RegExp('@kaist.ac.kr$');
 
 module.exports = {
+    /** CONSTANTS */
+    BCRYPT_SALTROUNDS: 5,
     /** ENUM */
     USER_TYPES: [0, 1, 2],
     TRANSACTION_TYPES: [0, 1],
@@ -9,9 +12,9 @@ module.exports = {
     REPORT_STATUS: [0, 1],
     IMG_FILE_TYPES: ['png', 'jpg', 'jpeg', 'bmp', 'gif', 'webp', 'psd'],
     /** user type checks */
-    isAdmin: (user) => user.user_type === 0,
-    isKAISTUser: (user) => user.user_type === 1,
-    isFacilityUser: (user) => user.user_type === 2,
+    isAdmin: (headers) => headers.userType === 0,
+    isKAISTUser: (headers) => headers.userType === 1,
+    isFacilityUser: (headers) => headers.userType === 2,
     /** general helpers */
     parseBoolean: (string) => {
         return string === 'true' ? true : string === 'false' ? false : undefined;
@@ -29,6 +32,10 @@ module.exports = {
             Bucket: url.hostname,
             Key: url.pathname.startsWith('/') ? url.pathname.slice(1) : url.pathname,
         };
+    },
+    generateRandomCode: () => {
+        const num = Math.floor(Math.random() * 1000000);
+        return num.toString().padStart(6, '0');
     },
     /** request validation */
     validateUserId: (userId) => userNamePattern.test(userId),
@@ -58,4 +65,5 @@ module.exports = {
             return false;
         }
     },
+    validateKAISTMail: (email) => KAISTMailPattern.test(email),
 };
