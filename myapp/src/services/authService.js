@@ -90,12 +90,19 @@ module.exports = {
      * - accountId, userType, password, email
      */
     registerNewUser: async (args) => {
-        const users = await userService.getUsers({ accountId: args.userId });
+        // check duplicate with account-ID
+        let users;
+        users = await userService.getUsers({ accountId: args.userId });
         if(users.length !== 0)
             throw ({status: 409, message: `User with the same account-ID already exists`});
 
         switch(Number(args.userType)){
             case 1:
+                // check duplicate with userType and email
+                users = await userService.getUsers({ type: args.userType, email: args.email });
+                if(users.length !== 0)
+                    throw ({status: 409, message: `A KAIST User with the same email already exists`});
+
                 const authCode = await module.exports.sendVerificationMail(args.email);
                 const pending = await module.exports.insertPendingKAISTUser(args, authCode);
                 if(pending.length === 0)

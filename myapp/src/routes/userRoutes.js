@@ -15,6 +15,7 @@ router
         [
             query('accountId', `optional query field 'accountId' must be string`).optional().isString(),
             query('type', `optional query field 'type' must be one of ${USER_TYPES}`).optional().isIn(USER_TYPES),
+            query('email', `optional query field 'email' must be a valid email`).optional().isEmail(),
             validatorChecker,
         ],
         userController.getUsers
