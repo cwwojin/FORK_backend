@@ -184,8 +184,6 @@ module.exports = {
         const result = await db.query(query);
         return result.rows;
     },
-};
-
     // Get my facilities with id
     getMyFacility: async (id) => {
         const query = {
