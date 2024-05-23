@@ -1,24 +1,24 @@
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
-const { validateKAISTMail, BCRYPT_SALTROUNDS } = require("../helper/helper");
-const db = require("../models/index");
-const { sendAuthMail } = require("../helper/mailSender");
-const userService = require("./userService");
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const { validateKAISTMail, BCRYPT_SALTROUNDS } = require('../helper/helper');
+const db = require('../models/index');
+const { sendAuthMail } = require('../helper/mailSender');
+const userService = require('./userService');
 
 const validateAccount = async (userId, password) => {
     const { rows } = await db.query({
         text: `select id, account_id, password, user_type from "user" where account_id = $1`,
         values: [userId],
     });
-    if(!rows || rows.length === 0) throw ({status: 401, message: `Invalid user ID`});
+    if (!rows || rows.length === 0) throw { status: 401, message: `Invalid user ID` };
     const pwMatch = await bcrypt.compare(password, rows[0].password);
-    if(!pwMatch) throw ({status: 401, message: `Invalid password`});
+    if (!pwMatch) throw { status: 401, message: `Invalid password` };
 
     return rows[0];
 };
 
 module.exports = {
-    /** 
+    /**
      * login : attempt to log in with account-ID & password
      * SUCCESS -> create token
      */
@@ -26,44 +26,46 @@ module.exports = {
         const { userId, password } = body;
         const user = await validateAccount(userId, password);
         const payload = {
-            "id": user.id,
-            "accountId": user.account_id,
-            "userType": user.user_type,
+            id: user.id,
+            accountId: user.account_id,
+            userType: user.user_type,
         };
         const token = jwt.sign(
             payload,
             process.env.JWT_SECRET,
-            { expiresIn: "1d" },    // set expiration time
+            { expiresIn: '1d' } // set expiration time
         );
         return {
             token: `Bearer ${token}`,
             user: payload,
-        };   // for Bearer authentication
+        }; // for Bearer authentication
     },
-    /** 
+    /**
      * Send verification mail to KAIST user
      * 1. validate KAIST email
      * 2. send a verification mail containing 6-digit code
      * 3. return the 6-digit code to insert to DB
      */
     sendVerificationMail: async (email) => {
-        if(!validateKAISTMail(email))
-            throw ({ status: 400, message: "Not a valid KAIST email" });
+        if (!validateKAISTMail(email)) throw { status: 400, message: 'Not a valid KAIST email' };
         const { authCode } = await sendAuthMail(email);
         return authCode;
     },
     /** re-send verification mail & update pending_kaist_user */
     reSendVerificationMail: async (userId) => {
-        try{
+        try {
             await db.query('BEGIN');
             const { rows } = await db.query({
                 text: `select * from pending_kaist_user where account_id = $1`,
                 values: [userId],
             });
-            if(rows.length === 0)
-                throw ({status: 404, message: `No pending KAIST user found. Please try registration again`});
+            if (rows.length === 0)
+                throw {
+                    status: 404,
+                    message: `No pending KAIST user found. Please try registration again`,
+                };
             const pendingUser = rows[0];
-    
+
             // send verification mail & get code again
             const authCode = await module.exports.sendVerificationMail(pendingUser.email);
             const hash = await bcrypt.hash(authCode, BCRYPT_SALTROUNDS);
@@ -74,12 +76,15 @@ module.exports = {
                     returning email`,
                 values: [hash, pendingUser.id],
             });
-            if(result.rows.length === 0)
-                throw ({status: 404, message: `No pending KAIST user found or record was not updated. Please try registration again`});
+            if (result.rows.length === 0)
+                throw {
+                    status: 404,
+                    message: `No pending KAIST user found or record was not updated. Please try registration again`,
+                };
 
             await db.query('COMMIT');
             return result.rows;
-        }catch(err){
+        } catch (err) {
             await db.query('ROLLBACK');
             throw err;
         }
@@ -97,25 +102,28 @@ module.exports = {
         // check duplicate with account-ID
         let users;
         users = await userService.getUsers({ accountId: args.userId });
-        if(users.length !== 0)
-            throw ({status: 409, message: `User with the same account-ID already exists`});
+        if (users.length !== 0)
+            throw { status: 409, message: `User with the same account-ID already exists` };
 
-        switch(Number(args.userType)){
+        switch (Number(args.userType)) {
             case 1:
                 // check duplicate with userType and email
                 users = await userService.getUsers({ type: args.userType, email: args.email });
-                if(users.length !== 0)
-                    throw ({status: 409, message: `A KAIST User with the same email already exists`});
+                if (users.length !== 0)
+                    throw {
+                        status: 409,
+                        message: `A KAIST User with the same email already exists`,
+                    };
 
                 const authCode = await module.exports.sendVerificationMail(args.email);
                 const pending = await module.exports.insertPendingKAISTUser(args, authCode);
-                if(pending.length === 0)
-                    throw ({status: 404, message: `Couldn't cache KAIST user info`});
+                if (pending.length === 0)
+                    throw { status: 404, message: `Couldn't cache KAIST user info` };
                 return { type: 1, user: pending[0] };
             case 2:
                 const result = await userService.createUser(args);
-                if(result.length === 0)
-                    throw ({status: 404, message: `Couldn't insert facility user`});
+                if (result.length === 0)
+                    throw { status: 404, message: `Couldn't insert facility user` };
                 return { type: 2, user: result[0] };
         }
     },
@@ -130,13 +138,7 @@ module.exports = {
                 on conflict on constraint pending_kaist_user_account_id_key do update
                 set password = $3, email = $4, auth_code = $5
                 returning id, account_id`,
-            values: [
-                info.userId, 
-                info.userType,
-                info.password,
-                info.email,
-                hash,
-            ],
+            values: [info.userId, info.userType, info.password, info.email, hash],
         });
         return rows;
     },
@@ -145,21 +147,23 @@ module.exports = {
      * - if successful, insert user into DB & return user info
      */
     verifyKAISTUser: async (args) => {
-        try{
+        try {
             await db.query('BEGIN');
             const { rows } = await db.query({
                 text: `select * from pending_kaist_user where account_id = $1`,
                 values: [args.userId],
             });
-            if(rows.length === 0)
-                throw ({status: 404, message: `No pending KAIST user found. Please try registration again`});
+            if (rows.length === 0)
+                throw {
+                    status: 404,
+                    message: `No pending KAIST user found. Please try registration again`,
+                };
             const pendingUser = rows[0];
-    
+
             // verify code
             const codeMatch = await bcrypt.compare(args.code, pendingUser.auth_code);
-            if(!codeMatch)
-                throw ({status: 403, message: `Verification code does not match`});
-    
+            if (!codeMatch) throw { status: 403, message: `Verification code does not match` };
+
             // create new KAIST user
             const result = await userService.createUser({
                 userId: pendingUser.account_id,
@@ -173,13 +177,12 @@ module.exports = {
                 text: `delete from pending_kaist_user where id = $1`,
                 values: [pendingUser.id],
             });
-    
+
             await db.query('COMMIT');
             return result;
-        }catch(err){
+        } catch (err) {
             await db.query('ROLLBACK');
             throw err;
         }
     },
-
-}
+};

@@ -1,25 +1,25 @@
-const bcrypt = require("bcrypt");
-const db = require("../models/index");
-const { BCRYPT_SALTROUNDS } = require("../helper/helper");
-const { removeS3File } = require("../helper/s3Engine");
+const bcrypt = require('bcrypt');
+const db = require('../models/index');
+const { BCRYPT_SALTROUNDS } = require('../helper/helper');
+const { removeS3File } = require('../helper/s3Engine');
 
 module.exports = {
-    /** 
-     * get user by query 
+    /**
+     * get user by query
      * - (args) account_id, user_type
      * */
     getUsers: async (args) => {
         let baseQuery = `select id, account_id, user_type, email, profile_img_uri, register_date from "user" where 1=1 `;
         let values = [];
-        if(args.accountId !== undefined){
+        if (args.accountId !== undefined) {
             values.push(args.accountId);
             baseQuery = baseQuery + `and account_id = $${values.length} `;
         }
-        if(args.type !== undefined){
+        if (args.type !== undefined) {
             values.push(args.type);
             baseQuery = baseQuery + `and user_type = $${values.length} `;
         }
-        if(args.email !== undefined){
+        if (args.email !== undefined) {
             values.push(args.email);
             baseQuery = baseQuery + `and email = $${values.length} `;
         }
@@ -44,12 +44,7 @@ module.exports = {
         const passwordHash = await bcrypt.hash(info.password, BCRYPT_SALTROUNDS);
         const query = {
             text: 'insert into "user" (account_id, user_type, password, email) values ($1, $2, $3, $4) returning *',
-            values: [
-                info.userId,
-                info.userType,
-                passwordHash,
-                info.email,
-            ]
+            values: [info.userId, info.userType, passwordHash, info.email],
         };
         const result = await db.query(query);
         return result.rows;
@@ -59,11 +54,7 @@ module.exports = {
         const passwordHash = await bcrypt.hash(info.password, BCRYPT_SALTROUNDS);
         const query = {
             text: 'update "user" set password = $1, email = $2 where id = $3 returning *',
-            values: [
-                passwordHash,
-                info.email,
-                id,
-            ]
+            values: [passwordHash, info.email, id],
         };
         const result = await db.query(query);
         return result.rows;
@@ -75,7 +66,7 @@ module.exports = {
             values: [id],
         };
         const result = await db.query(query);
-        if(result.rows.length !== 0 && result.rows[0].profile_img_uri){
+        if (result.rows.length !== 0 && result.rows[0].profile_img_uri) {
             await removeS3File(result.rows[0].profile_img_uri);
         }
         return result.rows;
@@ -85,7 +76,7 @@ module.exports = {
         const query = {
             text: 'select p.* from user_preference up join "user" u on up.user_id = u.id join preference p on up.preference_id = p.id where up.user_id = $1',
             values: [id],
-        }
+        };
         const result = await db.query(query);
         return result.rows;
     },
@@ -96,7 +87,7 @@ module.exports = {
                 on conflict on constraint user_preference_pkey do nothing
                 returning *`,
             values: [userId, preferenceId],
-        }
+        };
         const result = await db.query(query);
         return result.rows;
     },
@@ -105,7 +96,7 @@ module.exports = {
         const query = {
             text: `delete from user_preference where user_id = $1 and preference_id = $2 returning *`,
             values: [userId, preferenceId],
-        }
+        };
         const result = await db.query(query);
         return result.rows;
     },
@@ -117,7 +108,7 @@ module.exports = {
                 join facility f on fv.facility_id = f.id
                 where fv.user_id = $1`,
             values: [id],
-        }
+        };
         const result = await db.query(query);
         return result.rows;
     },
@@ -128,7 +119,7 @@ module.exports = {
                 where user_id = $1 and facility_id = $2`,
             values: [userId, facilityId],
         });
-        const result = (rows.length !== 0);
+        const result = rows.length !== 0;
         return result;
     },
     // add a favorite to user (if it isn't already added)
@@ -138,7 +129,7 @@ module.exports = {
                 on conflict on constraint favorite_pkey do nothing
                 returning *`,
             values: [userId, facilityId],
-        }
+        };
         const result = await db.query(query);
         return result.rows;
     },
@@ -147,21 +138,21 @@ module.exports = {
         const query = {
             text: `delete from favorite where user_id = $1 and facility_id = $2 returning *`,
             values: [userId, facilityId],
-        }
+        };
         const result = await db.query(query);
         return result.rows;
     },
-    /** 
+    /**
      * upload / update a user profile image
      * 1. if user already has a profile image, delete file from S3
      * 2. update user 'profile_img_uri'
      * */
     uploadUserProfileImage: async (id, imageUri) => {
         const user = await module.exports.getUserById(id);
-        if(user.length === 0){ 
-            throw ({status: 404, message: `No user with id: ${id}`});
+        if (user.length === 0) {
+            throw { status: 404, message: `No user with id: ${id}` };
         }
-        if(user[0].profile_img_uri){
+        if (user[0].profile_img_uri) {
             await removeS3File(user[0].profile_img_uri);
         }
         const result = await db.query({
@@ -192,5 +183,4 @@ module.exports = {
         const result = await db.query(query);
         return result.rows;
     },
-
-}
+};

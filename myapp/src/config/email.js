@@ -10,8 +10,7 @@ module.exports = {
         auth: {
             user: process.env.NODEMAIL_USER,
             pass: process.env.NODEMAIL_PASSWORD,
-        }
+        },
     },
     mailTemplate: verificationMailTemplate,
-
-}
+};
