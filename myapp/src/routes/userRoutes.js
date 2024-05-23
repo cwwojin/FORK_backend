@@ -7,6 +7,7 @@ const {
   USER_TYPES,
   validateUserId,
   validatePassword,
+  validateOptionalURL,
 } = require("../helper/helper");
 const { s3Uploader } = require("../helper/s3Engine");
 
@@ -236,7 +237,7 @@ router
         .exists()
         .isString()
         .withMessage("Description is required"),
-      body("url").exists().isURL().withMessage("Valid URL is required"),
+      body("url").exists().isString().custom(validateOptionalURL).withMessage("Valid URL is required"),
       body("phone", `body field 'phone' must be string`).exists().isString(),
       body("email", `body field 'email' must be string`).exists().isString(),
       /** optionally update address, opening-hours, menus, preferences */
