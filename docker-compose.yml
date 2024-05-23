@@ -7,6 +7,8 @@ services:
     build:
       dockerfile: ./Dockerfile
       target: dev
+    image: fork_dev
+    pull_policy: build
     restart: unless-stopped
     ports:
       - "80:3000"
@@ -21,6 +23,8 @@ services:
     build:
       dockerfile: ./Dockerfile
       target: test
+    image: fork_test
+    pull_policy: build
     restart: unless-stopped
     ports:
       - "80:3000"
@@ -35,6 +39,8 @@ services:
     build:
       dockerfile: ./Dockerfile
       target: prod
+    image: fork_prod
+    pull_policy: build
     restart: unless-stopped
     ports:
       - "80:3000"
