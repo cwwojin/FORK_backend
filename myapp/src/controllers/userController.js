@@ -249,4 +249,49 @@ module.exports = {
             next(err);
         }
     },
+    /** get my facilities */
+    getMyFacility: async (req, res, next) => {
+        try {
+            const facility = await userService.getMyFacility(req.params.id);
+            if (facility) {
+                res.status(200).json({ status: 'success', data: facility });
+            } else {
+                res.status(404).json({ status: 'fail', message: 'Facility not found' });
+            }
+        } catch (err) {
+            next(err);
+        }
+    },
+    /** update my facility by ID */
+    updateMyFacility: async (req, res, next) => {
+        try {
+            const facility = await userService.updateMyFacility(
+                req.params.user,
+                req.params.facility,
+                req.body
+            );
+            res.status(200).json({ status: 'success', data: facility });
+        } catch (err) {
+            next(err);
+        }
+    },
+    /** delete facility relationship */
+    deleteFacilityRelationship: async (req, res, next) => {
+        try {
+            const result = await userService.deleteFacilityRelationship(
+                req.params.id,
+                req.params.facilityId
+            );
+            if (result) {
+                res.status(200).json({ status: 'success', data: result });
+            } else {
+                res.status(404).json({
+                    status: 'fail',
+                    message: 'Facility for current user not found',
+                });
+            }
+        } catch (err) {
+            next(err);
+        }
+    },
 };

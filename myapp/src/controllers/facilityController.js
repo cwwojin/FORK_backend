@@ -500,4 +500,21 @@ module.exports = {
             next(err);
         }
     },
+    /** create facility registration request */
+    createFacilityRegistrationRequest: async (req, res, next) => {
+        try {
+            const { authorId, title, content } = req.body;
+            const request = await facilityService.createFacilityRegistrationRequest({
+                authorId,
+                title,
+                content,
+            });
+            res.status(201).json({
+                status: 'success',
+                data: request,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 };

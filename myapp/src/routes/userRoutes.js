@@ -3,7 +3,12 @@ const router = Router();
 const userController = require('../controllers/userController');
 const { body, param, query } = require('express-validator');
 const { validatorChecker } = require('../middleware/validator');
-const { USER_TYPES, validateUserId, validatePassword } = require('../helper/helper');
+const {
+    USER_TYPES,
+    validateUserId,
+    validatePassword,
+    validateOptionalURL,
+} = require('../helper/helper');
 const { s3Uploader } = require('../helper/s3Engine');
 const { checkPermission } = require('../middleware/authMiddleware');
 
@@ -189,6 +194,67 @@ router
             validatorChecker,
         ],
         userController.deleteUserProfileImage
+    )
+    .get(
+        '/:id/myfacility', // GET: get facility with id
+        [
+            param('id').exists().isInt({ min: 1 }).withMessage('Valid account ID is required'),
+            validatorChecker,
+        ],
+        userController.getMyFacility
+    )
+    .post(
+        // PUT: update facility with id
+        '/:user/myfacility/:facility',
+        [
+            param('user').exists().isInt({ min: 1 }).withMessage('Valid account ID is required'),
+            param('facility', `route param 'facility' must be a positive integer`)
+                .exists()
+                .isInt({ min: 1 }),
+            body('name').exists().isString().withMessage('Name is required'),
+            body('businessId').exists().isString().withMessage('Business ID is required'),
+            body('type').exists().isString().withMessage('Type is required'),
+            body('description').exists().isString().withMessage('Description is required'),
+            body('url')
+                .exists()
+                .isString()
+                .custom(validateOptionalURL)
+                .withMessage('Valid URL is required'),
+            body('phone', `body field 'phone' must be string`).exists().isString(),
+            body('email', `body field 'email' must be string`).exists().isString(),
+            /** optionally update address, opening-hours, menus, preferences */
+            body('address', `optional body field 'address' must be an object`)
+                .optional()
+                .isObject(),
+            body('openingHours', `optional body field 'openingHours' must be an array`)
+                .optional()
+                .isArray(),
+            body('menu', `optional body field 'menu' must be an array`).optional().isArray(),
+            body('preferences', `optional body field 'preferences' must be an array`)
+                .optional()
+                .isArray(),
+            body('stampRuleset', `optional body field 'stampRuleset' must be an object`)
+                .optional()
+                .isObject(),
+            body(
+                'stampRuleset.rewards',
+                `optional body field 'stampRuleset.rewards' must be an array`
+            )
+                .optional()
+                .isArray(),
+            validatorChecker,
+        ],
+        userController.updateMyFacility
+    )
+    .delete(
+        // DELETE: delete facility with id
+        '/:id/myfacility/:facilityId',
+        [
+            param('id').exists().isInt({ min: 1 }).withMessage('Valid account ID is required'),
+            param('facilityId').isNumeric().withMessage('Valid facility ID is required'),
+            validatorChecker,
+        ],
+        userController.deleteFacilityRelationship
     );
 
 /** Router for "/api/preferences" */

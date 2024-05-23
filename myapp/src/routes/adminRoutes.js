@@ -77,6 +77,62 @@ router
             validatorChecker,
         ],
         adminController.handleReport
+    )
+    .get(
+        // GET: get facility registration request by id
+        '/facility-requests/:id',
+        [
+            param('id', `route param 'id' must be a positive integer`).exists().isInt({ min: 1 }),
+            validatorChecker,
+        ],
+        adminController.getFacilityRegistrationRequest
+    )
+    .get(
+        // GET: get all facility registration requests
+        '/facility-requests',
+        [
+            query('user', `optional query field 'user' must be a positive integer`)
+                .optional()
+                .isInt({ min: 1 }),
+            query('status', `optional query field 'status' must be a positive integer`)
+                .optional()
+                .isInt({ min: 0, max: 2 }),
+            validatorChecker,
+        ],
+        adminController.getAllFacilityRegistrationRequests
+    )
+    .post(
+        // POST: accept facility registration request requested by specified id
+        '/facility-requests/:id/accept',
+        [
+            param('id', `route param 'id' must be a positive integer`).exists().isInt({ min: 1 }),
+            body('adminId', `body field 'adminId' must be a positive integer`)
+                .exists()
+                .isInt({ min: 1 }),
+            validatorChecker,
+        ],
+        adminController.acceptFacilityRegistrationRequest
+    )
+    .post(
+        // POST: decline facility registration request requested by specified id
+        '/facility-requests/:id/decline',
+        [
+            param('id', `route param 'id' must be a positive integer`).exists().isInt({ min: 1 }),
+            body('adminId', `body field 'adminId' must be a positive integer`)
+                .exists()
+                .isInt({ min: 1 }),
+            validatorChecker,
+        ],
+        adminController.declineFacilityRegistrationRequest
+    )
+    .delete(
+        // DELETE: delete facility registration request of specified id
+        '/facility-requests/:id',
+        [
+            param('id', `route param 'id' must be a positive integer`).exists().isInt({ min: 1 }),
+            validatorChecker,
+        ],
+        adminController.deleteFacilityRegistrationRequest
     );
 
 module.exports = router;

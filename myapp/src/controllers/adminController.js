@@ -78,4 +78,83 @@ module.exports = {
             next(err);
         }
     },
+    /** get facility registration request - get facility registration request by id and its content */
+    getFacilityRegistrationRequest: async (req, res, next) => {
+        try {
+            const result = await adminService.getFacilityRegistrationRequest(Number(req.params.id));
+            if (result) {
+                res.status(200).json({
+                    status: 'success',
+                    data: result,
+                });
+            } else {
+                res.status(404).json({
+                    status: 'fail',
+                    message: `No request with id: ${req.params.id}`,
+                });
+            }
+        } catch (err) {
+            next(err);
+        }
+    },
+    /** get all facility registration rquests - get all facility registration requests */
+    getAllFacilityRegistrationRequests: async (req, res, next) => {
+        try {
+            const { user, status } = req.query; // Read query parameters
+            const result = await adminService.getAllFacilityRegistrationRequests({
+                authorId: user ? Number(user) : undefined,
+                status: status ? Number(status) : undefined,
+            });
+            res.status(200).json({
+                status: 'success',
+                data: result,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    /** set status column of facility registration request by id to be "accepted" */
+    acceptFacilityRegistrationRequest: async (req, res, next) => {
+        try {
+            const result = await adminService.acceptFacilityRegistrationRequest(
+                Number(req.params.id),
+                req.body.adminId
+            );
+            res.status(200).json({
+                status: 'success',
+                data: result,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    /** set status column of facility registration request by id to be "rejected" */
+    declineFacilityRegistrationRequest: async (req, res, next) => {
+        try {
+            const result = await adminService.declineFacilityRegistrationRequest(
+                Number(req.params.id),
+                req.body.adminId
+            );
+            res.status(200).json({
+                status: 'success',
+                data: result,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    /** delete facility registration request by id*/
+    deleteFacilityRegistrationRequest: async (req, res, next) => {
+        try {
+            const result = await adminService.deleteFacilityRegistrationRequest(
+                Number(req.params.id)
+            );
+            res.status(200).json({
+                status: 'success',
+                data: result,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 };

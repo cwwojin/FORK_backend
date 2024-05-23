@@ -56,5 +56,14 @@ module.exports = {
     validateMapArea: (area) => {
         return 'latMin' in area && 'lngMin' in area && 'latMax' in area && 'lngMax' in area;
     },
+    validateOptionalURL: (url) => {
+        if (url === '') return true;
+        try {
+            new URL(url);
+            return true;
+        } catch (err) {
+            return false;
+        }
+    },
     validateKAISTMail: (email) => KAISTMailPattern.test(email),
 };

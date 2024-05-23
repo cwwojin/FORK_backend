@@ -1,5 +1,6 @@
 const db = require('../models/index');
 const reviewService = require('./reviewService');
+const facilityService = require('./facilityService');
 
 module.exports = {
     /** get report by id */
@@ -89,5 +90,104 @@ module.exports = {
             await db.query('ROLLBACK');
             throw new Error(err);
         }
+    },
+    /** get facility registration request by id - possible for admin to view content */
+    getFacilityRegistrationRequest: async (id) => {
+        const query = {
+            text: `SELECT * FROM facility_registration_request WHERE id = $1`,
+            values: [id],
+        };
+        const result = await db.query(query);
+        return result.rows[0];
+    },
+
+    /** get all facility registration requests */
+    getAllFacilityRegistrationRequests: async (args) => {
+        let values = [];
+        let baseQuery = `SELECT * FROM facility_registration_request WHERE 1=1 `;
+        if (args.authorId !== undefined) {
+            values.push(args.authorId);
+            baseQuery = baseQuery + `AND author_id = $${values.length} `;
+        }
+        if (args.status !== undefined) {
+            values.push(args.status);
+            baseQuery = baseQuery + `AND status = $${values.length} `;
+        }
+        const result = await db.query({
+            text: baseQuery + `ORDER BY created_at DESC`,
+            values: values,
+        });
+        return result.rows;
+    },
+    /** accept a facility registration request */
+    acceptFacilityRegistrationRequest: async (id, adminId) => {
+        const request = await module.exports.getFacilityRegistrationRequest(id);
+        if (!request || request.status !== 0) {
+            throw { status: 404, message: `Request doesn't exist or is not pending` };
+        }
+
+        const data = request.content; // Assuming content is already an object
+        try {
+            await db.query('BEGIN');
+
+            // Create the facility and related entries
+            const facility = await facilityService.createFacility(data);
+
+            // Handle preferences
+            if (data.preferences && data.preferences.length !== 0) {
+                for await (const preferenceId of data.preferences) {
+                    await facilityService.addPreferenceToFacility(facility.id, preferenceId);
+                }
+            }
+
+            // Handle stamp ruleset and rewards
+            if (data.stampRuleset) {
+                await facilityService.createStampRuleset(facility.id, data.stampRuleset);
+            }
+
+            // Add the author as manager
+            await db.query({
+                text: `insert into manages (user_id, facility_id) values ($1, $2)`,
+                values: [request.author_id, facility.id],
+            });
+
+            // Update the registration request status
+            const query = {
+                text: `UPDATE facility_registration_request SET status = $1, respond_date = NOW() WHERE id = $2 RETURNING *`,
+                values: [1, id],
+            };
+            const result = await db.query(query);
+
+            await db.query('COMMIT');
+            return { request: result.rows[0], facility };
+        } catch (error) {
+            await db.query('ROLLBACK');
+            throw error;
+        }
+    },
+
+    /** decline a facility registration request */
+    declineFacilityRegistrationRequest: async (id, adminId) => {
+        const request = await module.exports.getFacilityRegistrationRequest(id);
+        if (!request || request.status !== 0) {
+            throw { status: 404, message: `Request doesn't exist or is not pending` };
+        }
+
+        const query = {
+            text: `UPDATE facility_registration_request SET status = $1, respond_date = NOW(), updated_at = NOW() WHERE id = $2 RETURNING *`,
+            values: [2, id],
+        };
+        const result = await db.query(query);
+        return result.rows[0];
+    },
+
+    /** delete a facility registration request */
+    deleteFacilityRegistrationRequest: async (id) => {
+        const query = {
+            text: `DELETE FROM facility_registration_request WHERE id = $1 RETURNING *`,
+            values: [id],
+        };
+        const result = await db.query(query);
+        return result.rows[0];
     },
 };

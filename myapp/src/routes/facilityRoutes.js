@@ -4,6 +4,7 @@ const { body, param, check } = require('express-validator');
 const { validatorChecker } = require('../middleware/validator');
 const { s3Uploader } = require('../helper/s3Engine');
 const { checkPermission } = require('../middleware/authMiddleware');
+const { validateOptionalURL } = require('../helper/helper');
 
 const router = Router();
 
@@ -23,22 +24,28 @@ router.post(
     '/', // POST: create a new facility
     checkPermission([0]),
     [
-        body('name').notEmpty().withMessage('Name is required'),
-        body('businessId').notEmpty().withMessage('Business ID is required'),
-        body('type').notEmpty().withMessage('Type is required'),
-        body('description').notEmpty().withMessage('Description is required'),
-        body('url').notEmpty().isURL().withMessage('Valid URL is required'),
-        body('phone').notEmpty().withMessage('Phone is required'),
-        body('email').isEmail().withMessage('Valid email is required'),
-        body('profileImgUri').exists().isString().withMessage('Profile image URI is required'),
-        body('address.postNumber').notEmpty().withMessage('Post number is required'),
-        body('address.country').notEmpty().withMessage('Country is required'),
-        body('address.city').notEmpty().withMessage('City is required'),
-        body('address.roadAddress').notEmpty().withMessage('Road address is required'),
-        body('address.jibunAddress').notEmpty().withMessage('Jibun address is required'),
-        body('address.englishAddress').notEmpty().withMessage('English address is required'),
-        body('address.lat').notEmpty().isFloat().withMessage('Latitude is required'),
-        body('address.lng').notEmpty().isFloat().withMessage('Longitude is required'),
+        body('name').exists().isString().withMessage('Name is required'),
+        body('businessId').exists().notEmpty().withMessage('Business ID is required'),
+        body('type').exists().isString().withMessage('Type is required'),
+        body('description').exists().isString().withMessage('Description is required'),
+        body('url')
+            .exists()
+            .isString()
+            .custom(validateOptionalURL)
+            .withMessage('Valid URL is required'),
+        body('phone').exists().isString().withMessage('Phone is required'),
+        body('email').exists().isString().withMessage('Valid email is required'),
+        body('address.postNumber').exists().isString().withMessage('Post number is required'),
+        body('address.country').exists().isString().withMessage('Country is required'),
+        body('address.city').exists().isString().withMessage('City is required'),
+        body('address.roadAddress').exists().isString().withMessage('Road address is required'),
+        body('address.jibunAddress').exists().isString().withMessage('Jibun address is required'),
+        body('address.englishAddress')
+            .exists()
+            .isString()
+            .withMessage('English address is required'),
+        body('address.lat').exists().isFloat().withMessage('Latitude is required'),
+        body('address.lng').exists().isFloat().withMessage('Longitude is required'),
         validatorChecker,
     ],
     facilityController.createFacility
@@ -46,14 +53,17 @@ router.post(
 
 router.put(
     '/:id', // PUT : update a facility
-    checkPermission([0, 2]),
     [
         param('id').isNumeric().withMessage('Valid ID is required'),
-        body('name').notEmpty().withMessage('Name is required'),
-        body('businessId').notEmpty().withMessage('Business ID is required'),
-        body('type').notEmpty().withMessage('Type is required'),
-        body('description').notEmpty().withMessage('Description is required'),
-        body('url').notEmpty().isURL().withMessage('Valid URL is required'),
+        body('name').exists().isString().withMessage('Name is required'),
+        body('businessId').exists().notEmpty().withMessage('Business ID is required'),
+        body('type').exists().isString().withMessage('Type is required'),
+        body('description').exists().isString().withMessage('Description is required'),
+        body('url')
+            .exists()
+            .isString()
+            .custom(validateOptionalURL)
+            .withMessage('Valid URL is required'),
         validatorChecker,
     ],
     facilityController.updateFacility
@@ -79,14 +89,14 @@ router.post(
     checkPermission([0, 2]),
     [
         param('facilityId').isNumeric().withMessage('Valid Facility ID is required'),
-        body('postNumber').notEmpty().withMessage('Post number is required'),
-        body('country').notEmpty().withMessage('Country is required'),
-        body('city').notEmpty().withMessage('City is required'),
-        body('roadAddress').notEmpty().withMessage('Road address is required'),
-        body('jibunAddress').notEmpty().withMessage('Jibun address is required'),
-        body('englishAddress').notEmpty().withMessage('English address is required'),
-        body('lat').notEmpty().isFloat().withMessage('Latitude is required'),
-        body('lng').notEmpty().isFloat().withMessage('Longitude is required'),
+        body('postNumber').exists().isString().withMessage('Post number is required'),
+        body('country').exists().isString().withMessage('Country is required'),
+        body('city').exists().isString().withMessage('City is required'),
+        body('roadAddress').exists().isString().withMessage('Road address is required'),
+        body('jibunAddress').exists().isString().withMessage('Jibun address is required'),
+        body('englishAddress').exists().isString().withMessage('English address is required'),
+        body('lat').exists().isFloat().withMessage('Latitude is required'),
+        body('lng').exists().isFloat().withMessage('Longitude is required'),
         validatorChecker,
     ],
     facilityController.addAddress
@@ -120,8 +130,8 @@ router.post(
             .trim()
             .isInt({ min: 0, max: 6 })
             .withMessage('Valid day is required'),
-        body('openTime').optional().notEmpty().withMessage('Opening time is required'),
-        body('closeTime').optional().notEmpty().withMessage('Closing time is required'),
+        body('openTime').exists().isString().withMessage('Opening time is required'),
+        body('closeTime').exists().isString().withMessage('Closing time is required'),
         validatorChecker,
     ],
     facilityController.addOpeningHours
@@ -159,10 +169,10 @@ router.post(
     [
         param('facilityId').isNumeric().withMessage('Valid Facility ID is required'),
         body().isArray().withMessage('Menu data should be an array'),
-        body('*.name').notEmpty().withMessage('Menu item name is required'),
-        body('*.description').notEmpty().withMessage('Description is required'),
+        body('*.name').exists().isString().withMessage('Menu item name is required'),
+        body('*.description').exists().isString().withMessage('Description is required'),
         body('*.price').isNumeric().withMessage('Price must be a number'),
-        body('*.quantity').notEmpty().withMessage('Quantity is required'),
+        body('*.quantity').exists().isString().withMessage('Quantity is required'),
         validatorChecker,
     ],
     facilityController.createMenu
@@ -174,10 +184,10 @@ router.put(
     [
         param('facilityId').isNumeric().withMessage('Valid Facility ID is required'),
         param('menuId').isNumeric().withMessage('Valid Menu ID is required'),
-        body('name').notEmpty().withMessage('Menu item name is required'),
-        body('description').notEmpty().withMessage('Description is required'),
+        body('name').exists().isString().withMessage('Menu item name is required'),
+        body('description').exists().isString().withMessage('Description is required'),
         body('price').isNumeric().withMessage('Price must be a number'),
-        body('quantity').notEmpty().withMessage('Quantity is required'),
+        body('quantity').exists().isString().withMessage('Quantity is required'),
         validatorChecker,
     ],
     facilityController.updateMenuItem
@@ -219,8 +229,8 @@ router.post(
     [
         param('facilityId').isNumeric().withMessage('Valid Facility ID is required'),
         body('authorId').isInt({ min: 1 }).withMessage('Author ID must be a positive integer'),
-        body('title').notEmpty().withMessage('Title is required'),
-        body('content').notEmpty().withMessage('Content is required'),
+        body('title').exists().isString().withMessage('Title is required'),
+        body('content').exists().isString().withMessage('Content is required'),
         validatorChecker,
     ],
     facilityController.createPost
@@ -232,8 +242,8 @@ router.put(
     [
         param('facilityId').isNumeric().withMessage('Valid Facility ID is required'),
         param('postId').isNumeric().withMessage('Valid Post ID is required'),
-        body('title').notEmpty().withMessage('Title is required'),
-        body('content').notEmpty().withMessage('Content is required'),
+        body('title').exists().isString().withMessage('Title is required'),
+        body('content').exists().isString().withMessage('Content is required'),
         validatorChecker,
     ],
     facilityController.updatePost
@@ -264,11 +274,10 @@ router.post(
     checkPermission([0, 2]),
     [
         param('facilityId').isNumeric().withMessage('Valid Facility ID is required'),
-        body('logoImgUri').exists().isString().withMessage('Logo Image URI is required'),
         body('totalCnt').isNumeric().withMessage('Total count is required'),
         body('rewards').isArray().withMessage('Rewards must be an array'),
         body('rewards.*.cnt').isNumeric().withMessage('Count is required for each reward'),
-        body('rewards.*.name').notEmpty().withMessage('Name is required for each reward'),
+        body('rewards.*.name').exists().isString().withMessage('Name is required for each reward'),
         validatorChecker,
     ],
     facilityController.createStampRuleset
@@ -293,7 +302,7 @@ router.post(
     [
         param('facilityId').isNumeric().withMessage('Valid Facility ID is required'),
         body('cnt').isNumeric().withMessage('Count is required'),
-        body('name').notEmpty().withMessage('Name is required'),
+        body('name').exists().isString().withMessage('Name is required'),
         validatorChecker,
     ],
     facilityController.createStampReward
@@ -306,7 +315,7 @@ router.put(
         param('facilityId').isNumeric().withMessage('Valid Facility ID is required'),
         param('rewardId').isNumeric().withMessage('Valid Reward ID is required'),
         body('cnt').isNumeric().withMessage('Count is required'),
-        body('name').notEmpty().withMessage('Name is required'),
+        body('name').exists().isString().withMessage('Name is required'),
         validatorChecker,
     ],
     facilityController.updateStampReward
@@ -428,6 +437,72 @@ router
             validatorChecker,
         ],
         facilityController.deleteMenuImage
+    )
+    .post(
+        // POST: send facility registration request to admin to create facility
+        '/facility-requests',
+        [
+            body('authorId')
+                .exists()
+                .isInt({ min: 1 })
+                .withMessage('Author ID is required and must be a positive integer'),
+            body('title').exists().isString().withMessage('Title is required and must be a string'),
+            body('content.name')
+                .exists()
+                .isString()
+                .withMessage('Content name is required and must be a string'),
+            body('content.type')
+                .exists()
+                .isString()
+                .withMessage('Content type is required and must be a string'),
+            body('content.businessId')
+                .exists()
+                .notEmpty()
+                .withMessage('Business ID is required and must be a string'),
+            body('content.phone')
+                .exists()
+                .isString()
+                .withMessage('Phone is required and must be a string'),
+            body('content.email')
+                .exists()
+                .isString()
+                .withMessage('Email is required and must be a valid email'),
+            body('content.url')
+                .exists()
+                .isString()
+                .custom(validateOptionalURL)
+                .withMessage('URL is required and must be a valid URL'),
+            body('content.description')
+                .exists()
+                .isString()
+                .withMessage('Description is required and must be a string'),
+            body('content.address')
+                .exists()
+                .isObject()
+                .withMessage('Address is required and must be an object'),
+            body('content.openingHours')
+                .optional()
+                .isArray()
+                .withMessage('Opening hours must be an array if provided'),
+            body('content.menu')
+                .optional()
+                .isArray()
+                .withMessage('Menu must be an array if provided'),
+            body('content.preferences')
+                .optional()
+                .isArray()
+                .withMessage('Preferences must be an array if provided'),
+            body('content.stampRuleset')
+                .optional()
+                .isObject()
+                .withMessage('Stamp ruleset must be an object if provided'),
+            body('content.stampRuleset.rewards')
+                .optional()
+                .isArray()
+                .withMessage('Stamp rewards must be an array if provided'),
+            validatorChecker,
+        ],
+        facilityController.createFacilityRegistrationRequest
     );
 
 module.exports = router;

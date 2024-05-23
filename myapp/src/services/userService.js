@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const db = require('../models/index');
 const { BCRYPT_SALTROUNDS } = require('../helper/helper');
 const { removeS3File } = require('../helper/s3Engine');
+const facilityService = require('./facilityService');
 
 module.exports = {
     /**
@@ -182,5 +183,59 @@ module.exports = {
         };
         const result = await db.query(query);
         return result.rows;
+    },
+    // Get my facilities with id
+    getMyFacility: async (id) => {
+        const query = {
+            text: `SELECT f.* FROM facility_detailed f 
+                 JOIN manages m ON f.id = m.facility_id 
+                 WHERE m.user_id = $1`,
+            values: [id],
+        };
+        const result = await db.query(query);
+        return result.rows;
+    },
+
+    /** Update my facility by facility-ID
+     * 1. validate facility ownership
+     * 2. call facilityService to update w/ body contents
+     */
+    updateMyFacility: async (userId, facilityId, data) => {
+        const myFacility = await module.exports.getMyFacility(userId);
+        if (!myFacility.map((e) => e.id).includes(Number(facilityId))) {
+            // NOT my facility -> deny request
+            throw {
+                status: 404,
+                message: `Facility not found or is not managed by the user`,
+            };
+        }
+        await facilityService.updateFacility(facilityId, data);
+        if (data.preferences !== undefined && data.preferences.length !== 0) {
+            const currPreferences = await facilityService.getPreferencesByFacilityId(facilityId);
+            // prune all
+            for await (const preference of currPreferences.map((e) => e.id)) {
+                await facilityService.deletePreferenceFromFacility(facilityId, preference);
+            }
+            // add all
+            for await (const preference of data.preferences) {
+                await facilityService.addPreferenceToFacility(facilityId, preference);
+            }
+        }
+        if (data.stampRuleset !== undefined) {
+            await facilityService.createStampRuleset(facilityId, data.stampRuleset);
+        }
+        // get result - updated facility_detailed
+        const result = await facilityService.getFacilityById(facilityId);
+        return result;
+    },
+
+    // Delete facility relationship (not the facility)
+    deleteFacilityRelationship: async (id, facilityId) => {
+        const query = {
+            text: `DELETE FROM manages WHERE user_id = $1 AND facility_id = $2 RETURNING *`,
+            values: [id, facilityId],
+        };
+        const result = await db.query(query);
+        return result.rows[0];
     },
 };
