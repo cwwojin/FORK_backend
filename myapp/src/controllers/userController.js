@@ -1,254 +1,252 @@
-const userService = require("../services/userService");
-const { makeS3Uri } = require("../helper/helper");
+const userService = require('../services/userService');
+const { makeS3Uri } = require('../helper/helper');
 
 module.exports = {
     /** get user by query - account_id, user_type */
-    getUsers: async (req,res,next) => {
-        try{
+    getUsers: async (req, res, next) => {
+        try {
             const result = await userService.getUsers(req.query);
             res.status(200).json({
-                status: "success",
+                status: 'success',
                 data: result,
             });
-        }catch(err){
+        } catch (err) {
             next(err);
         }
     },
     // get user by ID
-    getUserById: async (req,res,next) => {
+    getUserById: async (req, res, next) => {
         const id = Number(req.params.id);
-        try{
+        try {
             const result = await userService.getUserById(id);
-            if(result.length !== 0){
+            if (result.length !== 0) {
                 res.status(200).json({
-                    status: "success",
+                    status: 'success',
                     data: result[0],
                 });
-            }else{
+            } else {
                 res.status(404).json({
-                    status: "fail",
-                    message: `No user with id: ${id}`}
-                );
+                    status: 'fail',
+                    message: `No user with id: ${id}`,
+                });
             }
-        }catch(err){
+        } catch (err) {
             next(err);
         }
     },
     // create new user
-    createUser: async (req,res,next) => {
-        try{
+    createUser: async (req, res, next) => {
+        try {
             const result = await userService.createUser(req.body);
-            if(result.length !== 0){
+            if (result.length !== 0) {
                 res.status(201).json({
-                    status: "success",
+                    status: 'success',
                     data: result[0],
                 });
-            }else{
+            } else {
                 res.status(404).json({
-                    status: "fail",
+                    status: 'fail',
                     message: `No records were inserted`,
                 });
             }
-        }catch(err){
+        } catch (err) {
             next(err);
         }
     },
     // update user - profile
-    updateUserProfile: async (req,res,next) => {
+    updateUserProfile: async (req, res, next) => {
         const id = Number(req.params.id);
-        try{
+        try {
             const result = await userService.updateUserProfile(req.body, id);
-            if(result.length !== 0){
+            if (result.length !== 0) {
                 res.status(201).json({
-                    status: "success",
+                    status: 'success',
                     data: result[0],
                 });
-            }else{
+            } else {
                 res.status(404).json({
-                    status: "fail",
+                    status: 'fail',
                     message: `No user with id: ${id}`,
-                })
+                });
             }
-        }catch(err){
+        } catch (err) {
             next(err);
         }
     },
     // delete user
-    deleteUser: async (req,res,next) => {
+    deleteUser: async (req, res, next) => {
         const id = Number(req.params.id);
-        try{
+        try {
             const result = await userService.deleteUser(id);
             res.status(200).json({
-                status: "success",
+                status: 'success',
                 data: result[0],
             });
-        }catch(err){
+        } catch (err) {
             next(err);
         }
     },
     // get user preferences
-    getUserPreference: async (req,res,next) => {
+    getUserPreference: async (req, res, next) => {
         const id = Number(req.params.id);
-        try{
+        try {
             const result = await userService.getUserPreference(id);
             res.status(200).json({
-                status: "success",
+                status: 'success',
                 data: result,
             });
-        }catch(err){
+        } catch (err) {
             next(err);
         }
     },
     // add a preference to user (if it isnt already added)
-    addUserPreference: async (req,res,next) => {
+    addUserPreference: async (req, res, next) => {
         const id = Number(req.params.id);
         try {
             const result = await userService.addUserPreference(id, req.body.preferenceId);
             res.status(201).json({
-                status: "success",
+                status: 'success',
                 data: result[0],
             });
-        }catch(err){
+        } catch (err) {
             next(err);
         }
     },
     // delete a preference of a user
-    deleteUserPreference: async (req,res,next) => {
+    deleteUserPreference: async (req, res, next) => {
         const id = Number(req.params.id);
-        try{
+        try {
             const result = await userService.deleteUserPreference(id, req.body.preferenceId);
             res.status(200).json({
-                status: "success",
+                status: 'success',
                 data: result[0],
             });
-        }catch(err){
+        } catch (err) {
             next(err);
         }
     },
     // get user favorites
-    getUserFavorite: async (req,res,next) => {
+    getUserFavorite: async (req, res, next) => {
         const id = Number(req.params.id);
-        try{
+        try {
             const result = await userService.getUserFavorite(id);
             res.status(200).json({
-                status: "success",
+                status: 'success',
                 data: result,
             });
-        }catch(err){
+        } catch (err) {
             next(err);
         }
     },
     /** check if a facility is a user's favorite */
-    isUserFavorite: async (req,res,next) => {
-        try{
+    isUserFavorite: async (req, res, next) => {
+        try {
             const result = await userService.isUserFavorite(req.params.user, req.params.facility);
             res.status(200).json({
-                status: "success",
+                status: 'success',
                 data: result,
             });
-        }catch(err){
+        } catch (err) {
             next(err);
         }
     },
     // add a favorite
-    addUserFavorite: async (req,res,next) => {
+    addUserFavorite: async (req, res, next) => {
         const id = Number(req.params.id);
         try {
             const result = await userService.addUserFavorite(id, req.body.facilityId);
             res.status(201).json({
-                status: "success",
+                status: 'success',
                 data: result[0],
             });
-        }catch(err){
+        } catch (err) {
             next(err);
         }
     },
     // delete a favorite
-    deleteUserFavorite: async (req,res,next) => {
+    deleteUserFavorite: async (req, res, next) => {
         const id = Number(req.params.id);
-        try{
+        try {
             const result = await userService.deleteUserFavorite(id, req.body.facilityId);
             res.status(200).json({
-                status: "success",
+                status: 'success',
                 data: result[0],
             });
-        }catch(err){
+        } catch (err) {
             next(err);
         }
     },
     /** upload a user profile image */
-    uploadUserProfileImage: async (req,res,next) => {
+    uploadUserProfileImage: async (req, res, next) => {
         const id = Number(req.params.id);
-        try{
-            const imageUri = (req.file !== undefined) ? makeS3Uri(req.file.bucket, req.file.key) : '';
+        try {
+            const imageUri = req.file !== undefined ? makeS3Uri(req.file.bucket, req.file.key) : '';
             const result = await userService.uploadUserProfileImage(id, imageUri);
-            if(result.length !== 0){
+            if (result.length !== 0) {
                 res.status(201).json({
-                    status: "success",
+                    status: 'success',
                     data: result[0],
                 });
-            }else{
+            } else {
                 res.status(404).json({
-                    status: "fail",
+                    status: 'fail',
                     message: `No user with id: ${id}`,
                 });
             }
-        }catch(err){
+        } catch (err) {
             next(err);
         }
     },
     /** delete a user profile image */
-    deleteUserProfileImage: async (req,res,next) => {
+    deleteUserProfileImage: async (req, res, next) => {
         const id = Number(req.params.id);
-        try{
+        try {
             const result = await userService.deleteUserProfileImage(id);
-            if(result.length !== 0){
+            if (result.length !== 0) {
                 res.status(201).json({
-                    status: "success",
+                    status: 'success',
                     data: result[0],
                 });
-            }else{
+            } else {
                 res.status(404).json({
-                    status: "fail",
+                    status: 'fail',
                     message: `No user with id: ${id}`,
                 });
             }
-        }catch(err){
+        } catch (err) {
             next(err);
         }
     },
     /** get all preferences */
-    getAllPreferences: async (req,res,next) => {
-        try{
+    getAllPreferences: async (req, res, next) => {
+        try {
             const result = await userService.getAllPreferences();
             res.status(200).json({
-                status: "success",
+                status: 'success',
                 data: result,
             });
-        }catch(err){
+        } catch (err) {
             next(err);
         }
     },
     /** get preference by id */
-    getPreference: async (req,res,next) => {
+    getPreference: async (req, res, next) => {
         const id = Number(req.params.id);
-        try{
+        try {
             const result = await userService.getPreference(id);
-            if(result.length !== 0){
+            if (result.length !== 0) {
                 res.status(200).json({
-                    status: "success",
-                    data: result[0]
+                    status: 'success',
+                    data: result[0],
                 });
-            }else{
+            } else {
                 res.status(404).json({
-                    status: "fail",
+                    status: 'fail',
                     message: `no preference with id: ${id}`,
                 });
             }
-        }catch(err){
+        } catch (err) {
             next(err);
         }
-    }
-
-
-}
+    },
+};

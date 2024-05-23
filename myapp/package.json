@@ -9,13 +9,15 @@
   "scripts": {
     "dev": "NODE_ENV=development nodemon src/server.js",
     "test": "NODE_ENV=test node src/server.js",
-    "prod": "NODE_ENV=production node src/server.js"
+    "prod": "NODE_ENV=production node src/server.js",
+    "prettier": "prettier --write src/*.js src/**/*.js"
   },
   "keywords": [],
   "author": "Foodie",
   "license": "ISC",
   "devDependencies": {
-    "nodemon": "^3.1.0"
+    "nodemon": "^3.1.0",
+    "prettier": "^3.2.5"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.577.0",
