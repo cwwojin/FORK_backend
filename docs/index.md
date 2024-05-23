@@ -4,8 +4,11 @@
 - [FORK\_Backend API Documentation](#fork_backend-api-documentation)
   - [Getting Started](#getting-started)
   - [HTTP Status codes \& Errors](#http-status-codes--errors)
-  - [Reponse Format](#reponse-format)
+  - [Request Format](#request-format)
+  - [Response Format](#response-format)
   - [Author](#author)
+
+---
 
 ## Getting Started
 This project consists of 7 components. 
@@ -37,7 +40,19 @@ Here are the example error codes and HTTP status codes for all API responses.
 | **200 OK** | | Request accepted |
 | **201 Created** | | Request accepted, and resource was created as requested |
 
-## Reponse Format
+---
+
+## Request Format
+All Requests should contain neccessary headers for authorization
+
+| Location | Field Name | Data Type | Value | Description |
+| --- | --- | --- | --- | --- |
+| header | `Authorization` | string | `"Bearer {MY_TOKEN}"` | The Bearer format access token of the `user` |
+| . | . | . | `"guest"` | Default value that indicates the client is a non-logged-in user, a.k.a `guest user` |
+
+---
+
+## Response Format
 Responses are designed to follow [JSEND format](https://github.com/omniti-labs/jsend)
 
 ### Response Content
