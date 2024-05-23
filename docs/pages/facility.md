@@ -39,6 +39,8 @@
   - [DELETE : delete stamp logo image](#delete--delete-stamp-logo-image)
   - [POST : upload menu image](#post--upload-menu-image)
   - [DELETE : delete menu image](#delete--delete-menu-image)
+  - [GET : Get list of trending facilities](#get--get-list-of-trending-facilities)
+  - [GET : Get list of newest facilities](#get--get-list-of-newest-facilities)
 
 
 ---
@@ -1082,3 +1084,81 @@
 | --- | --- |
 | status | `success` |
 | data | the updated `menu` object |
+
+---
+
+## GET : Get list of trending facilities
+- get list of trending facilities
+- also filter by preferences using query parameters
+- result contains only facilities that have at least 1 review
+
+### URL
+
+`/api/facilities/leaderboard/trending`
+
+### Permissions
+
+| userType | Guest | 0 (Admin) | 1 (KAIST) | 2 (Facility) |
+| --- | --- | --- | --- | --- |
+| Permission | O | O | O | O |
+
+### Request Format
+- Content-Type : `application/json`
+
+| Location | Field Name | Data Type | Required | Description |
+| --- | --- | --- | --- | --- |
+| query | limit | int | O | limit number of result rows to `limit` |
+| query | preferences | array | - | comma-seperated array of `preference.id` (integer). If provided, then search for facilities that contain at least one of the preferences queried |
+
+### Example Request URL
+`http://{BASE_URL}/api/facilities/leaderboard/trending?limit=5&preferences=1,2,3`
+
+### Response Format
+- HTTP Status Code: `200`
+
+| Key | Description |
+| --- | --- |
+| status | `success` |
+| data | array of `pin` rows |
+
+### Notes
+- This method will return facility data in `pin` format, which is the same as results in [map API](./map.md)
+- Includes `name, address, preferences, opening_hours, etc.`
+
+---
+
+## GET : Get list of newest facilities
+- get list of newest facilities, ordered by `created_at` column in DB
+
+### URL
+
+`/api/facilities/leaderboard/newest`
+
+### Permissions
+
+| userType | Guest | 0 (Admin) | 1 (KAIST) | 2 (Facility) |
+| --- | --- | --- | --- | --- |
+| Permission | O | O | O | O |
+
+### Request Format
+- Content-Type : `application/json`
+
+| Location | Field Name | Data Type | Required | Description |
+| --- | --- | --- | --- | --- |
+| query | limit | int | O | limit number of result rows to `limit` |
+
+### Example Request URL
+`http://{BASE_URL}/api/facilities/leaderboard/newest?limit=5`
+
+### Response Format
+- HTTP Status Code: `200`
+
+| Key | Description |
+| --- | --- |
+| status | `success` |
+| data | array of `pin` rows |
+
+### Notes
+- This method will return facility data in `pin` format, which is the same as results in [map API](./map.md)
+- Includes `name, address, preferences, opening_hours, etc.`
+
