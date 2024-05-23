@@ -1,44 +1,38 @@
-const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const pool = require("../models/index"); // pooled connection
+const bcrypt = require("bcrypt");
+const { BCRYPT_SALTROUNDS } = require("../helper/helper");
+const db = require("../models/index");
 
-class AuthService {
-  async loginUser({ userId, password }) {
-    try {
-      const query = 'SELECT * FROM "user" WHERE account_id = $1';
-      const { rows } = await pool.query(query, [userId]);
-      const user = rows[0];
+const validateAccount = async (userId, password) => {
+    const { rows } = await db.query({
+        text: `select id, account_id, password, user_type from "user" where account_id = $1`,
+        values: [userId],
+    });
+    if(!rows || rows.length === 0) throw ({status: 401, message: `Invalid user ID`});
+    const pwMatch = await bcrypt.compare(password, rows[0].password);
+    if(!pwMatch) throw ({status: 401, message: `Invalid password`});
 
-      if (!user) {
-        throw new Error("User not found");
-      }
+    return rows[0];
+};
 
-      // Validate the password with bcrypt
-      const passwordIsValid = await bcrypt.compare(password, user.password);
-      if (!passwordIsValid) {
-        throw new Error("Invalid credentials");
-      }
-
-      // Sign the JWT with user ID and user type
-      const token = jwt.sign(
-        { id: user.id, userId: user.account_id, userType: user.user_type },
-        process.env.JWT_SECRET || "your_secret_key",
-        {
-          expiresIn: "1h",
-        }
-      );
-
-      // return the token, relevant user details
-      return {
-        token,
-        userId: user.account_id,
-        userType: user.user_type,
-        id: user.id,
-      };
-    } catch (error) {
-      throw error;
-    }
-  }
+module.exports = {
+    /** 
+     * login : attempt to log in with account-ID & password
+     * SUCCESS -> create token
+     */
+    loginUser: async (body) => {
+        const { userId, password } = body;
+        const payload = await validateAccount(userId, password);
+        const token = jwt.sign(
+            {
+                "id": payload.id,
+                "accountId": payload.account_id,
+                "userType": payload.user_type,
+            }, 
+            process.env.JWT_SECRET,
+            { expiresIn: "1h" },    // set expiration time
+        );
+        return `Bearer ${token}`;   // for Bearer authentication
+    },
+    /** logout : remove user's access token */
 }
-
-module.exports = new AuthService();
