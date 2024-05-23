@@ -10,12 +10,18 @@
     "dev": "NODE_ENV=development nodemon src/server.js",
     "test": "NODE_ENV=test node src/server.js",
     "prod": "NODE_ENV=production node src/server.js",
-    "prettier": "prettier --write src/*.js src/**/*.js"
+    "prettier": "prettier --write src/*.js src/**/*.js",
+    "lint": "eslint --fix src/*.js src/**/*.js"
   },
   "keywords": [],
   "author": "Foodie",
   "license": "ISC",
   "devDependencies": {
+    "@eslint/js": "^9.3.0",
+    "eslint": "^9.3.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "globals": "^15.3.0",
     "nodemon": "^3.1.0",
     "prettier": "^3.2.5"
   },
