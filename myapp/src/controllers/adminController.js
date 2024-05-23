@@ -100,9 +100,9 @@ module.exports = {
     /** get all facility registration rquests - get all facility registration requests */
     getAllFacilityRegistrationRequests: async (req, res, next) => {
         try {
-            const { authorId, status } = req.query; // Read query parameters
+            const { user, status } = req.query; // Read query parameters
             const result = await adminService.getAllFacilityRegistrationRequests({
-                authorId: authorId ? Number(authorId) : undefined,
+                authorId: user ? Number(user) : undefined,
                 status: status ? Number(status) : undefined,
             });
             res.status(200).json({

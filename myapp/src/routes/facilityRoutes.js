@@ -457,7 +457,7 @@ router
                 .optional()
                 .isObject()
                 .withMessage("Stamp ruleset must be an object if provided"),
-            body("content.stampRewards")
+            body("content.stampRuleset.rewards")
                 .optional()
                 .isArray()
                 .withMessage("Stamp rewards must be an array if provided"),

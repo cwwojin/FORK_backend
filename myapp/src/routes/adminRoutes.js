@@ -85,7 +85,7 @@ router
         // GET: get all facility registration requests
         "/facility-requests",
         [
-            query("authorId", `optional query field 'authorId' must be a positive integer`)
+            query("user", `optional query field 'user' must be a positive integer`)
                 .optional()
                 .isInt({ min: 1 }),
             query("status", `optional query field 'status' must be a positive integer`)

@@ -147,11 +147,6 @@ module.exports = {
             if (data.stampRuleset) {
                 await facilityService.createStampRuleset(facility.id, data.stampRuleset);
             }
-            if (data.stampRewards) {
-                for (const reward of data.stampRewards) {
-                    await facilityService.createStampReward(facility.id, reward);
-                }
-            }
 
             // Update the registration request status
             const query = {
