@@ -528,5 +528,30 @@ module.exports = {
       next(err);
     }
   },
+  /** get trending facilities */
+  getTrendingFacilities: async (req,res,next) => {
+    try{
+      const result = await facilityService.getTrendingFacilities(req.query);
+      res.status(200).json({
+        status: "success",
+        data: result,
+      });
+    }catch(err){
+      next(err);
+    }
+  },
+  /** get newest facilities */
+  getNewestFacilities: async (req,res,next) => {
+    try{
+      const limit = req.query.limit;
+      const result = await facilityService.getNewestFacilities(limit);
+      res.status(200).json({
+        status: "success",
+        data: result,
+      });
+    }catch(err){
+      next(err);
+    }
+  }
 
 };

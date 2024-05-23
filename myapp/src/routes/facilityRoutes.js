@@ -1,9 +1,10 @@
 const { Router } = require("express");
 const facilityController = require("../controllers/facilityController");
-const { body, param, check } = require("express-validator");
+const { body, param, query } = require("express-validator");
 const { validatorChecker } = require("../middleware/validator");
 const { s3Uploader } = require("../helper/s3Engine");
-const { checkPermission } = require("../middleware/authMiddleware")
+const { checkPermission } = require("../middleware/authMiddleware");
+const { validateIntArray } = require("../helper/helper");
 
 const router = Router();
 
@@ -500,8 +501,31 @@ router
     ],
     facilityController.deleteMenuImage
   )
+;
 
-
+/** leaderboard methods */
+router
+  .get(
+    '/leaderboard/trending',
+    [
+      query('limit', `query field 'limit' must be a positive integer`).exists().isInt({min: 1}),
+      query('preferences', `optional query field 'preferences' must be an integer array`)
+        .optional()
+        .isString()
+        .customSanitizer((e) => e.split(',').map((e) => Number(e)))
+        .custom(validateIntArray),
+      validatorChecker,
+    ],
+    facilityController.getTrendingFacilities
+  ).get(
+    '/leaderboard/newest',
+    [
+      query('limit', `query field 'limit' must be a positive integer`).exists().isInt({min: 1}),
+      validatorChecker,
+    ],
+    facilityController.getNewestFacilities
+  )
+;
 
 
 module.exports = router;
