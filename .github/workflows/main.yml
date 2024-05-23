@@ -42,7 +42,7 @@ jobs:
         run: yarn install
 
       - name: Prettier check
-        run: yarn prettier
+        run: yarn run prettier
 
       - name: Lint check
-        run: yarn lint
+        run: yarn run lint
