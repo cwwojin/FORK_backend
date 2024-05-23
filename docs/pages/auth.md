@@ -18,7 +18,7 @@
 
 ### Permissions
 | userType | Guest | 0 (Admin) | 1 (KAIST) | 2 (Facility) |
-| --- | --- | --- | --- | --- |
+| ---- | ---- | ---- | ---- | ---- |
 | Permission | O | O | X | X |
 
 ### Request Format
@@ -50,7 +50,7 @@
 
 ### Permissions
 | userType | Guest | 0 (Admin) | 1 (KAIST) | 2 (Facility) |
-| --- | --- | --- | --- | --- |
+| ---- | ---- | ---- | ---- | ---- |
 | Permission | O | O | X | X |
 
 ### Request Format
@@ -90,7 +90,7 @@
 
 ### Permissions
 | userType | Guest | 0 (Admin) | 1 (KAIST) | 2 (Facility) |
-| --- | --- | --- | --- | --- |
+| ---- | ---- | ---- | ---- | ---- |
 | Permission | O | O | X | X |
 
 ### Request Format
@@ -122,7 +122,7 @@
 
 ### Permissions
 | userType | Guest | 0 (Admin) | 1 (KAIST) | 2 (Facility) |
-| --- | --- | --- | --- | --- |
+| ---- | ---- | ---- | ---- | ---- |
 | Permission | O | O | X | X |
 
 ### Request Format
