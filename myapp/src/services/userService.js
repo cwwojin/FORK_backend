@@ -19,6 +19,10 @@ module.exports = {
             values.push(args.type);
             baseQuery = baseQuery + `and user_type = $${values.length} `;
         }
+        if(args.email !== undefined){
+            values.push(args.email);
+            baseQuery = baseQuery + `and email = $${values.length} `;
+        }
         const query = {
             text: baseQuery,
             values: values,
