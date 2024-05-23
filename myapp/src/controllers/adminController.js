@@ -1,4 +1,4 @@
-const adminService = require("../services/adminService");
+const adminService = require('../services/adminService');
 
 module.exports = {
     /** get report by id */
@@ -8,12 +8,12 @@ module.exports = {
             const result = await adminService.getReport(id);
             if (result.length !== 0) {
                 res.status(200).json({
-                    status: "success",
+                    status: 'success',
                     data: result[0],
                 });
             } else {
                 res.status(404).json({
-                    status: "fail",
+                    status: 'fail',
                     message: `No report with id: ${id}`,
                 });
             }
@@ -26,7 +26,7 @@ module.exports = {
         try {
             const result = await adminService.getReportByQuery(req.query);
             res.status(200).json({
-                status: "success",
+                status: 'success',
                 data: result,
             });
         } catch (err) {
@@ -39,12 +39,12 @@ module.exports = {
             const result = await adminService.createReport(req.body);
             if (result.length !== 0) {
                 res.status(201).json({
-                    status: "success",
+                    status: 'success',
                     data: result[0],
                 });
             } else {
                 res.status(404).json({
-                    status: "fail",
+                    status: 'fail',
                     message: `No records were inserted`,
                 });
             }
@@ -58,7 +58,7 @@ module.exports = {
         try {
             const result = await adminService.deleteReport(id);
             res.status(200).json({
-                status: "success",
+                status: 'success',
                 data: result[0],
             });
         } catch (err) {
@@ -71,7 +71,7 @@ module.exports = {
         try {
             const result = await adminService.handleReport(id, req.body);
             res.status(200).json({
-                status: "success",
+                status: 'success',
                 data: result,
             });
         } catch (err) {
@@ -84,12 +84,12 @@ module.exports = {
             const result = await adminService.getFacilityRegistrationRequest(Number(req.params.id));
             if (result) {
                 res.status(200).json({
-                    status: "success",
+                    status: 'success',
                     data: result,
                 });
             } else {
                 res.status(404).json({
-                    status: "fail",
+                    status: 'fail',
                     message: `No request with id: ${req.params.id}`,
                 });
             }
@@ -106,7 +106,7 @@ module.exports = {
                 status: status ? Number(status) : undefined,
             });
             res.status(200).json({
-                status: "success",
+                status: 'success',
                 data: result,
             });
         } catch (err) {
@@ -121,7 +121,7 @@ module.exports = {
                 req.body.adminId
             );
             res.status(200).json({
-                status: "success",
+                status: 'success',
                 data: result,
             });
         } catch (err) {
@@ -136,7 +136,7 @@ module.exports = {
                 req.body.adminId
             );
             res.status(200).json({
-                status: "success",
+                status: 'success',
                 data: result,
             });
         } catch (err) {
@@ -150,7 +150,7 @@ module.exports = {
                 Number(req.params.id)
             );
             res.status(200).json({
-                status: "success",
+                status: 'success',
                 data: result,
             });
         } catch (err) {

@@ -1,6 +1,6 @@
-const db = require("../models/index");
-const reviewService = require("./reviewService");
-const facilityService = require("./facilityService");
+const db = require('../models/index');
+const reviewService = require('./reviewService');
+const facilityService = require('./facilityService');
 
 module.exports = {
     /** get report by id */
@@ -65,15 +65,15 @@ module.exports = {
      * */
     handleReport: async (id, body) => {
         const report = await module.exports.getReport(id);
-        if (report.length === 0 || report[0]["status"] !== 0) {
+        if (report.length === 0 || report[0]['status'] !== 0) {
             throw {
                 status: 409,
                 message: `Report doesn't exists or is already accepted : ${id}`,
             };
         }
-        const reviewId = report[0]["review_id"];
+        const reviewId = report[0]['review_id'];
         try {
-            await db.query("BEGIN");
+            await db.query('BEGIN');
             let result = await db.query({
                 text: `update report 
                     set status = $1, action = $2, admin_id = $3, respond_date = now()
@@ -83,14 +83,14 @@ module.exports = {
             result = {
                 report: result.rows[0],
             };
-            if (body.action === "delete") {
+            if (body.action === 'delete') {
                 const deleteResult = await reviewService.deleteReview(reviewId);
                 result.deleteRows = deleteResult;
             }
-            await db.query("COMMIT");
+            await db.query('COMMIT');
             return result;
         } catch (err) {
-            await db.query("ROLLBACK");
+            await db.query('ROLLBACK');
             throw new Error(err);
         }
     },
@@ -131,7 +131,7 @@ module.exports = {
 
         const data = request.content; // Assuming content is already an object
         try {
-            await db.query("BEGIN");
+            await db.query('BEGIN');
 
             // Create the facility and related entries
             const facility = await facilityService.createFacility(data);
@@ -161,10 +161,10 @@ module.exports = {
             };
             const result = await db.query(query);
 
-            await db.query("COMMIT");
+            await db.query('COMMIT');
             return { request: result.rows[0], facility };
         } catch (error) {
-            await db.query("ROLLBACK");
+            await db.query('ROLLBACK');
             throw error;
         }
     },
