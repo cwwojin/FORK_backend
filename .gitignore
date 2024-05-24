@@ -128,6 +128,9 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+# MeiliSearch
+.meili_data/
+
 # Extras
 .DS_Store
 *.http
