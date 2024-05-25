@@ -56,16 +56,24 @@ services:
     volumes:
       - ./.meili_data:/meili_data
     restart: unless-stopped
-    profiles:
-      - meili
+    profiles: ["dev", "prod"]
 
   meilisync-dev:
     container_name: meilisync
     platform: linux/amd64
-    env_file: .env
-    image: long2ice/meilisync
+    image: long2ice/meilisync:dev
     volumes:
-      - .meilisync/config.yml:/meilisync/config.yml
+      - .meilisync/config.dev.yml:/meilisync/config.yml
     restart: unless-stopped
     profiles:
-      - meili
+      - dev
+
+  meilisync-prod:
+    container_name: meilisync
+    platform: linux/amd64
+    image: long2ice/meilisync:dev
+    volumes:
+      - .meilisync/config.prod.yml:/meilisync/config.yml
+    restart: unless-stopped
+    profiles:
+      - prod

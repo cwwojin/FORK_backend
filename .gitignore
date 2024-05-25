@@ -130,6 +130,7 @@ dist
 
 # MeiliSearch
 .meili_data/
+.meilisync/
 
 # Extras
 .DS_Store
