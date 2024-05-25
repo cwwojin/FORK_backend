@@ -8,7 +8,11 @@
   - [POST : create report](#post--create-report)
   - [DELETE : delete report](#delete--delete-report)
   - [POST : handle report (by admin)](#post--handle-report-by-admin)
-
+  - [GET : get facility registration request by id](#get--get-facility-registration-request-by-id)
+  - [GET : get all facility registration requests](#get--get-all-facility-registration-requests)
+  - [POST : accept facility registration request requested by specified id](#post--accept-facility-registration-request-requested-by-specified-id)
+  - [POST : decline facility registration request requested by specified id](#post--decline-facility-registration-request-requested-by-specified-id)
+  - [DELETE : delete facility registration request of specified id](#delete--delete-facility-registration-request-of-specified-id)
 ---
 
 ## GET : get report by query
@@ -133,3 +137,143 @@
 | status | `success` |
 | data | the updated `report` object |
 | deleteRows | if `action = "delete"`, then this will return all the deleted rows |
+
+---
+
+## GET : get facility registration request by id
+
+- Retrieve a facility registration request by its ID
+
+### URL
+
+`/api/admin/facility-requests/:id`
+
+### Request Format
+
+- Content-Type: `application/json`
+
+| Location | Field Name | Data Type | Required | Description                             |
+| -------- | ---------- | --------- | -------- | --------------------------------------- |
+| param    | id         | int       | O        | unique ID of the `facility registration request` |
+
+### Response Format
+
+- HTTP Status Code: `200`
+
+| Key    | Description                                      |
+| ------ | ------------------------------------------------ |
+| status | `success`                                        |
+| data   | the returned `facility registration request` object |
+
+---
+
+## GET : get all facility registration requests
+
+- Retrieve all facility registration requests
+
+### URL
+
+`/api/admin/facility-requests`
+
+### Request Format
+
+- Content-Type: `application/json`
+
+| Location | Field Name | Data Type | Required | Description                         |
+| -------- | ---------- | --------- | -------- | ----------------------------------- |
+| query    | user       | int       | -        | unique ID of the user (optional)    |
+| query    | status     | int       | -        | status of the request (optional)    |
+
+### Response Format
+
+- HTTP Status Code: `200`
+
+| Key    | Description                            |
+| ------ | -------------------------------------- |
+| status | `success`                              |
+| data   | array of `facility registration request` objects |
+
+---
+
+## POST : accept facility registration request requested by specified id
+
+- Accept a facility registration request by its ID
+
+### URL
+
+`/api/admin/facility-requests/:id/accept`
+
+### Request Format
+
+- Content-Type: `application/json`
+
+| Location | Field Name | Data Type | Required | Description                |
+| -------- | ---------- | --------- | -------- | -------------------------- |
+| param    | id         | int       | O        | unique ID of the request   |
+| body     | adminId    | int       | O        | unique ID of the admin     |
+
+### Response Format
+
+- HTTP Status Code: `200`
+
+| Key    | Description                                    |
+| ------ | ---------------------------------------------- |
+| status | `success`                                      |
+| data   | the accepted `facility registration request` object |
+
+---
+
+## POST : decline facility registration request requested by specified id
+
+- Decline a facility registration request by its ID
+
+### URL
+
+`/api/admin/facility-requests/:id/decline`
+
+### Request Format
+
+- Content-Type: `application/json`
+
+| Location | Field Name | Data Type | Required | Description                |
+| -------- | ---------- | --------- | -------- | -------------------------- |
+| param    | id         | int       | O        | unique ID of the request   |
+| body     | adminId    | int       | O        | unique ID of the admin     |
+
+### Response Format
+
+- HTTP Status Code: `200`
+
+| Key    | Description                                     |
+| ------ | ----------------------------------------------- |
+| status | `success`                                       |
+| data   | the declined `facility registration request` object |
+
+---
+
+## DELETE : delete facility registration request of specified id
+
+- Delete a facility registration request by its ID
+
+### URL
+
+`/api/admin/facility-requests/:id`
+
+### Request Format
+
+- Content-Type: `application/json`
+
+| Location | Field Name | Data Type | Required | Description                |
+| -------- | ---------- | --------- | -------- | -------------------------- |
+| param    | id         | int       | O        | unique ID of the request   |
+
+### Response Format
+
+- HTTP Status Code: `200`
+
+| Key    | Description                                   |
+| ------ | --------------------------------------------- |
+| status | `success`                                     |
+| data   | the deleted `facility registration request` object |
+
+
