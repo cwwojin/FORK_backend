@@ -17,6 +17,9 @@
   - [DELETE : delete a user favorite](#delete--delete-a-user-favorite)
   - [POST : upload a user profile image](#post--upload-a-user-profile-image)
   - [DELETE : delete a user profile image](#delete--delete-a-user-profile-image)
+  - [GET : get facility with id](#get--get-facility-with-id)
+  - [POST : update facility with id](#post--update-facility-with-id)
+  - [DELETE : delete facility with id](#delete--delete-facility-with-id)
 - [Preference Methods](#preference-methods)
   - [GET : get all preferences from the system](#get--get-all-preferences-from-the-system)
   - [GET : get preference by preference ID](#get--get-preference-by-preference-id)
@@ -369,6 +372,100 @@
 | data | the updated `user` object |
 
 ---
+## GET : get facility with id
+
+- Get facility by its ID associated with the user
+
+### URL
+
+`/api/users/:id/myfacility`
+
+### Request Format
+
+- Content-Type: `application/json`
+
+| Location | Field Name | Data Type | Required | Description                   |
+| -------- | ---------- | --------- | -------- | ----------------------------- |
+| param    | id         | int       | O        | unique ID of the user account |
+
+### Response Format
+
+- HTTP Status Code: `200`
+
+| Key    | Description                            |
+| ------ | -------------------------------------- |
+| status | `success`                              |
+| data   | the returned `facility` object         |
+
+---
+
+## POST : update facility with id
+
+- Update a facility by its ID associated with the user
+
+### URL
+
+`/api/users/:user/myfacility/:facility`
+
+### Request Format
+
+- Content-Type: `application/json`
+
+| Location | Field Name             | Data Type | Required | Description                           |
+| -------- | ---------------------- | --------- | -------- | ------------------------------------- |
+| param    | user                   | int       | O        | unique ID of the user account         |
+| param    | facility               | int       | O        | unique ID of the facility             |
+| body     | name                   | string    | O        | name of the facility                  |
+| body     | businessId             | string    | O        | business ID of the facility           |
+| body     | type                   | string    | O        | type of the facility                  |
+| body     | description            | string    | O        | description of the facility           |
+| body     | url                    | string    | O        | URL of the facility                   |
+| body     | phone                  | string    | O        | phone number of the facility          |
+| body     | email                  | string    | O        | email of the facility                 |
+| body     | address                | object    | -        | optional address of the facility      |
+| body     | openingHours           | array     | -        | optional opening hours of the facility |
+| body     | menu                   | array     | -        | optional menu of the facility         |
+| body     | preferences            | array     | -        | optional preferences of the facility  |
+| body     | stampRuleset           | object    | -        | optional stamp ruleset of the facility |
+| body     | stampRuleset.rewards   | array     | -        | optional rewards in the stamp ruleset |
+
+### Response Format
+
+- HTTP Status Code: `200`
+
+| Key    | Description                          |
+| ------ | ------------------------------------ |
+| status | `success`                            |
+| data   | the updated `facility` object        |
+
+---
+
+## DELETE : delete facility with id
+
+- Delete a facility by its ID associated with the user
+
+### URL
+
+`/api/users/:id/myfacility/:facilityId`
+
+### Request Format
+
+- Content-Type: `application/json`
+
+| Location | Field Name | Data Type | Required | Description                   |
+| -------- | ---------- | --------- | -------- | ----------------------------- |
+| param    | id         | int       | O        | unique ID of the user account |
+| param    | facilityId | int       | O        | unique ID of the facility     |
+
+### Response Format
+
+- HTTP Status Code: `200`
+
+| Key    | Description                                       |
+| ------ | ------------------------------------------------- |
+| status | `success`                                         |
+| data   | array of the deleted `facility` objects or an empty array if none |
+
 
 # Preference Methods
 
