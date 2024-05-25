@@ -41,6 +41,7 @@
   - [DELETE : delete menu image](#delete--delete-menu-image)
   - [GET : Get list of trending facilities](#get--get-list-of-trending-facilities)
   - [GET : Get list of newest facilities](#get--get-list-of-newest-facilities)
+  - [POST : send facility registration request to admin to create facility](#post--send-facility-registration-request-to-admin-to-create-facility)
 
 
 ---
@@ -1161,4 +1162,45 @@
 ### Notes
 - This method will return facility data in `pin` format, which is the same as results in [map API](./map.md)
 - Includes `name, address, preferences, opening_hours, etc.`
+
+---
+
+## POST : send facility registration request to admin to create facility
+
+- Send a facility registration request to admin
+
+### URL
+
+`/api/facilities/facility-requests`
+
+### Request Format
+
+- Content-Type: `application/json`
+
+| Location | Field Name               | Data Type | Required | Description                                    |
+| -------- | ------------------------ | --------- | -------- | -----------------------------------------------|
+| body     | authorId                 | int       | O        | unique ID of the author of the request         |
+| body     | title                    | string    | O        | title of the facility registration request     |
+| body     | content.name             | string    | O        | name of the facility                           |
+| body     | content.type             | string    | O        | type of the facility                           |
+| body     | content.businessId       | string    | O        | business ID of the facility                    |
+| body     | content.phone            | string    | O        | phone number of the facility                   |
+| body     | content.email            | string    | O        | email of the facility                          |
+| body     | content.url              | string    | O        | URL of the facility                            |
+| body     | content.description      | string    | O        | description of the facility                    |
+| body     | content.address          | object    | O        | address of the facility                        |
+| body     | content.openingHours     | array     | -        | opening hours of the facility (optional)       |
+| body     | content.menu             | array     | -        | menu items of the facility (optional)          |
+| body     | content.preferences      | array     | -        | preferences of the facility (optional)         |
+| body     | content.stampRuleset     | object    | -        | stamp ruleset of the facility (optional)       |
+| body     | content.stampRuleset.rewards | array | -        | rewards for the stamp ruleset (optional)       |
+
+### Response Format
+
+- HTTP Status Code: `201`
+
+| Key    | Description                                      |
+| ------ | ------------------------------------------------ |
+| status | `success`                                        |
+| data   | the created `facility registration request` object |
 
