@@ -896,6 +896,35 @@ class FacilityService {
         const result = await db.query(query);
         return result.rows.length > 0 ? result.rows[0].status : null;
     }
+
+    /** get list of trending facilities
+     * - (args) limit : limit result to top-K
+     * - (args) preferences : filter by list of preferences
+     */
+    async getTrendingFacilities(args) {
+        const values = [];
+        let baseQuery = `select fp.* from facility_pin fp where fp.avg_score is not null `;
+        if (args.preferences && args.preferences.length !== 0) {
+            values.push(args.preferences);
+            baseQuery = baseQuery + `and fp.preference_ids && $${values.length} `;
+        }
+        const { rows } = await db.query({
+            text: baseQuery + `order by fp.avg_score desc limit ${args.limit} `,
+            values: values,
+        });
+        return rows;
+    }
+
+    /** get list of newest facilities
+     * - limit : limit result to top-K
+     */
+    async getNewestFacilities(limit) {
+        const { rows } = await db.query({
+            text: `select fp.* from facility_pin fp join facility f on fp.id = f.id order by f.created_at desc limit $1`,
+            values: [limit],
+        });
+        return rows;
+    }
 }
 
 module.exports = new FacilityService();
