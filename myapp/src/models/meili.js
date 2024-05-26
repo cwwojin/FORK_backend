@@ -2,15 +2,15 @@
 const { MeiliSearch } = require('meilisearch');
 
 class MeiliClient {
-    constructor () {
+    constructor() {
         this.client = new MeiliSearch({
             host: process.env.MEILI_HOST,
             apiKey: process.env.MEILI_MASTER_KEY,
         });
     }
 
-    async setupIndex () {
-        try{
+    async setupIndex() {
+        try {
             const meiliIndex = this.client.index('facility_pin');
             await meiliIndex.updateSettings({
                 searchableAttributes: [
@@ -38,15 +38,14 @@ class MeiliClient {
                 filterableAttributes: ['opening_hours', 'preference_ids'],
             });
             this.index = meiliIndex;
-        }catch(err){
+        } catch (err) {
             console.log(err);
         }
     }
 
-    async search (query, searchOptions) {
+    async search(query, searchOptions) {
         return this.index.search(query, searchOptions);
     }
-
 }
 
 module.exports = new MeiliClient();

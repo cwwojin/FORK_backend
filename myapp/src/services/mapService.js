@@ -78,10 +78,10 @@ module.exports = {
      */
     getLocationByQueryMeili: async (args) => {
         let query = '';
-        let filter = [];
+        const filter = [];
 
         // check meili client setup
-        if (!meiliClient.hasOwnProperty('index')) {
+        if (!Object.prototype.hasOwnProperty.call(meiliClient, 'index')) {
             await meiliClient.setupIndex();
         }
 
