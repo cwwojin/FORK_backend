@@ -176,6 +176,16 @@ router
         ],
         userController.deleteUserFavorite
     )
+    .get(
+        // GET: get posts of favorite facilities of a user
+        '/favorite/:id/updates',
+        checkPermission([0, 1, 2]),
+        [
+            param('id', `route param 'id' must be a positive integer`).exists().isInt({ min: 1 }),
+            validatorChecker,
+        ],
+        userController.getFavoriteFacilityPosts
+    )
     .post(
         // POST : upload / update a user profile image
         '/profile/image/:id',
