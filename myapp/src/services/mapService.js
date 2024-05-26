@@ -1,4 +1,5 @@
 const db = require('../models/index');
+const meiliClient = require('../models/meili');
 const { parseBoolean } = require('../helper/helper');
 
 module.exports = {
@@ -69,5 +70,49 @@ module.exports = {
             values: values,
         });
         return rows;
+    },
+
+    /** get locations by query - with Search Engine
+     * (args) name, openNow, preferences (list)
+     * - search is done with MeiliSearch (https://www.meilisearch.com/)
+     */
+    getLocationByQueryMeili: async (args) => {
+        let query = '';
+        let filter = [];
+
+        // check meili client setup
+        if (!meiliClient.hasOwnProperty('index')) {
+            await meiliClient.setupIndex();
+        }
+
+        // name
+        if (args.name) {
+            query = args.name;
+        }
+
+        // open-now
+        if (parseBoolean(args.openNow)) {
+            const dayOfWeek = new Date().getDay();
+            const currentTime = new Date().toTimeString().split(' ')[0].slice(0, 5); // Get time in HH:MM format
+            filter.push(
+                `opening_hours.${dayOfWeek}.open_time <= "${currentTime}" AND opening_hours.${dayOfWeek}.close_time >= "${currentTime}"`
+            );
+        }
+
+        // preference id
+        if (args.preferences && args.preferences.length) {
+            const preferencesFilter = args.preferences
+                .map((preference) => `preference_ids = ${preference}`)
+                .join(' OR ');
+            filter.push(`(${preferencesFilter})`);
+        }
+
+        const searchOptions = {};
+        if (filter.length) {
+            searchOptions.filter = filter.join(' AND '); // Join filters with AND
+        }
+
+        const searchResult = await meiliClient.search(query, searchOptions);
+        return searchResult.hits;
     },
 };

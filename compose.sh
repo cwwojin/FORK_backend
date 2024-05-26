@@ -1,5 +1,16 @@
 #!/usr/bin/env bash
 
+# meilisearch directory setup
+if [ -d ./.meili_data ]; then
+    rm -r .meili_data/*
+else
+    mkdir .meili_data
+fi
+
+if ! [ -d ./.meilisync ]; then
+    mkdir .meilisync
+fi
+
 # download key files from S3
 if ! [ -e ./.env ]; then
     aws s3 cp s3://fork-foodies/env/.env ./.env
