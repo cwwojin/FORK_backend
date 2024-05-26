@@ -33,42 +33,29 @@ module.exports = {
      * name is searched as case-insensitive substring search
      */
     getLocationByQuery: async (args) => {
-        const values = [];
-        let baseQuery = `select 
-                            fpe.id,
-                            fpe.name,
-                            fpe.slug,
-                            fpe.profile_img_uri,
-                            fpe.description,
-                            fpe.lat,
-                            fpe.lng,
-                            fpe.road_address,
-                            fpe.english_address,
-                            fpe.avg_score,
-                            fpe.opening_hours,
-                            fpe.preference_ids,
-                            fpe.preferences
-                        from (select fp.*, json_array_elements(fp.opening_hours) oh from facility_pin fp) fpe where 1=1 `;
+        let values = [];
+        let baseQuery = `with base as (select f.id, oh from
+                facility_pin f,
+                json_array_elements(f.opening_hours) oh )
+            select fp.*
+            from facility_pin fp join base on fp.id = base.id where 1=1 `;
 
         // query parameters
         if (args.name) {
-            baseQuery = baseQuery + `and name ilike '%${args.name}%' `;
+            baseQuery = baseQuery + `and fp.name ilike '%${args.name}%' `;
         }
         if (parseBoolean(args.openNow)) {
             baseQuery =
                 baseQuery +
-                `and extract(dow from now()) = (fpe.oh->>'day')::integer 
-                and now()::time between (fpe.oh->>'open_time')::time and (fpe.oh->>'close_time')::time `;
+                `and extract(dow from (now() at time zone 'Asia/Seoul')) = (base.oh->>'day')::integer 
+                and (now() at time zone 'Asia/Seoul')::time between (base.oh->>'open_time')::time and (base.oh->>'close_time')::time `;
         }
         if (args.preferences !== undefined && args.preferences.length !== 0) {
             values.push(args.preferences);
-            baseQuery = baseQuery + `and fpe.preference_ids && $${values.length} `;
+            baseQuery = baseQuery + `and fp.preference_ids && $${values.length} `;
         }
 
-        const { rows } = await db.query({
-            text: baseQuery,
-            values: values,
-        });
+        const { rows } = await db.query(baseQuery, values);
         return rows;
     },
 
