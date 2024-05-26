@@ -144,6 +144,21 @@ module.exports = {
         const result = await db.query(query);
         return result.rows;
     },
+    // Get all posts of favorite facilities of a user, ordered by updated dates
+    getFavoriteFacilityPosts: async (userId) => {
+        const query = {
+            text: `
+                SELECT p.*
+                FROM post p
+                JOIN favorite f ON p.facility_id = f.facility_id
+                WHERE f.user_id = $1
+                ORDER BY p.updated_at DESC
+            `,
+            values: [userId],
+        };
+        const result = await db.query(query);
+        return result.rows;
+    },
     /**
      * upload / update a user profile image
      * 1. if user already has a profile image, delete file from S3

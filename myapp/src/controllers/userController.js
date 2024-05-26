@@ -176,6 +176,19 @@ module.exports = {
             next(err);
         }
     },
+    // Get all posts of favorite facilities of a user
+    getFavoriteFacilityPosts: async (req, res, next) => {
+        const id = Number(req.params.id);
+        try {
+            const result = await userService.getFavoriteFacilityPosts(id);
+            res.status(200).json({
+                status: 'success',
+                data: result,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
     /** upload a user profile image */
     uploadUserProfileImage: async (req, res, next) => {
         const id = Number(req.params.id);
