@@ -20,6 +20,7 @@
   - [GET : get facility with id](#get--get-facility-with-id)
   - [POST : update facility with id](#post--update-facility-with-id)
   - [DELETE : delete facility with id](#delete--delete-facility-with-id)
+  - [GET : get posts of all user's favorite facilities](#get--get-posts-of-all-users-favorite-facilities)
 - [Preference Methods](#preference-methods)
   - [GET : get all preferences from the system](#get--get-all-preferences-from-the-system)
   - [GET : get preference by preference ID](#get--get-preference-by-preference-id)
@@ -465,6 +466,28 @@
 | ------ | ------------------------------------------------- |
 | status | `success`                                         |
 | data   | array of the deleted `facility` objects or an empty array if none |
+
+---
+## GET : get posts of all user's favorite facilities
+- Get all posts of the facilities that a user has marked as favorite in order, most recent first
+
+### URL
+`/api/users/favorite/:id/updates`
+
+### Request Format
+- Content-Type: `application/json`
+
+| Location | Field Name | Data Type | Required | Description                |
+| -------- | ---------- | --------- | -------- | -------------------------- |
+| param    | id         | int       | O        | the unique id of the `user`|
+
+### Response Format
+- HTTP Status Code: `200`
+
+| Key | Description |
+| --- | ----------- |
+| status | `success` |
+| data | array of `post` rows from all favorite facilities of the user |
 
 
 # Preference Methods
