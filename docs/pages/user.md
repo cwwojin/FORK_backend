@@ -15,6 +15,7 @@
   - [GET : check if a facility is user's favorite](#get--check-if-a-facility-is-users-favorite)
   - [PUT : add a user favorite](#put--add-a-user-favorite)
   - [DELETE : delete a user favorite](#delete--delete-a-user-favorite)
+  - [GET : Get updates from my favorites (facilitiy posts)](#get--get-updates-from-my-favorites-facilitiy-posts)
   - [POST : upload a user profile image](#post--upload-a-user-profile-image)
   - [DELETE : delete a user profile image](#delete--delete-a-user-profile-image)
   - [GET : get facility with id](#get--get-facility-with-id)
@@ -321,6 +322,40 @@
 | --- | --- |
 | status | `success` |
 | data | the deleted junction object which has keys `{"user_id", "facility_id"}` |
+
+---
+
+## GET : Get updates from my favorites (facilitiy posts)
+- get all posts from my favorite facilities, in order of update-time `updated_at`
+- returned data format is in [`post` format](./facility.md)
+
+### URL
+`/api/users/favorite/:id/updates`
+
+### Permissions
+
+| userType | Guest | 0 (Admin) | 1 (KAIST) | 2 (Facility) |
+| --- | --- | --- | --- | --- |
+| Permission | X | O | O | O |
+
+### Request Format
+- Content-Type: `application/json`
+
+| Location | Field Name | Data Type | Required | Description |
+| --- | --- | --- | --- | --- |
+| param | id | int | O | the unique id of the `user` |
+
+### Response Format
+- HTTP Status Code: `200`
+
+| Key | Description |
+| --- | --- |
+| status | `success` |
+| data | Array of `post` rows |
+
+### Notes
+
+- The data returned is of format `post` (refer to facility API docs)
 
 ---
 
