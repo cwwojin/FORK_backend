@@ -11,16 +11,19 @@ const { reviewRoutes, hashtagRoutes } = require('./routes/reviewRoutes');
 const stampRoutes = require('./routes/stampRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const errorMiddleware = require('./middleware/errorMiddleware');
-const { checkUserTypeHeader } = require('./middleware/authMiddleware');
+const { checkUserTypeHeader, identifyUser } = require('./middleware/authMiddleware');
 
 const app = express();
 
-// Middleware
+// Middleware - General
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan('dev')); // Logging middleware
-app.use(checkUserTypeHeader());     // middleware for checking userType header
+
+// Middleware - Authorization
+app.use(checkUserTypeHeader()); // middleware for checking userType header
+app.use(identifyUser()); // middleware for identification
 
 // Routes
 app.use('/api/auth', authRoutes);
