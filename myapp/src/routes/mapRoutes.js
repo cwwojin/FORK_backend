@@ -40,6 +40,11 @@ router
                 .isString()
                 .isLength({ max: 50 })
                 .custom(validateSearchInput),
+            query('englishName', `optional query field 'englishName must be a string`)
+                .optional()
+                .isString()
+                .isLength({ max: 50 })
+                .custom(validateSearchInput),
             query('openNow', `optional query field 'openNow' must be boolean`)
                 .optional()
                 .isBoolean(),

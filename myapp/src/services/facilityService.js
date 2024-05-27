@@ -27,12 +27,13 @@ class FacilityService {
 
             // Insert into facility table, get the facility ID
             const facilityQuery = `
-        INSERT INTO facility (name, business_id, type, description, url, phone, email)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        INSERT INTO facility (name, english_name, business_id, type, description, url, phone, email)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         RETURNING *;
       `;
             const facilityValues = [
                 data.name,
+                data.englishName,
                 data.businessId,
                 data.type,
                 data.description,
@@ -161,6 +162,10 @@ class FacilityService {
             if (data.name !== undefined) {
                 updateFields.push(`name = $${fieldIndex++}`);
                 updateValues.push(data.name);
+            }
+            if (data.englishName !== undefined) {
+                updateFields.push(`english_name = $${fieldIndex++}`);
+                updateValues.push(data.englishName);
             }
             if (data.businessId !== undefined) {
                 updateFields.push(`business_id = $${fieldIndex++}`);
