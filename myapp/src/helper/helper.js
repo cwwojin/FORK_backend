@@ -1,6 +1,7 @@
 const userNamePattern = new RegExp('^[a-zA-Z0-9._-]+$');
 const passwordPattern = new RegExp('^[a-zA-Z0-9._-]+$');
 const KAISTMailPattern = new RegExp('@kaist.ac.kr$');
+const searchBarInputPattern = new RegExp('^[ㄱ-ㅎㅏ-ㅣ가-힣a-zA-Z0-9!?@#$&()`._+,/"\'-]+$');
 
 module.exports = {
     /** CONSTANTS */
@@ -66,4 +67,5 @@ module.exports = {
         }
     },
     validateKAISTMail: (email) => KAISTMailPattern.test(email),
+    validateSearchInput: (str) => searchBarInputPattern.test(str),
 };
