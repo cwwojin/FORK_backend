@@ -20,7 +20,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan('dev')); // Logging middleware
-app.use(checkUserTypeHeader());     // middleware for checking userType header
+app.use(checkUserTypeHeader()); // middleware for checking userType header
 
 // Routes
 app.use('/api/auth', authRoutes);

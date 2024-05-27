@@ -38,11 +38,11 @@ module.exports = {
         return result.rows;
     },
     /** create a report */
-    createReport: async (body) => {
+    createReport: async (body, clientId) => {
         const query = {
             text: `insert into report (author_id, type, content, review_id) 
                 values ($1, $2, $3, $4) returning *`,
-            values: [body.authorId, body.type, body.content, body.reviewId],
+            values: [clientId || body.authorId, body.type, body.content, body.reviewId],
         };
         const result = await db.query(query);
         return result.rows;
@@ -63,7 +63,7 @@ module.exports = {
      *  1. update report -> set status = 1, admin_id, respond_date, action
      *  2. if action == "delete", delete the corresponding review (if review_id is not null)
      * */
-    handleReport: async (id, body) => {
+    handleReport: async (id, body, clientId) => {
         const report = await module.exports.getReport(id);
         if (report.length === 0 || report[0]['status'] !== 0) {
             throw { status: 409, message: `Report doesn't exists or is already accepted : ${id}` };
@@ -75,7 +75,7 @@ module.exports = {
                 text: `update report 
                     set status = $1, action = $2, admin_id = $3, respond_date = now()
                     where id = $4 returning *`,
-                values: [1, body.action, body.adminId, id],
+                values: [1, body.action, clientId || body.adminId, id],
             });
             result = {
                 report: result.rows[0],
@@ -120,7 +120,7 @@ module.exports = {
         return result.rows;
     },
     /** accept a facility registration request */
-    acceptFacilityRegistrationRequest: async (id, adminId) => {
+    acceptFacilityRegistrationRequest: async (id) => {
         const request = await module.exports.getFacilityRegistrationRequest(id);
         if (!request || request.status !== 0) {
             throw { status: 404, message: `Request doesn't exist or is not pending` };
@@ -167,7 +167,7 @@ module.exports = {
     },
 
     /** decline a facility registration request */
-    declineFacilityRegistrationRequest: async (id, adminId) => {
+    declineFacilityRegistrationRequest: async (id) => {
         const request = await module.exports.getFacilityRegistrationRequest(id);
         if (!request || request.status !== 0) {
             throw { status: 404, message: `Request doesn't exist or is not pending` };

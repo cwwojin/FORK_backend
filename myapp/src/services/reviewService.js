@@ -57,7 +57,7 @@ module.exports = {
      * 4. Insert junction table "review_hashtag" entries
      * 5. COMMIT or ROLLBACK transaction if error
      */
-    createReview: async (args) => {
+    createReview: async (args, clientId) => {
         try {
             let result;
             const existingHashTags = args.hashtags.filter((e) => !!e['id']);
@@ -74,7 +74,13 @@ module.exports = {
             result = await db.query({
                 text: `insert into review (author_id, facility_id, score, content, img_uri)
                     values ($1, $2, $3, $4, $5) returning id`,
-                values: [args.authorId, args.facilityId, args.score, args.content, args.imageUri],
+                values: [
+                    clientId || args.authorId,
+                    args.facilityId,
+                    args.score,
+                    args.content,
+                    args.imageUri,
+                ],
             });
             const reviewId = result.rows[0]['id'];
             const insertJunctionQuery = `insert into review_hashtag (review_id, hashtag_id)

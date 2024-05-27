@@ -32,7 +32,7 @@ module.exports = {
      * name is searched as case-insensitive substring search
      */
     getLocationByQuery: async (args) => {
-        let values = [];
+        const values = [];
         let baseQuery = `with base as (select f.id, oh from
                 facility_pin f,
                 json_array_elements(f.opening_hours) oh )
