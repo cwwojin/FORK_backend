@@ -7,6 +7,7 @@
   - [POST : Register New User](#post--register-new-user)
   - [POST : Re-send verification mail](#post--re-send-verification-mail)
   - [POST : Verify KAIST user \& complete registration](#post--verify-kaist-user--complete-registration)
+  - [POST : Sign-out - Remove user account from the system](#post--sign-out---remove-user-account-from-the-system)
 
 ---
 
@@ -144,3 +145,37 @@
 | --- | --- |
 | status | `success` |
 | data | the created `user` object |
+
+---
+
+## POST : Sign-out - Remove user account from the system
+- Sign out from my account, deleting it from the FORK database
+- Server will identify the requesting user from header value `id`
+
+### URL
+`/api/auth/sign-out`
+
+### Permissions
+
+| userType | Guest | 0 (Admin) | 1 (KAIST) | 2 (Facility) |
+| --- | --- | --- | --- | --- |
+| Permission | X | O | O | O |
+
+### Request Format
+- Content-Type: `application/json`
+
+| Location | Field Name | Data Type | Required | Description |
+| --- | --- | --- | --- | --- |
+| . | . | . | . | . |
+
+### Response Format
+- HTTP Status Code: `200`
+
+| Key | Description |
+| --- | --- |
+| status | `success` |
+| data | the deleted `user` object |
+
+### Notes
+
+- Client doesn't have to explicitly add user `id` in the request
