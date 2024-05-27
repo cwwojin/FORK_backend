@@ -47,7 +47,7 @@ module.exports = {
     identifyUser: () => {
         return async (req, res, next) => {
             if (USER_TYPES.includes(Number(req.header('userType')))) {
-                try{
+                try {
                     const id = Number(req.header('id'));
                     const user = await userService.getUserById(id);
                     if (
@@ -62,11 +62,11 @@ module.exports = {
                             message: `No user in database with { id: ${req.header('id')}, accountId: ${req.header('accountId')}, userType: ${req.header('userType')} }`,
                         });
                     }
-                }catch(err){
+                } catch (err) {
                     return res.status(401).json({
                         status: 'fail',
                         message: `User identification failed for { id: ${req.header('id')}, accountId: ${req.header('accountId')}, userType: ${req.header('userType')} }`,
-                    })
+                    });
                 }
             }
             next();
