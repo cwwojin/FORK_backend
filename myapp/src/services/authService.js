@@ -190,4 +190,12 @@ module.exports = {
             throw err;
         }
     },
+    /** sign out - delete my account from FORK system
+     * - verify requesting user
+     * - use their id to request user deletion
+     */
+    signOutUser: async (userId) => {
+        const result = await userService.deleteUser(userId);
+        return result;
+    },
 };

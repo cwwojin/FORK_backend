@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const { body, param, query } = require('express-validator');
+const { body, header } = require('express-validator');
 
 const authController = require('../controllers/authController');
 const { validatorChecker } = require('../middleware/validator');
@@ -63,6 +63,16 @@ router
             validatorChecker,
         ],
         authController.verifyKAISTUser
+    )
+    .post(
+        // POST : sign out - delete my account
+        '/sign-out',
+        checkPermission([0, 1, 2]),
+        [
+            header('id', `header 'id' must be a positive integer`).exists().isInt({ min: 1 }),
+            validatorChecker,
+        ],
+        authController.signOutUser
     );
 
 module.exports = router;
