@@ -73,6 +73,16 @@ router
             validatorChecker,
         ],
         authController.signOutUser
+    )
+    .post(
+        // POST : request password reset
+        '/reset-password',
+        checkPermission([-1, 0]),
+        [
+            body('userId', `body field 'userId' should be string`).exists().isString(),
+            validatorChecker,
+        ],
+        authController.resetPassword
     );
 
 module.exports = router;

@@ -38,6 +38,11 @@ module.exports = {
         const num = Math.floor(Math.random() * 1000000);
         return num.toString().padStart(6, '0');
     },
+    generateRandomPassword: (length) => {
+        return Math.random()
+            .toString(36)
+            .substring(2, 2 + length);
+    },
     /** request validation */
     validateUserId: (userId) => userNamePattern.test(userId),
     validatePassword: (password) => passwordPattern.test(password),

@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 
 const { validateKAISTMail, BCRYPT_SALTROUNDS } = require('../helper/helper');
 const db = require('../models/index');
-const { sendAuthMail } = require('../helper/mailSender');
+const { sendAuthMail, sendPasswordResetMail } = require('../helper/mailSender');
 const userService = require('./userService');
 
 const validateAccount = async (userId, password) => {
@@ -197,5 +197,38 @@ module.exports = {
     signOutUser: async (userId) => {
         const result = await userService.deleteUser(userId);
         return result;
+    },
+    /** request password reset
+     * - generate random password
+     * - send mail to account email containing the new password
+     * - update DB w/ new password
+     */
+    resetPassword: async (userId) => {
+        const client = await db.connect();
+        try {
+            await client.query('BEGIN');
+            const users = await userService.getUsers({ accountId: userId });
+            if (users.length === 0)
+                throw { status: 404, message: `No user with account id : ${userId}` };
+
+            const { id, email } = users[0];
+            const { newPassword } = await sendPasswordResetMail(email);
+
+            const result = await userService.updateUserProfile(
+                {
+                    password: newPassword,
+                    email: email,
+                },
+                id
+            );
+
+            await client.query('COMMIT');
+            return result;
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        } finally {
+            client.release();
+        }
     },
 };

@@ -72,4 +72,20 @@ module.exports = {
             next(err);
         }
     },
+    /** request password reset
+     * - generate random password
+     * - send mail to account email containing the new password
+     * - update DB w/ new password
+     */
+    resetPassword: async (req, res, next) => {
+        try {
+            await authService.resetPassword(req.body.userId);
+            res.status(201).json({
+                status: 'success',
+                message: 'Password reset mail sent', // hide email
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 };
