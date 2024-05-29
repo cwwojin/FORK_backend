@@ -89,7 +89,7 @@ module.exports = {
         } catch (err) {
             await client.query('ROLLBACK');
             throw err;
-        }finally{
+        } finally {
             client.release();
         }
     },
@@ -192,7 +192,7 @@ module.exports = {
         } catch (err) {
             await client.query('ROLLBACK');
             throw err;
-        }finally{
+        } finally {
             client.release();
         }
     },
