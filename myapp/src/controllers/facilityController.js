@@ -504,11 +504,14 @@ module.exports = {
     createFacilityRegistrationRequest: async (req, res, next) => {
         try {
             const { authorId, title, content } = req.body;
-            const request = await facilityService.createFacilityRegistrationRequest({
-                authorId,
-                title,
-                content,
-            });
+            const request = await facilityService.createFacilityRegistrationRequest(
+                {
+                    authorId,
+                    title,
+                    content: JSON.parse(content),
+                },
+                req.files
+            );
             res.status(201).json({
                 status: 'success',
                 data: request,
