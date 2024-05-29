@@ -899,8 +899,6 @@ class FacilityService {
                 fileToS3UriMap.set(e.originalname, makeS3Uri(e.bucket, e.key));
         });
 
-        console.log(fileToS3UriMap);
-
         // set uri fields in 'content'
         const content = structuredClone(data.content);
         content.profileImgUri = fileToS3UriMap.get(content.profileImgFile);
@@ -914,8 +912,6 @@ class FacilityService {
                 };
             });
         }
-
-        console.log(content);
 
         const query = `
       INSERT INTO facility_registration_request (author_id, title, content)
