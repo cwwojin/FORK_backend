@@ -37,26 +37,29 @@ module.exports = {
      * 4. COMMIT or ROLLBACK
      * */
     stampTransaction: async (args) => {
+        const client = await db.connect();
         try {
             const amountDiff = (args.type ? 1 : -1) * args.amount;
-            await db.query('BEGIN');
-            let result = await db.query({
+            await client.query('BEGIN');
+            let result = await client.query({
                 text: `insert into transaction (buyer_id, facility_id, seller_id, type, amount)
                     values ($1, $2, $3, $4, $5)
                     returning *`,
                 values: [args.buyerId, args.facilityId, args.sellerId, args.type, args.amount],
             });
-            result = await db.query({
+            result = await client.query({
                 text: `update stampbook set cnt = cnt + $1
                     where user_id = $2 and facility_id = $3
                     returning *`,
                 values: [amountDiff, args.buyerId, args.facilityId],
             });
-            await db.query('COMMIT');
+            await client.query('COMMIT');
             return result.rows;
         } catch (err) {
-            await db.query('ROLLBACK');
+            await client.query('ROLLBACK');
             throw new Error(err);
+        }finally{
+            client.release();
         }
     },
 };

@@ -412,7 +412,7 @@ class FacilityService {
             }
             throw error;
         } finally {
-            client?.release();
+            client.release();
         }
     }
 
@@ -470,7 +470,7 @@ class FacilityService {
             await client.query('ROLLBACK');
             throw error;
         } finally {
-            client?.release();
+            client.release();
         }
     }
 
@@ -521,7 +521,7 @@ class FacilityService {
             await client.query('ROLLBACK');
             throw error;
         } finally {
-            client?.release();
+            client.release();
         }
     }
 
@@ -756,7 +756,7 @@ class FacilityService {
             const { rows } = await client.query(query, values);
             return rows;
         } finally {
-            client?.release();
+            client.release();
         }
     }
 
@@ -773,7 +773,7 @@ class FacilityService {
             const { rows } = await client.query(query, values);
             return rows[0];
         } finally {
-            client?.release();
+            client.release();
         }
     }
 
