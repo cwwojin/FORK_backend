@@ -442,6 +442,7 @@ router
     .post(
         // POST: send facility registration request to admin to create facility
         '/facility-requests',
+        checkPermission([0, 2]),
         s3Uploader.array('images'),
         [
             body('authorId')

@@ -510,7 +510,7 @@ class FacilityService {
             };
         return rows[0];
     }
-    async createPost(facilityId, data) {
+    async createPost(facilityId, data, clientId) {
         let client;
         try {
             client = await db.connect();
@@ -521,7 +521,13 @@ class FacilityService {
         VALUES ($1, $2, $3, $4, $5)
         RETURNING *;
       `;
-            const values = [data.authorId, facilityId, data.title, data.content, data.imgUri];
+            const values = [
+                clientId || data.authorId,
+                facilityId,
+                data.title,
+                data.content,
+                data.imgUri,
+            ];
 
             const { rows } = await client.query(query, values);
             await client.query('COMMIT');
@@ -891,7 +897,7 @@ class FacilityService {
      * - make map { originalname : s3Uri } from files array
      * - in content, make uri fields for only matched files and put s3-uri
      * */
-    async createFacilityRegistrationRequest(data, files) {
+    async createFacilityRegistrationRequest(data, clientId, files) {
         const fileToS3UriMap = new Map();
         files.map((e) => {
             // map originalname -> s3-uri
@@ -918,7 +924,7 @@ class FacilityService {
       VALUES ($1, $2, $3)
       RETURNING *;
     `;
-        const values = [data.authorId, data.title, JSON.stringify(content)];
+        const values = [clientId || data.authorId, data.title, JSON.stringify(content)];
         const { rows } = await db.query(query, values);
         return rows[0];
     }
