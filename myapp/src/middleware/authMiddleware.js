@@ -16,7 +16,7 @@ module.exports = {
             (req, res, next) => {
                 const errors = validationResult(req);
                 if (!errors.isEmpty()) {
-                    res.status(401).json({
+                    return res.status(401).json({
                         status: 'fail',
                         message: `One or more invalid userType, id, accountId headers. Check authorization`,
                     });
