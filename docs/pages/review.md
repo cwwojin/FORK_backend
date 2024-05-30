@@ -11,6 +11,7 @@
 - [Hashtag Methods](#hashtag-methods)
   - [GET : Get all Hashtags from the system](#get--get-all-hashtags-from-the-system)
   - [GET : Get a Hashtag by ID](#get--get-a-hashtag-by-id)
+  - [GET : Get Top-N Hashtags of a Facility](#get--get-top-n-hashtags-of-a-facility)
 
 ---
 
@@ -216,3 +217,28 @@
 | status | `success` |
 | data | the returned `hashtag` object |
 
+---
+
+## GET : Get Top-N Hashtags of a Facility
+- Get the top-N hashtags of a certain facility
+- the top-N is given by : out of all hashtags in the facility's reviews, order by number of occurences
+
+### URL
+`/api/hashtags/top/:facility`
+
+### Request Format
+- Content-Type: `application/json`
+
+| Location | Field Name | Data Type | Required | Description |
+| --- | --- | --- | --- | --- |
+| param | facility | int | O | the unique id of the `facility` |
+| query | limit | int | - | limit the returned `hashtag` rows to this amount. If not given, the result will contain every hashtag that appears at least once |
+
+### Response Format
+
+- HTTP Status Code: `200`
+
+| Key | Description |
+| --- | --- |
+| status | `success` |
+| data | array of `hashtag` rows |
