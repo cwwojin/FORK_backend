@@ -46,3 +46,34 @@ services:
       - "80:3000"
     profiles:
       - prod
+
+  meilisearch:
+    container_name: meilisearch
+    env_file: .env
+    image: getmeili/meilisearch:v1.8
+    ports:
+      - "7700:7700"
+    volumes:
+      - ./.meili_data:/meili_data
+    restart: unless-stopped
+    profiles: ["dev", "prod"]
+
+  meilisync-dev:
+    container_name: meilisync
+    platform: linux/amd64
+    image: long2ice/meilisync:dev
+    volumes:
+      - .meilisync/config.dev.yml:/meilisync/config.yml
+    restart: unless-stopped
+    profiles:
+      - dev
+
+  meilisync-prod:
+    container_name: meilisync
+    platform: linux/amd64
+    image: long2ice/meilisync:dev
+    volumes:
+      - .meilisync/config.prod.yml:/meilisync/config.yml
+    restart: unless-stopped
+    profiles:
+      - prod

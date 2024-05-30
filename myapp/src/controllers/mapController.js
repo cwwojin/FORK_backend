@@ -41,7 +41,8 @@ module.exports = {
     /** get location by query (name, openNow, preferences) */
     getLocationByQuery: async (req, res, next) => {
         try {
-            const result = await mapService.getLocationByQuery(req.query);
+            // const result = await mapService.getLocationByQuery(req.query);
+            const result = await mapService.getLocationByQueryMeili(req.query);
             res.status(200).json({
                 status: 'success',
                 data: result,
