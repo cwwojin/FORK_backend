@@ -1168,19 +1168,34 @@
 ## POST : send facility registration request to admin to create facility
 
 - Send a facility registration request to admin
+- Attach multiple images that should be included in the facility profile (optional)
+  - Images include : `1. Facility Profile Image (1), 2. Menu Images (1 per menu) 3. Stamp Logo Image (1)`
+  - All uploaded images will be viewable after the facilty has been accepted and registered into FORK.
 
 ### URL
 
 `/api/facilities/facility-requests`
 
+---
+
 ### Request Format
 
-- Content-Type: `application/json`
+- Content-Type: `multipart/form-data`
 
 | Location | Field Name               | Data Type | Required | Description                                    |
 | -------- | ------------------------ | --------- | -------- | -----------------------------------------------|
+| body     | images                   | array of files (FormData) | - | The array of image files to be uploaded. This field is optional |
 | body     | authorId                 | int       | O        | unique ID of the author of the request         |
 | body     | title                    | string    | O        | title of the facility registration request     |
+| body     | content                  | JSON-string    | O | the content of the facility registration request, which is an object containing all necessary & optional information for the `facility` the entire field should be wrapped as JSON-string |
+
+### Request Format : Content
+
+- the `content` field of this request body is an object wrapped as JSON-string `use JSON.stringify()`
+- this section covers the included keys of the `content`
+
+| Location | Field Name               | Data Type | Required | Description                                    |
+| -------- | ------------------------ | --------- | -------- | -----------------------------------------------|
 | body     | content.name             | string    | O        | name of the facility                           |
 | body     | content.type             | string    | O        | type of the facility                           |
 | body     | content.businessId       | string    | O        | business ID of the facility                    |
@@ -1188,12 +1203,33 @@
 | body     | content.email            | string    | O        | email of the facility                          |
 | body     | content.url              | string    | O        | URL of the facility                            |
 | body     | content.description      | string    | O        | description of the facility                    |
+| body     | content.profileImgFile   | string    | O        | the BASE-NAME of the uploaded file for the facilty profile image `(ex. "Image_001.png")` |
 | body     | content.address          | object    | O        | address of the facility                        |
 | body     | content.openingHours     | array     | -        | opening hours of the facility (optional)       |
 | body     | content.menu             | array     | -        | menu items of the facility (optional)          |
 | body     | content.preferences      | array     | -        | preferences of the facility (optional)         |
 | body     | content.stampRuleset     | object    | -        | stamp ruleset of the facility (optional)       |
-| body     | content.stampRuleset.rewards | array | -        | rewards for the stamp ruleset (optional)       |
+| body     | content.stampRuleset.rewards     | array    | -        | array of `stamp reward` elements (optional)       |
+
+### Request Format : Content - menu (array element)
+
+| Location | Field Name               | Data Type | Required | Description                                    |
+| -------- | ------------------------ | --------- | -------- | -----------------------------------------------|
+| body | content.menu.*.name | string | O | the name of the `menu` |
+| body | content.menu.*.description | string | O | the description of the `menu` |
+| body | content.menu.*.price | int | O | the price of the `menu` item |
+| body | content.menu.*.quantity | string | O | the quantity per serving of the `menu` item, in (g) or (mL) `(ex. 200g)` |
+| body | content.menu.*.imgFile | string | - | the BASE-NAME of the uploaded file for the image for this particular `menu` item `(ex. "Image_001.png")` |
+
+### Request Format : Content - stampRuleset
+
+| Location | Field Name               | Data Type | Required | Description                                    |
+| -------- | ------------------------ | --------- | -------- | -----------------------------------------------|
+| body | content.stampRuleset.totalCnt | int | O | the total-count of the `stamp_ruleset` the total-count refers to the MAX amount of stamps collectable by a KAIST user |
+| body | content.stampRuleset.logoImgFile | string | - | the BASE-NAME of the uploaded file for the stamps logo image `(ex. "Image_001.png")` |
+| body     | content.stampRuleset.rewards     | array    | -        | array of `stamp reward` elements (optional)       |
+
+---
 
 ### Response Format
 
@@ -1204,3 +1240,83 @@
 | status | `success`                                        |
 | data   | the created `facility registration request` object |
 
+### Notes
+- Attached images are all optional. If there are no images, exclude the field or have empty array.
+- Image files in the `images` field should match the file base-names saved in the `content` field `ex. profileImgFile` If not, the image won't be saved even if facility is registered into the system
+- If some of the images fail to upload, only the uploaded images will be saved when facility is registered into the system
+
+### Example Request
+- In this example, the field `images` is excluded
+
+```JSON
+{
+  "authorId": 1,
+  "title" : "Hello FORK!",
+  "content" : JSON.Stringify({
+    "name":"Restaurant_01", 
+    "type":"restaurant", 
+    "businessId":"B00001", 
+    "phone":"02-1234-5678", 
+    "email":"fork350@foodies.com", 
+    "url":"www.restaurant.com", 
+    "description":"We serve great foods.", 
+    "profileImgFile": "facility_img_01.png", 
+    "address": { 
+      "postNumber":"12345", 
+      "country":"Korea", 
+      "city":"Seoul", 
+      "roadAddress":"도로명 주소 01", 
+      "englishAddress":"eng address 01", 
+      "lat":100.00, 
+      "lng":100.00
+    }, 
+    "openingHours":[
+      {
+        "day": 1,
+        "openTime": "09:00",
+        "closeTime": "17:00"
+      },
+      {
+        "day": 2,
+        "openTime": "09:00",
+        "closeTime": "17:00"
+      },
+      {
+        "day": 3,
+        "openTime": "09:00",
+        "closeTime": "17:00"
+      }
+    ], 
+    "menu":[ 
+      {
+        "name": "menu_01", 
+        "description": "menuDesc_01", 
+        "price": 20000, 
+        "quantity": "100g", 
+        "imgFile": "menu_img_01.png" 
+      }, 
+      { 
+        "name": "menu_02", 
+        "description": "menuDesc_02", 
+        "price": 20000, 
+        "quantity": "100g", 
+        "imgFile": "menu_img_02.png" 
+      } 
+    ], 
+    "preferences":[
+      1,
+      2
+    ], 
+    "stampRuleset":{ 
+      "totalCnt":100, 
+      "logoImgFile": "stamp_img_01.png", 
+      "rewards":[ 
+        { 
+          "name":"reward_001", 
+          "cnt":10 
+        } 
+      ] 
+    } 
+  })
+}
+```
