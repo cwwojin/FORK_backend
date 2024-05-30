@@ -174,4 +174,29 @@ module.exports = {
         const result = await db.query(query);
         return result.rows;
     },
+    /** get top-N hashtags
+     * - get up to top-N hashtags from a certain facility's reviews
+     * - if none, return empty array
+     */
+    getTopHashtags: async (facilityId, limit) => {
+        const values = [facilityId];
+        let baseQuery = `select h.* from hashtag h 
+            join review_hashtag rh on h.id = rh.hashtag_id
+            join review r on rh.review_id = r.id
+            where r.facility_id = $${values.length}
+            group by h.id
+            order by count(h.id) desc `;
+
+        // query parameter - limit
+        if (limit !== undefined) {
+            values.push(limit);
+            baseQuery = baseQuery + `limit $${values.length} `;
+        }
+
+        const { rows } = await db.query({
+            text: baseQuery,
+            values: values,
+        });
+        return rows;
+    },
 };

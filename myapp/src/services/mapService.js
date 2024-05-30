@@ -28,16 +28,27 @@ module.exports = {
         return result.rows;
     },
     /** get locations by query
-     * (args) name, openNow, preferences (list)
-     * name is searched as case-insensitive substring search
+     * (args) name, openNow, preferences (list), favorite (bool)
+     * - name is searched as case-insensitive substring search
+     * - favorite : if TRUE, get only the user (clientId) favorites
      */
-    getLocationByQuery: async (args) => {
+    getLocationByQuery: async (args, clientId) => {
         const values = [];
         let baseQuery = `with base as (select f.id, oh from
                 facility_pin f,
                 json_array_elements(f.opening_hours) oh )
-            select fp.*
-            from facility_pin fp join base on fp.id = base.id where 1=1 `;
+            select distinct on (fp.id) fp.*
+            from facility_pin fp 
+            join base on fp.id = base.id `;
+
+        // query parameter - favorite
+        if (parseBoolean(args.favorite)) {
+            values.push(clientId);
+            baseQuery =
+                baseQuery +
+                `join favorite fv on fp.id = fv.facility_id and fv.user_id = $${values.length} `;
+        }
+        baseQuery = baseQuery + `where 1=1 `;
 
         // query parameters
         if (args.name) {
