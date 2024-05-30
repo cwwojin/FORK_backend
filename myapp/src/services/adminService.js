@@ -64,14 +64,15 @@ module.exports = {
      *  2. if action == "delete", delete the corresponding review (if review_id is not null)
      * */
     handleReport: async (id, body) => {
+        const client = await db.connect();
         const report = await module.exports.getReport(id);
         if (report.length === 0 || report[0]['status'] !== 0) {
             throw { status: 409, message: `Report doesn't exists or is already accepted : ${id}` };
         }
         const reviewId = report[0]['review_id'];
         try {
-            await db.query('BEGIN');
-            let result = await db.query({
+            await client.query('BEGIN');
+            let result = await client.query({
                 text: `update report 
                     set status = $1, action = $2, admin_id = $3, respond_date = now()
                     where id = $4 returning *`,
@@ -84,11 +85,13 @@ module.exports = {
                 const deleteResult = await reviewService.deleteReview(reviewId);
                 result.deleteRows = deleteResult;
             }
-            await db.query('COMMIT');
+            await client.query('COMMIT');
             return result;
         } catch (err) {
-            await db.query('ROLLBACK');
+            await client.query('ROLLBACK');
             throw new Error(err);
+        } finally {
+            client.release();
         }
     },
     /** get facility registration request by id - possible for admin to view content */
@@ -121,6 +124,7 @@ module.exports = {
     },
     /** accept a facility registration request */
     acceptFacilityRegistrationRequest: async (id, adminId) => {
+        const client = await db.connect();
         const request = await module.exports.getFacilityRegistrationRequest(id);
         if (!request || request.status !== 0) {
             throw { status: 404, message: `Request doesn't exist or is not pending` };
@@ -128,7 +132,7 @@ module.exports = {
 
         const data = request.content; // Assuming content is already an object
         try {
-            await db.query('BEGIN');
+            await client.query('BEGIN');
 
             // Create the facility and related entries
             const facility = await facilityService.createFacility(data);
@@ -146,7 +150,7 @@ module.exports = {
             }
 
             // Add the author as manager
-            await db.query({
+            await client.query({
                 text: `insert into manages (user_id, facility_id) values ($1, $2)`,
                 values: [request.author_id, facility.id],
             });
@@ -156,13 +160,15 @@ module.exports = {
                 text: `UPDATE facility_registration_request SET status = $1, respond_date = NOW() WHERE id = $2 RETURNING *`,
                 values: [1, id],
             };
-            const result = await db.query(query);
+            const result = await client.query(query);
 
-            await db.query('COMMIT');
+            await client.query('COMMIT');
             return { request: result.rows[0], facility };
         } catch (error) {
-            await db.query('ROLLBACK');
+            await client.query('ROLLBACK');
             throw error;
+        } finally {
+            client.release();
         }
     },
 
