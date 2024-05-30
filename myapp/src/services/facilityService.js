@@ -501,7 +501,7 @@ class FacilityService {
             };
         return rows[0];
     }
-    async createPost(facilityId, data) {
+    async createPost(facilityId, data, clientId) {
         let client;
         try {
             client = await db.connect();
@@ -512,7 +512,13 @@ class FacilityService {
         VALUES ($1, $2, $3, $4, $5)
         RETURNING *;
       `;
-            const values = [data.authorId, facilityId, data.title, data.content, data.imgUri];
+            const values = [
+                clientId || data.authorId, 
+                facilityId, 
+                data.title, 
+                data.content, 
+                data.imgUri
+            ];
 
             const { rows } = await client.query(query, values);
             await client.query('COMMIT');
@@ -877,13 +883,13 @@ class FacilityService {
     }
 
     /** create facility registration request */
-    async createFacilityRegistrationRequest(data) {
+    async createFacilityRegistrationRequest(data, clientId) {
         const query = `
       INSERT INTO facility_registration_request (author_id, title, content)
       VALUES ($1, $2, $3)
       RETURNING *;
     `;
-        const values = [data.authorId, data.title, JSON.stringify(data.content)];
+        const values = [clientId || data.authorId, data.title, JSON.stringify(data.content)];
         const { rows } = await db.query(query, values);
         return rows[0];
     }
