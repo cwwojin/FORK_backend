@@ -127,4 +127,16 @@ module.exports = {
             next(err);
         }
     },
+    /** get top-N hashtags of a facility */
+    getTopHashtags: async (req, res, next) => {
+        try {
+            const result = await reviewService.getTopHashtags(req.params.facility, req.query.limit);
+            res.status(200).json({
+                status: 'success',
+                data: result,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 };
