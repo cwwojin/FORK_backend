@@ -58,20 +58,21 @@ module.exports = {
      * 5. COMMIT or ROLLBACK transaction if error
      */
     createReview: async (args) => {
+        const client = await db.connect();
         try {
             let result;
             const existingHashTags = args.hashtags.filter((e) => !!e['id']);
             const newHashtags = args.hashtags.filter((e) => !e['id']);
             let hashtagIds = existingHashTags.map((e) => e['id']);
-            await db.query('BEGIN');
+            await client.query('BEGIN');
             if (newHashtags.length !== 0) {
                 const insertTagQuery = `insert into hashtag (name) 
                     values ${newHashtags.map((e) => `('${e['name']}')`).join(`, `)} 
                     returning id`;
-                result = await db.query(insertTagQuery);
+                result = await client.query(insertTagQuery);
                 hashtagIds = [...hashtagIds, ...result.rows.map((e) => e['id'])];
             }
-            result = await db.query({
+            result = await client.query({
                 text: `insert into review (author_id, facility_id, score, content, img_uri)
                     values ($1, $2, $3, $4, $5) returning id`,
                 values: [args.authorId, args.facilityId, args.score, args.content, args.imageUri],
@@ -79,16 +80,18 @@ module.exports = {
             const reviewId = result.rows[0]['id'];
             const insertJunctionQuery = `insert into review_hashtag (review_id, hashtag_id)
                 values ${hashtagIds.map((e) => `(${reviewId}, ${e})`).join(`, `)}`;
-            await db.query(insertJunctionQuery);
-            result = await db.query({
+            await client.query(insertJunctionQuery);
+            result = await client.query({
                 text: `select * from review_with_hashtag r where id = $1`,
                 values: [reviewId],
             });
-            await db.query('COMMIT');
+            await client.query('COMMIT');
             return result.rows;
         } catch (err) {
-            await db.query('ROLLBACK');
+            await client.query('ROLLBACK');
             throw new Error(err);
+        } finally {
+            client.release();
         }
     },
     /**
@@ -96,38 +99,42 @@ module.exports = {
      * - can update content or hashtags
      */
     updateReview: async (id, body) => {
+        const client = await db.connect();
         try {
             const existingHashTags = body.hashtags.filter((e) => !!e['id']);
             const newHashtags = body.hashtags.filter((e) => !e['id']);
             const insertTagQuery = `insert into hashtag (name) 
                 values ${newHashtags.map((e) => `('${e['name']}')`).join(`, `)} 
                 returning id`;
-            await db.query('BEGIN');
-            let result = await db.query(insertTagQuery);
+
+            await client.query('BEGIN');
+            let result = await client.query(insertTagQuery);
             const hashtagIds = [
                 ...existingHashTags.map((e) => e['id']),
                 ...result.rows.map((e) => e['id']),
             ];
-            result = await db.query({
+            result = await client.query({
                 text: `update review set content = $1 where id = $2 returning *`,
                 values: [body.content, id],
             });
-            await db.query({
+            await client.query({
                 text: `delete from review_hashtag where review_id = $1`,
                 values: [id],
             });
             const insertJunctionQuery = `insert into review_hashtag (review_id, hashtag_id)
                 values ${hashtagIds.map((e) => `(${id}, ${e})`).join(`, `)}`;
-            await db.query(insertJunctionQuery);
-            result = await db.query({
+            await client.query(insertJunctionQuery);
+            result = await client.query({
                 text: `select * from review_with_hashtag r where id = $1`,
                 values: [id],
             });
-            await db.query('COMMIT');
+            await client.query('COMMIT');
             return result.rows;
         } catch (err) {
-            await db.query('ROLLBACK');
+            await client.query('ROLLBACK');
             throw new Error(err);
+        } finally {
+            client.release();
         }
     },
     /** delete a review

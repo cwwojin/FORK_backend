@@ -13,10 +13,5 @@ const pool = new pg.Pool({
     port: 5432,
     max: 10,
 });
-pool.connect((err) => {
-    if (err) {
-        console.log('DB connection failed : ' + err);
-    }
-});
 
 module.exports = pool;
