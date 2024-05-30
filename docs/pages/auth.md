@@ -8,6 +8,7 @@
   - [POST : Re-send verification mail](#post--re-send-verification-mail)
   - [POST : Verify KAIST user \& complete registration](#post--verify-kaist-user--complete-registration)
   - [POST : Sign-out - Remove user account from the system](#post--sign-out---remove-user-account-from-the-system)
+  - [POST : Reset password \& send new password via email](#post--reset-password--send-new-password-via-email)
 
 ---
 
@@ -179,3 +180,40 @@
 ### Notes
 
 - Client doesn't have to explicitly add user `id` in the request
+
+---
+
+## POST : Reset password & send new password via email
+- Reset the requesting user's password and save into DB
+- The user is identified by their account-ID
+- Send the generated new password to user's saved email
+
+### URL
+`/api/auth/reset-password`
+
+### Permissions
+
+| userType | Guest | 0 (Admin) | 1 (KAIST) | 2 (Facility) |
+| --- | --- | --- | --- | --- |
+| Permission | O | O | X | X |
+
+### Request Format
+- Content-Type: `application/json`
+
+| Location | Field Name | Data Type | Required | Description |
+| --- | --- | --- | --- | --- |
+| body | userId | string | O | the account-ID of the `user` whose password would be reset |
+
+### Response Format
+- HTTP Status Code: `201`
+
+| Key | Description |
+| --- | --- |
+| status | `success` |
+| message | `"Password reset mail sent"` |
+
+### Notes
+
+- The outcome of this request, is the password reset mail being sent to the `user`
+- The client may use the same request again to "re-send" the password-reset mail
+- The response body will not contain any of the `user` information, such as email
