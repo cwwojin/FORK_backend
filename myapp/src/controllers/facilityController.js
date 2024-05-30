@@ -512,9 +512,10 @@ module.exports = {
                 {
                     authorId,
                     title,
-                    content,
+                    content: JSON.parse(content),
                 },
-                getClientId(req)
+                getClientId(req),
+                req.files
             );
             res.status(201).json({
                 status: 'success',
