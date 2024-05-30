@@ -513,11 +513,11 @@ class FacilityService {
         RETURNING *;
       `;
             const values = [
-                clientId || data.authorId, 
-                facilityId, 
-                data.title, 
-                data.content, 
-                data.imgUri
+                clientId || data.authorId,
+                facilityId,
+                data.title,
+                data.content,
+                data.imgUri,
             ];
 
             const { rows } = await client.query(query, values);

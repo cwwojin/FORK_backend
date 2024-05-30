@@ -43,6 +43,9 @@ router
             query('openNow', `optional query field 'openNow' must be boolean`)
                 .optional()
                 .isBoolean(),
+            query('favorite', `optional query field 'favorite' must be boolean`)
+                .optional()
+                .isBoolean(),
             query('preferences', `optional query field 'preferences' must be an integer array`)
                 .optional()
                 .isString()
