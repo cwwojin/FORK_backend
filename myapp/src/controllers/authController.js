@@ -57,4 +57,19 @@ module.exports = {
             next(err);
         }
     },
+    /** sign-out from FORK system
+     * - delete my account from DB
+     * - rest of my data will be cascade-deleted by DB
+     */
+    signOutUser: async (req, res, next) => {
+        try {
+            const result = await authService.signOutUser(req.header('id'));
+            res.status(200).json({
+                status: 'success',
+                data: result[0],
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 };

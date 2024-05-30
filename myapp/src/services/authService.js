@@ -54,9 +54,10 @@ module.exports = {
     },
     /** re-send verification mail & update pending_kaist_user */
     reSendVerificationMail: async (userId) => {
+        const client = await db.connect();
         try {
-            await db.query('BEGIN');
-            const { rows } = await db.query({
+            await client.query('BEGIN');
+            const { rows } = await client.query({
                 text: `select * from pending_kaist_user where account_id = $1`,
                 values: [userId],
             });
@@ -72,7 +73,7 @@ module.exports = {
             const hash = await bcrypt.hash(authCode, BCRYPT_SALTROUNDS);
 
             // update pending-user with the new code hash
-            const result = await db.query({
+            const result = await client.query({
                 text: `update pending_kaist_user set auth_code = $1 where id = $2
                     returning email`,
                 values: [hash, pendingUser.id],
@@ -83,11 +84,13 @@ module.exports = {
                     message: `No pending KAIST user found or record was not updated. Please try registration again`,
                 };
 
-            await db.query('COMMIT');
+            await client.query('COMMIT');
             return result.rows;
         } catch (err) {
-            await db.query('ROLLBACK');
+            await client.query('ROLLBACK');
             throw err;
+        } finally {
+            client.release();
         }
     },
     /**
@@ -152,9 +155,10 @@ module.exports = {
      * - if successful, insert user into DB & return user info
      */
     verifyKAISTUser: async (args) => {
+        const client = await db.connect();
         try {
-            await db.query('BEGIN');
-            const { rows } = await db.query({
+            await client.query('BEGIN');
+            const { rows } = await client.query({
                 text: `select * from pending_kaist_user where account_id = $1`,
                 values: [args.userId],
             });
@@ -178,16 +182,26 @@ module.exports = {
             });
 
             // delete the pending user
-            await db.query({
+            await client.query({
                 text: `delete from pending_kaist_user where id = $1`,
                 values: [pendingUser.id],
             });
 
-            await db.query('COMMIT');
+            await client.query('COMMIT');
             return result;
         } catch (err) {
-            await db.query('ROLLBACK');
+            await client.query('ROLLBACK');
             throw err;
+        } finally {
+            client.release();
         }
+    },
+    /** sign out - delete my account from FORK system
+     * - verify requesting user
+     * - use their id to request user deletion
+     */
+    signOutUser: async (userId) => {
+        const result = await userService.deleteUser(userId);
+        return result;
     },
 };
