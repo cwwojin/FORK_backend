@@ -6,7 +6,7 @@ module.exports = {
     /** get report by id */
     getReport: async (id) => {
         const query = {
-            text: `select * from report where id = $1`,
+            text: `select * from report_with_review where id = $1`,
             values: [id],
         };
         const result = await db.query(query);
@@ -18,7 +18,7 @@ module.exports = {
     getReportByQuery: async (args) => {
         const authorId = args.user;
         const values = [];
-        let baseQuery = `select * from report where 1=1 `;
+        let baseQuery = `select * from report_with_review where 1=1 `;
         if (authorId !== undefined) {
             values.push(authorId);
             baseQuery = baseQuery + `and author_id = $${values.length} `;
