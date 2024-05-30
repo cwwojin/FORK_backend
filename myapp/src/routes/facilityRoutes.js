@@ -443,6 +443,7 @@ router
         // POST: send facility registration request to admin to create facility
         '/facility-requests',
         checkPermission([0, 2]),
+        s3Uploader.array('images'),
         [
             body('authorId')
                 .exists()
@@ -478,6 +479,12 @@ router
                 .exists()
                 .isString()
                 .withMessage('Description is required and must be a string'),
+            body('content.profileImgFile')
+                .exists()
+                .isString()
+                .withMessage(
+                    `body field 'content.profileImgFile' is required and must be a string`
+                ),
             body('content.address')
                 .exists()
                 .isObject()
@@ -490,6 +497,10 @@ router
                 .optional()
                 .isArray()
                 .withMessage('Menu must be an array if provided'),
+            body('content.menu.*.imgFile')
+                .optional()
+                .isString()
+                .withMessage(`optional field 'content.menu.*.menuImgFile' is must be a string`),
             body('content.preferences')
                 .optional()
                 .isArray()
@@ -498,6 +509,12 @@ router
                 .optional()
                 .isObject()
                 .withMessage('Stamp ruleset must be an object if provided'),
+            body('content.stampRuleset.logoImgFile')
+                .optional()
+                .isString()
+                .withMessage(
+                    `optional field 'content.stampRuleset.logoImgFile' is must be a string`
+                ),
             body('content.stampRuleset.rewards')
                 .optional()
                 .isArray()

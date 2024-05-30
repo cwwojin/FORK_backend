@@ -246,13 +246,15 @@ module.exports = {
             const facilityId = Number(req.params.facilityId);
             const { authorId, title, content } = req.body;
 
-            const post = await facilityService.createPost(facilityId, {
+            const post = await facilityService.createPost(
+                facilityId,
+                {
                     authorId,
                     title,
                     content,
                     imgUri,
                 },
-                getClientId(req),
+                getClientId(req)
             );
 
             res.status(201).json({
@@ -510,9 +512,10 @@ module.exports = {
                 {
                     authorId,
                     title,
-                    content,
+                    content: JSON.parse(content),
                 },
-                getClientId(req)
+                getClientId(req),
+                req.files
             );
             res.status(201).json({
                 status: 'success',
