@@ -115,6 +115,20 @@ hashtagRoutes
             validatorChecker,
         ],
         reviewController.getHashtag
+    )
+    .get(
+        // GET : get top-N hashtags of a certain facility
+        '/top/:facility',
+        [
+            param('facility', `route param 'facility' must be a positive integer`)
+                .exists()
+                .isInt({ min: 1 }),
+            query('limit', `optional query field 'limit' must be a positive integer`)
+                .optional()
+                .isInt({ min: 1 }),
+            validatorChecker,
+        ],
+        reviewController.getTopHashtags
     );
 
 module.exports = {
