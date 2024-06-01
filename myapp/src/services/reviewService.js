@@ -61,10 +61,24 @@ module.exports = {
         const client = await db.connect();
         try {
             let result;
-            const existingHashTags = args.hashtags.filter((e) => !!e['id']);
-            const newHashtags = args.hashtags.filter((e) => !e['id']);
-            let hashtagIds = existingHashTags.map((e) => e['id']);
             await client.query('BEGIN');
+
+            // new code - make array of {id, name} from args.hashtags (array of names)
+            const hashtagArray = [];
+            for await (const h of args.hashtags) {
+                const { rows } = await db.query({
+                    text: `select * from hashtag where name = $1 or (slug <> '' and slug = slugify($1))`,
+                    values: [h],
+                });
+                hashtagArray.push(
+                    rows.length ? { id: rows[0].id, name: h } : { id: undefined, name: h }
+                );
+            }
+
+            const existingHashTags = hashtagArray.filter((e) => !!e['id']);
+            const newHashtags = hashtagArray.filter((e) => !e['id']);
+            let hashtagIds = existingHashTags.map((e) => e['id']);
+
             if (newHashtags.length !== 0) {
                 const insertTagQuery = `insert into hashtag (name) 
                     values ${newHashtags.map((e) => `('${e['name']}')`).join(`, `)} 
@@ -107,18 +121,33 @@ module.exports = {
     updateReview: async (id, body) => {
         const client = await db.connect();
         try {
-            const existingHashTags = body.hashtags.filter((e) => !!e['id']);
-            const newHashtags = body.hashtags.filter((e) => !e['id']);
-            const insertTagQuery = `insert into hashtag (name) 
-                values ${newHashtags.map((e) => `('${e['name']}')`).join(`, `)} 
-                returning id`;
-
+            let result;
             await client.query('BEGIN');
-            let result = await client.query(insertTagQuery);
-            const hashtagIds = [
-                ...existingHashTags.map((e) => e['id']),
-                ...result.rows.map((e) => e['id']),
-            ];
+
+            // new code - make array of {id, name} from args.hashtags (array of names)
+            const hashtagArray = [];
+            for await (const h of body.hashtags) {
+                const { rows } = await db.query({
+                    text: `select * from hashtag where name = $1 or (slug <> '' and slug = slugify($1))`,
+                    values: [h],
+                });
+                hashtagArray.push(
+                    rows.length ? { id: rows[0].id, name: h } : { id: undefined, name: h }
+                );
+            }
+
+            const existingHashTags = hashtagArray.filter((e) => !!e['id']);
+            const newHashtags = hashtagArray.filter((e) => !e['id']);
+            let hashtagIds = existingHashTags.map((e) => e['id']);
+
+            if (newHashtags.length !== 0) {
+                const insertTagQuery = `insert into hashtag (name) 
+                    values ${newHashtags.map((e) => `('${e['name']}')`).join(`, `)} 
+                    returning id`;
+                result = await client.query(insertTagQuery);
+                hashtagIds = [...hashtagIds, ...result.rows.map((e) => e['id'])];
+            }
+
             result = await client.query({
                 text: `update review set content = $1 where id = $2 returning *`,
                 values: [body.content, id],
