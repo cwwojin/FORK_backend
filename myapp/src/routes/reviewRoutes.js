@@ -79,11 +79,10 @@ router
             body('content', `body field 'content' must be string`).exists().isString(),
             body(
                 'hashtags',
-                `body field 'hashtag' must be array of objects, each with keys {id, name}`
+                `body field 'hashtag' must be array string names`
             )
                 .exists()
-                .isArray()
-                .custom(validateHashtagArray),
+                .isArray(),
             validatorChecker,
         ],
         reviewController.updateReview
