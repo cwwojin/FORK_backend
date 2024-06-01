@@ -120,7 +120,7 @@ module.exports = {
         const query = {
             text: `select f.* from favorite fv 
                 join "user" u on fv.user_id = u.id 
-                join facility f on fv.facility_id = f.id
+                join facility_detailed f on fv.facility_id = f.id
                 where fv.user_id = $1`,
             values: [id],
         };
