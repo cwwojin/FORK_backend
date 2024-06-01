@@ -81,28 +81,18 @@
 | body | facilityId | int | O | the unique id of the `facility` |
 | body | score | int | O | the review score, which is an integer value in range `[0, 5]` |
 | body | content | string | O | review contents, which is text |
-| body | hashtags | JSON-string | O | All `hashtag` objects that should be associated with the review. A JSON-stringified string. The content should be an array of object, in the format below |
+| body | hashtags | JSON-string | O | a JSON-strint of an array of `hashtag` names to be inserted `ex. ['hashtag 1', 'hashtag 2']` |
 | body-FormData | image | file | - | the image file to upload |
 
 ### Request Body - `hashtags`
 - You can upload a review with hashtags that are either :
   - already recorded in the system
   - new hashtag made by the author (user)
-- Existing hashtag data must match with DB
-- To insert a new hashtag, set the `id = NULL` for it
+- In the request body, simply include the array of hashtag names
 
 ```JSON
 {
-    "hashtags": [
-        {
-            "id": 1,
-            "name": "Good Food"
-        },
-        {
-            "id": null,
-            "name": "A New Hashtag"
-        }
-    ]
+    "hashtags": ["Good Food", "A New Hashtag"]
 }
 ```
 
@@ -132,7 +122,7 @@
 | --- | --- | --- | --- | --- |
 | param | id | int | O | unique id of the `review` |
 | body | content | string | O | review contents, which is text |
-| body | hashtags | JSON-string | O | All `hashtag` objects that should be associated with the review. A JSON-stringified string. The content should be an array of objects. |
+| body | hashtags | JSON-string | O | a JSON-strint of an array of `hashtag` names to be inserted `ex. ['hashtag 1', 'hashtag 2']` |
 
 ### Response Format
 - HTTP Status Code: `201`
