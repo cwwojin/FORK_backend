@@ -64,13 +64,15 @@ module.exports = {
             await client.query('BEGIN');
 
             // new code - make array of {id, name} from args.hashtags (array of names)
-            let hashtagArray = [];
+            const hashtagArray = [];
             for await (const h of args.hashtags) {
-                let { rows } = await db.query({
+                const { rows } = await db.query({
                     text: `select * from hashtag where name = $1 or (slug <> '' and slug = slugify($1))`,
-                    values: [h]
+                    values: [h],
                 });
-                hashtagArray.push(rows.length ? { id : rows[0].id, name : h} : { id: undefined, name: h});
+                hashtagArray.push(
+                    rows.length ? { id: rows[0].id, name: h } : { id: undefined, name: h }
+                );
             }
 
             const existingHashTags = hashtagArray.filter((e) => !!e['id']);
@@ -123,13 +125,15 @@ module.exports = {
             await client.query('BEGIN');
 
             // new code - make array of {id, name} from args.hashtags (array of names)
-            let hashtagArray = [];
+            const hashtagArray = [];
             for await (const h of body.hashtags) {
-                let { rows } = await db.query({
+                const { rows } = await db.query({
                     text: `select * from hashtag where name = $1 or (slug <> '' and slug = slugify($1))`,
-                    values: [h]
+                    values: [h],
                 });
-                hashtagArray.push(rows.length ? { id : rows[0].id, name : h} : { id: undefined, name: h});
+                hashtagArray.push(
+                    rows.length ? { id: rows[0].id, name: h } : { id: undefined, name: h }
+                );
             }
 
             const existingHashTags = hashtagArray.filter((e) => !!e['id']);

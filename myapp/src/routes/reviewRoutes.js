@@ -4,12 +4,7 @@ const { body, param, query } = require('express-validator');
 const reviewController = require('../controllers/reviewController');
 const { validatorChecker } = require('../middleware/validator');
 const { s3Uploader } = require('../helper/s3Engine');
-const {
-    IMG_FILE_TYPES,
-    validateJSONArray,
-    validateHashtagArray,
-    validateIntArray,
-} = require('../helper/helper');
+const { validateJSONArray, validateIntArray } = require('../helper/helper');
 const { checkPermission } = require('../middleware/authMiddleware');
 
 const router = Router();
@@ -77,12 +72,7 @@ router
         [
             param('id', `route param 'id' must be a positive integer`).exists().isInt({ min: 1 }),
             body('content', `body field 'content' must be string`).exists().isString(),
-            body(
-                'hashtags',
-                `body field 'hashtag' must be array string names`
-            )
-                .exists()
-                .isArray(),
+            body('hashtags', `body field 'hashtag' must be array string names`).exists().isArray(),
             validatorChecker,
         ],
         reviewController.updateReview
