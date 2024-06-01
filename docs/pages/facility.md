@@ -1250,7 +1250,7 @@
 
 ```JSON
 {
-  "authorId": 1,
+  "authorId": 2,
   "title" : "Hello FORK!",
   "content" : JSON.Stringify({
     "name":"Restaurant_01", 
@@ -1320,3 +1320,98 @@
   })
 }
 ```
+
+---
+
+### Example Response
+
+- The response body will contain the actual facility registration request that is saved to DB
+- additional fields `profileImgUri, imgUri, logoImgUri` will indicate the S3-URI of the images saved
+
+```JSON
+{
+  "status": "success",
+  "data": {
+    "id": 46,
+    "author_id": 2,
+    "status": 0,
+    "title": "Hello FORK!",
+    "content": {
+      "name": "Restaurant_01",
+      "type": "restaurant",
+      "businessId": "B00001",
+      "phone": "02-1234-5678",
+      "email": "fork350@foodies.com",
+      "url": "www.restaurant.com",
+      "description": "We serve great foods.",
+      "profileImgFile": "facility_img_01.png",
+      "address": {
+        "postNumber": "12345",
+        "country": "Korea",
+        "city": "Seoul",
+        "roadAddress": "도로명 주소 01",
+        "englishAddress": "eng address 01",
+        "lat": 100,
+        "lng": 100
+      },
+      "openingHours": [
+        {
+          "day": 1,
+          "openTime": "09:00",
+          "closeTime": "17:00"
+        },
+        {
+          "day": 2,
+          "openTime": "09:00",
+          "closeTime": "17:00"
+        },
+        {
+          "day": 3,
+          "openTime": "09:00",
+          "closeTime": "17:00"
+        }
+      ],
+      "menu": [
+        {
+          "name": "menu_01",
+          "description": "menuDesc_01",
+          "price": 20000,
+          "quantity": "100g",
+          "imgFile": "menu_img_01.png",
+          "imgUri": "s3://fork-foodies/images/2024-06-01/1717226029920_menu_img_01.png"
+        },
+        {
+          "name": "menu_02",
+          "description": "menuDesc_02",
+          "price": 20000,
+          "quantity": "100g",
+          "imgFile": "menu_img_02.png",
+          "imgUri": "s3://fork-foodies/images/2024-06-01/1717226029940_menu_img_02.png"
+        }
+      ],
+      "preferences": [
+        1,
+        2
+      ],
+      "stampRuleset": {
+        "totalCnt": 100,
+        "logoImgFile": "stamp_img_01.png",
+        "rewards": [
+          {
+            "name": "reward_001",
+            "cnt": 10
+          }
+        ],
+        "logoImgUri": "s3://fork-foodies/images/2024-06-01/1717226029964_stamp_img_01.png"
+      },
+      "profileImgUri": "s3://fork-foodies/images/2024-06-01/1717226029911_facility_img_01.png"
+    },
+    "send_date": "2024-05-31T22:13:50.169Z",
+    "respond_date": null,
+    "created_at": "2024-05-31T22:13:50.169Z",
+    "updated_at": "2024-05-31T22:13:50.169Z"
+  }
+}
+```
+
+
