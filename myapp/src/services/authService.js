@@ -213,7 +213,7 @@ module.exports = {
         const client = await db.connect();
         try {
             await client.query('BEGIN');
-            const users = await userService.getUsers({ accountId: userId });
+            const users = await userService.getUsers({ accountId: userId }, true);
             if (users.length === 0)
                 throw { status: 404, message: `No user with account id : ${userId}` };
 
