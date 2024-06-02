@@ -439,6 +439,73 @@
 | status | `success`                            |
 | data   | the updated `facility` object        |
 
+### Example Request
+
+```JSON
+{
+  "name": "Restaurant_01",
+  "type": "restaurant",
+  "businessId": "B00001",
+  "phone": "02-1234-5678",
+  "email": "fork350@foodies.com",
+  "url": "www.restaurant.com",
+  "description": "We serve great foods.",
+  "address": {
+    "postNumber": "12345",
+    "country": "Korea",
+    "city": "Seoul",
+    "roadAddress": "도로명 주소 01",
+    "englishAddress": "eng address 01",
+    "lat": 100,
+    "lng": 100
+  },
+  "openingHours": [
+    {
+      "day": 1,
+      "openTime": "09:00",
+      "closeTime": "17:00"
+    },
+    {
+      "day": 2,
+      "openTime": "09:00",
+      "closeTime": "17:00"
+    },
+    {
+      "day": 3,
+      "openTime": "09:00",
+      "closeTime": "17:00"
+    }
+  ],
+  "menu": [
+    {
+      "name": "menu_01",
+      "description": "menuDesc_01",
+      "price": 20000,
+      "quantity": "100g"
+    },
+    {
+      "name": "menu_02",
+      "description": "menuDesc_02",
+      "price": 20000,
+      "quantity": "100g"
+    }
+  ],
+  "preferences": [
+    1,
+    2
+  ],
+  "stampRuleset": {
+    "totalCnt": 100,
+    "rewards": [
+      {
+        "name": "reward_001",
+        "cnt": 10
+      }
+    ]
+  }
+}
+```
+
 ---
 
 ## DELETE : delete facility with id
