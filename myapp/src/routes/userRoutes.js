@@ -209,6 +209,7 @@ router
     )
     .get(
         '/:id/myfacility', // GET: get facility with id
+        checkPermission([0, 2]),
         [
             param('id').exists().isInt({ min: 1 }).withMessage('Valid account ID is required'),
             validatorChecker,
@@ -218,6 +219,7 @@ router
     .post(
         // PUT: update facility with id
         '/:user/myfacility/:facility',
+        checkPermission([0, 2]),
         [
             param('user').exists().isInt({ min: 1 }).withMessage('Valid account ID is required'),
             param('facility', `route param 'facility' must be a positive integer`)
@@ -261,6 +263,7 @@ router
     .delete(
         // DELETE: delete facility with id
         '/:id/myfacility/:facilityId',
+        checkPermission([0, 2]),
         [
             param('id').exists().isInt({ min: 1 }).withMessage('Valid account ID is required'),
             param('facilityId').isNumeric().withMessage('Valid facility ID is required'),
