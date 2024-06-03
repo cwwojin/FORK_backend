@@ -12,10 +12,8 @@ module.exports = {
     REPORT_TYPES: [0, 1],
     REPORT_STATUS: [0, 1],
     IMG_FILE_TYPES: ['png', 'jpg', 'jpeg', 'bmp', 'gif', 'webp', 'psd'],
-    /** user type checks */
-    isAdmin: (headers) => headers.userType === 0,
-    isKAISTUser: (headers) => headers.userType === 1,
-    isFacilityUser: (headers) => headers.userType === 2,
+    /** get user info from header */
+    getClientId: (req) => req.header('id'),
     /** general helpers */
     parseBoolean: (string) => {
         return string === 'true' ? true : string === 'false' ? false : undefined;
@@ -37,6 +35,11 @@ module.exports = {
     generateRandomCode: () => {
         const num = Math.floor(Math.random() * 1000000);
         return num.toString().padStart(6, '0');
+    },
+    generateRandomPassword: (length) => {
+        return Math.random()
+            .toString(36)
+            .substring(2, 2 + length);
     },
     /** request validation */
     validateUserId: (userId) => userNamePattern.test(userId),

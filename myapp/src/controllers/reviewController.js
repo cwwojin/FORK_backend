@@ -1,5 +1,5 @@
 const reviewService = require('../services/reviewService');
-const { makeS3Uri } = require('../helper/helper');
+const { makeS3Uri, getClientId } = require('../helper/helper');
 
 module.exports = {
     /** get review by review id */
@@ -46,7 +46,7 @@ module.exports = {
                 hashtags: JSON.parse(req.body.hashtags),
                 imageUri: imageUri,
             };
-            const result = await reviewService.createReview(args);
+            const result = await reviewService.createReview(args, getClientId(req));
             if (result.length !== 0) {
                 res.status(201).json({
                     status: 'success',
@@ -123,6 +123,18 @@ module.exports = {
                     message: `No hashtag with id : ${id}`,
                 });
             }
+        } catch (err) {
+            next(err);
+        }
+    },
+    /** get top-N hashtags of a facility */
+    getTopHashtags: async (req, res, next) => {
+        try {
+            const result = await reviewService.getTopHashtags(req.params.facility, req.query.limit);
+            res.status(200).json({
+                status: 'success',
+                data: result,
+            });
         } catch (err) {
             next(err);
         }

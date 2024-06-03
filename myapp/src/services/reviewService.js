@@ -57,38 +57,61 @@ module.exports = {
      * 4. Insert junction table "review_hashtag" entries
      * 5. COMMIT or ROLLBACK transaction if error
      */
-    createReview: async (args) => {
+    createReview: async (args, clientId) => {
+        const client = await db.connect();
         try {
             let result;
-            const existingHashTags = args.hashtags.filter((e) => !!e['id']);
-            const newHashtags = args.hashtags.filter((e) => !e['id']);
+            await client.query('BEGIN');
+
+            // new code - make array of {id, name} from args.hashtags (array of names)
+            const hashtagArray = [];
+            for await (const h of args.hashtags) {
+                const { rows } = await db.query({
+                    text: `select * from hashtag where name = $1 or (slug <> '' and slug = slugify($1))`,
+                    values: [h],
+                });
+                hashtagArray.push(
+                    rows.length ? { id: rows[0].id, name: h } : { id: undefined, name: h }
+                );
+            }
+
+            const existingHashTags = hashtagArray.filter((e) => !!e['id']);
+            const newHashtags = hashtagArray.filter((e) => !e['id']);
             let hashtagIds = existingHashTags.map((e) => e['id']);
-            await db.query('BEGIN');
+
             if (newHashtags.length !== 0) {
                 const insertTagQuery = `insert into hashtag (name) 
                     values ${newHashtags.map((e) => `('${e['name']}')`).join(`, `)} 
                     returning id`;
-                result = await db.query(insertTagQuery);
+                result = await client.query(insertTagQuery);
                 hashtagIds = [...hashtagIds, ...result.rows.map((e) => e['id'])];
             }
-            result = await db.query({
+            result = await client.query({
                 text: `insert into review (author_id, facility_id, score, content, img_uri)
                     values ($1, $2, $3, $4, $5) returning id`,
-                values: [args.authorId, args.facilityId, args.score, args.content, args.imageUri],
+                values: [
+                    clientId || args.authorId,
+                    args.facilityId,
+                    args.score,
+                    args.content,
+                    args.imageUri,
+                ],
             });
             const reviewId = result.rows[0]['id'];
             const insertJunctionQuery = `insert into review_hashtag (review_id, hashtag_id)
                 values ${hashtagIds.map((e) => `(${reviewId}, ${e})`).join(`, `)}`;
-            await db.query(insertJunctionQuery);
-            result = await db.query({
+            await client.query(insertJunctionQuery);
+            result = await client.query({
                 text: `select * from review_with_hashtag r where id = $1`,
                 values: [reviewId],
             });
-            await db.query('COMMIT');
+            await client.query('COMMIT');
             return result.rows;
         } catch (err) {
-            await db.query('ROLLBACK');
+            await client.query('ROLLBACK');
             throw new Error(err);
+        } finally {
+            client.release();
         }
     },
     /**
@@ -96,38 +119,57 @@ module.exports = {
      * - can update content or hashtags
      */
     updateReview: async (id, body) => {
+        const client = await db.connect();
         try {
-            const existingHashTags = body.hashtags.filter((e) => !!e['id']);
-            const newHashtags = body.hashtags.filter((e) => !e['id']);
-            const insertTagQuery = `insert into hashtag (name) 
-                values ${newHashtags.map((e) => `('${e['name']}')`).join(`, `)} 
-                returning id`;
-            await db.query('BEGIN');
-            let result = await db.query(insertTagQuery);
-            const hashtagIds = [
-                ...existingHashTags.map((e) => e['id']),
-                ...result.rows.map((e) => e['id']),
-            ];
-            result = await db.query({
+            let result;
+            await client.query('BEGIN');
+
+            // new code - make array of {id, name} from args.hashtags (array of names)
+            const hashtagArray = [];
+            for await (const h of body.hashtags) {
+                const { rows } = await db.query({
+                    text: `select * from hashtag where name = $1 or (slug <> '' and slug = slugify($1))`,
+                    values: [h],
+                });
+                hashtagArray.push(
+                    rows.length ? { id: rows[0].id, name: h } : { id: undefined, name: h }
+                );
+            }
+
+            const existingHashTags = hashtagArray.filter((e) => !!e['id']);
+            const newHashtags = hashtagArray.filter((e) => !e['id']);
+            let hashtagIds = existingHashTags.map((e) => e['id']);
+
+            if (newHashtags.length !== 0) {
+                const insertTagQuery = `insert into hashtag (name) 
+                    values ${newHashtags.map((e) => `('${e['name']}')`).join(`, `)} 
+                    returning id`;
+                result = await client.query(insertTagQuery);
+                hashtagIds = [...hashtagIds, ...result.rows.map((e) => e['id'])];
+            }
+
+            result = await client.query({
                 text: `update review set content = $1 where id = $2 returning *`,
                 values: [body.content, id],
             });
-            await db.query({
+            await client.query({
                 text: `delete from review_hashtag where review_id = $1`,
                 values: [id],
             });
             const insertJunctionQuery = `insert into review_hashtag (review_id, hashtag_id)
                 values ${hashtagIds.map((e) => `(${id}, ${e})`).join(`, `)}`;
-            await db.query(insertJunctionQuery);
-            result = await db.query({
+            await client.query(insertJunctionQuery);
+            result = await client.query({
                 text: `select * from review_with_hashtag r where id = $1`,
                 values: [id],
             });
-            await db.query('COMMIT');
+            await client.query('COMMIT');
             return result.rows;
         } catch (err) {
-            await db.query('ROLLBACK');
+            await client.query('ROLLBACK');
             throw new Error(err);
+        } finally {
+            client.release();
         }
     },
     /** delete a review
@@ -160,5 +202,30 @@ module.exports = {
         };
         const result = await db.query(query);
         return result.rows;
+    },
+    /** get top-N hashtags
+     * - get up to top-N hashtags from a certain facility's reviews
+     * - if none, return empty array
+     */
+    getTopHashtags: async (facilityId, limit) => {
+        const values = [facilityId];
+        let baseQuery = `select h.* from hashtag h 
+            join review_hashtag rh on h.id = rh.hashtag_id
+            join review r on rh.review_id = r.id
+            where r.facility_id = $${values.length}
+            group by h.id
+            order by count(h.id) desc `;
+
+        // query parameter - limit
+        if (limit !== undefined) {
+            values.push(limit);
+            baseQuery = baseQuery + `limit $${values.length} `;
+        }
+
+        const { rows } = await db.query({
+            text: baseQuery,
+            values: values,
+        });
+        return rows;
     },
 };

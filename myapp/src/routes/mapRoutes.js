@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const { body, param, query } = require('express-validator');
+const { param, query } = require('express-validator');
 
 const mapController = require('../controllers/mapController');
 const { validatorChecker } = require('../middleware/validator');
@@ -41,6 +41,9 @@ router
                 .isLength({ max: 50 })
                 .custom(validateSearchInput),
             query('openNow', `optional query field 'openNow' must be boolean`)
+                .optional()
+                .isBoolean(),
+            query('favorite', `optional query field 'favorite' must be boolean`)
                 .optional()
                 .isBoolean(),
             query('preferences', `optional query field 'preferences' must be an integer array`)

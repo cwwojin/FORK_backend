@@ -1,3 +1,4 @@
+const { getClientId } = require('../helper/helper');
 const adminService = require('../services/adminService');
 
 module.exports = {
@@ -36,7 +37,7 @@ module.exports = {
     /** create a report */
     createReport: async (req, res, next) => {
         try {
-            const result = await adminService.createReport(req.body);
+            const result = await adminService.createReport(req.body, getClientId(req));
             if (result.length !== 0) {
                 res.status(201).json({
                     status: 'success',
@@ -69,7 +70,7 @@ module.exports = {
     handleReport: async (req, res, next) => {
         const id = Number(req.params.id);
         try {
-            const result = await adminService.handleReport(id, req.body);
+            const result = await adminService.handleReport(id, req.body, getClientId(req));
             res.status(200).json({
                 status: 'success',
                 data: result,
@@ -117,8 +118,7 @@ module.exports = {
     acceptFacilityRegistrationRequest: async (req, res, next) => {
         try {
             const result = await adminService.acceptFacilityRegistrationRequest(
-                Number(req.params.id),
-                req.body.adminId
+                Number(req.params.id)
             );
             res.status(200).json({
                 status: 'success',
@@ -132,8 +132,7 @@ module.exports = {
     declineFacilityRegistrationRequest: async (req, res, next) => {
         try {
             const result = await adminService.declineFacilityRegistrationRequest(
-                Number(req.params.id),
-                req.body.adminId
+                Number(req.params.id)
             );
             res.status(200).json({
                 status: 'success',

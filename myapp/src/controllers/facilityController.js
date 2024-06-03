@@ -1,5 +1,5 @@
 const facilityService = require('../services/facilityService');
-const { makeS3Uri } = require('../helper/helper');
+const { makeS3Uri, getClientId } = require('../helper/helper');
 
 module.exports = {
     getAllFacilities: async (req, res, next) => {
@@ -246,12 +246,16 @@ module.exports = {
             const facilityId = Number(req.params.facilityId);
             const { authorId, title, content } = req.body;
 
-            const post = await facilityService.createPost(facilityId, {
-                authorId,
-                title,
-                content,
-                imgUri,
-            });
+            const post = await facilityService.createPost(
+                facilityId,
+                {
+                    authorId,
+                    title,
+                    content,
+                    imgUri,
+                },
+                getClientId(req)
+            );
 
             res.status(201).json({
                 status: 'success',
@@ -504,11 +508,15 @@ module.exports = {
     createFacilityRegistrationRequest: async (req, res, next) => {
         try {
             const { authorId, title, content } = req.body;
-            const request = await facilityService.createFacilityRegistrationRequest({
-                authorId,
-                title,
-                content,
-            });
+            const request = await facilityService.createFacilityRegistrationRequest(
+                {
+                    authorId,
+                    title,
+                    content: JSON.parse(content),
+                },
+                getClientId(req),
+                req.files
+            );
             res.status(201).json({
                 status: 'success',
                 data: request,

@@ -10,8 +10,13 @@ module.exports = {
      * get user by query
      * - (args) account_id, user_type
      * */
-    getUsers: async (args) => {
-        let baseQuery = `select id, account_id, user_type, email, profile_img_uri, register_date from "user" where 1=1 `;
+    getUsers: async (args, getEmail) => {
+        let baseQuery;
+        if (getEmail) {
+            baseQuery = `select id, account_id, user_type, email, profile_img_uri, register_date from "user" where 1=1 `;
+        } else {
+            baseQuery = `select id, account_id, user_type, profile_img_uri, register_date from "user" where 1=1 `;
+        }
         const values = [];
         if (args.accountId !== undefined) {
             values.push(args.accountId);
@@ -33,9 +38,17 @@ module.exports = {
         return result.rows;
     },
     // get user by id
-    getUserById: async (id) => {
+    getUserById: async (id, clientId) => {
+        let baseQuery;
+        if (Number(id) === Number(clientId)) {
+            baseQuery =
+                'select id, account_id, user_type, email, profile_img_uri, register_date from "user" where id = $1';
+        } else {
+            baseQuery =
+                'select id, account_id, user_type, profile_img_uri, register_date from "user" where id = $1';
+        }
         const query = {
-            text: 'select id, account_id, user_type, email, profile_img_uri, register_date from "user" where id = $1',
+            text: baseQuery,
             values: [id],
         };
         const result = await db.query(query);
@@ -107,7 +120,7 @@ module.exports = {
         const query = {
             text: `select f.* from favorite fv 
                 join "user" u on fv.user_id = u.id 
-                join facility f on fv.facility_id = f.id
+                join facility_detailed f on fv.facility_id = f.id
                 where fv.user_id = $1`,
             values: [id],
         };

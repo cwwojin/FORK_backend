@@ -4,12 +4,7 @@ const { body, param, query } = require('express-validator');
 const reviewController = require('../controllers/reviewController');
 const { validatorChecker } = require('../middleware/validator');
 const { s3Uploader } = require('../helper/s3Engine');
-const {
-    IMG_FILE_TYPES,
-    validateJSONArray,
-    validateHashtagArray,
-    validateIntArray,
-} = require('../helper/helper');
+const { validateJSONArray, validateIntArray } = require('../helper/helper');
 const { checkPermission } = require('../middleware/authMiddleware');
 
 const router = Router();
@@ -77,13 +72,7 @@ router
         [
             param('id', `route param 'id' must be a positive integer`).exists().isInt({ min: 1 }),
             body('content', `body field 'content' must be string`).exists().isString(),
-            body(
-                'hashtags',
-                `body field 'hashtag' must be array of objects, each with keys {id, name}`
-            )
-                .exists()
-                .isArray()
-                .custom(validateHashtagArray),
+            body('hashtags', `body field 'hashtag' must be array string names`).exists().isArray(),
             validatorChecker,
         ],
         reviewController.updateReview
@@ -115,6 +104,20 @@ hashtagRoutes
             validatorChecker,
         ],
         reviewController.getHashtag
+    )
+    .get(
+        // GET : get top-N hashtags of a certain facility
+        '/top/:facility',
+        [
+            param('facility', `route param 'facility' must be a positive integer`)
+                .exists()
+                .isInt({ min: 1 }),
+            query('limit', `optional query field 'limit' must be a positive integer`)
+                .optional()
+                .isInt({ min: 1 }),
+            validatorChecker,
+        ],
+        reviewController.getTopHashtags
     );
 
 module.exports = {

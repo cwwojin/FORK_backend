@@ -23,7 +23,7 @@ app.use(morgan('dev')); // Logging middleware
 
 // Middleware - Authorization
 app.use(checkUserTypeHeader()); // middleware for checking userType header
-app.use(identifyUser()); // middleware for identification
+// app.use(identifyUser()); // middleware for identification
 
 // Routes
 app.use('/api/auth', authRoutes);
