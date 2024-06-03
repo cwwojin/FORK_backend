@@ -1,10 +1,18 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
-const { validateKAISTMail, BCRYPT_SALTROUNDS } = require('../helper/helper');
+const { validateKAISTMail, BCRYPT_SALTROUNDS, splitByDelimiter } = require('../helper/helper');
 const db = require('../models/index');
 const { sendAuthMail, sendPasswordResetMail } = require('../helper/mailSender');
 const userService = require('./userService');
+
+const getAccessToken = (payload) => {
+    return jwt.sign(
+        payload,
+        process.env.JWT_SECRET,
+        { expiresIn: '1m' } // TMP : 1 day
+    );
+};
 
 const validateAccount = async (userId, password) => {
     const { rows } = await db.query({
@@ -31,13 +39,13 @@ module.exports = {
             accountId: user.account_id,
             userType: user.user_type,
         };
-        const token = jwt.sign(
-            payload,
-            process.env.JWT_SECRET,
-            { expiresIn: '1d' } // set expiration time
-        );
+
+        const token = getAccessToken(payload);
+        const refreshToken = await module.exports.getNewRefreshToken(user.id);
+
         return {
             token: `Bearer ${token}`,
+            refreshToken: refreshToken,
             user: payload,
         }; // for Bearer authentication
     },
@@ -235,6 +243,107 @@ module.exports = {
             throw err;
         } finally {
             client.release();
+        }
+    },
+
+    // Refresh Token Methods
+
+    /** get a user refresh token from DB */
+    getUserRefreshToken: async (userId) => {
+        const { rows } = await db.query({
+            text: `select * from user_refresh_token where user_id = $1`,
+            values: [userId],
+        });
+        return rows;
+    },
+    /** create & save a refresh-token for a user
+     * - create a new refresh token, payload = { id }, exp = 14-days
+     * - save the refresh token in DB - user_refresh_token
+     *      - insert new row or update existing row
+     * - return the token
+     */
+    getNewRefreshToken: async (userId) => {
+        const client = await db.connect();
+        try {
+            await client.query('BEGIN');
+
+            // generate a refresh token
+            const refreshToken = jwt.sign(
+                { id: userId },
+                process.env.JWT_REFRESH_SECRET,
+                { expiresIn: '14d' } // exp : 2 weeks
+            );
+
+            // save token in DB
+            await client.query({
+                text: `insert into user_refresh_token (user_id, refresh_token) values ($1, $2)
+                on conflict on constraint user_refresh_token_pkey do update
+                set refresh_token = $2`,
+                values: [userId, refreshToken],
+            });
+
+            await client.query('COMMIT');
+            return refreshToken;
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw {
+                status: 409,
+                message: `Error during get & save refresh token : ${err.message}`,
+            };
+        } finally {
+            client.release();
+        }
+    },
+    /** grant a new access token via refresh token
+     * - POST /api/auth/refresh
+     * - (args) access token (Bearer), refresh token
+     * - decode AT (without expiredError) -> get the userId (int)
+     * - fetch refresh token from DB w/ userId -> if not exists, 401
+     * - (1) decode both (input RT, stored RT) -> should have equal payload
+     * - (2) string should be equal (inputRT === storedRT)
+     *      - 401 if checks fail
+     * - return { newAT, existingRT }
+     */
+    getNewAccessTokenFromRefresh: async (args) => {
+        try {
+            // decode old AT to get user ID
+            const [type, oldAccessToken] = splitByDelimiter(args.accessToken, ' ');
+            const { id } = jwt.verify(oldAccessToken, process.env.JWT_SECRET, {
+                ignoreExpiration: true,
+            });
+
+            // get saved RT from DB
+            const rows = await module.exports.getUserRefreshToken(id);
+            if (!rows.length)
+                throw { status: 401, message: `no refresh token in db for user: ${id}` };
+            const savedRefreshToken = rows[0].refresh_token;
+
+            // decode both - RT, savedRT -> compare both token & payload
+            const inputRTPayload = jwt.verify(args.refreshToken, process.env.JWT_REFRESH_SECRET);
+            const savedRTPayload = jwt.verify(savedRefreshToken, process.env.JWT_REFRESH_SECRET);
+
+            const verify =
+                args.refreshToken === savedRefreshToken && inputRTPayload.id === savedRTPayload.id;
+            if (!verify) throw new Error();
+
+            // make new access token w/ payload
+            const user = await userService.getUserById(id);
+            const payload = {
+                id: user[0].id,
+                accountId: user[0].account_id,
+                userType: user[0].user_type,
+            };
+            const newAccessToken = getAccessToken(payload);
+
+            // return new access token & stored refresh token
+            return {
+                token: `Bearer ${newAccessToken}`,
+                refreshToken: savedRefreshToken,
+                user: payload,
+            };
+        } catch (err) {
+            if (err.message) throw err;
+            throw { status: 401, message: `refresh token validation failed. Please login again` };
         }
     },
 };

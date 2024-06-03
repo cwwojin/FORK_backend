@@ -83,6 +83,17 @@ router
             validatorChecker,
         ],
         authController.resetPassword
+    )
+    .post(
+        // POST : get new access token via refresh token
+        '/refresh',
+        checkPermission([-1]),
+        [
+            header('Authorization', `Authorization header missing`).exists().isString(),
+            header('Refresh', `Refresh header missing`).exists().isString(),
+            validatorChecker,
+        ],
+        authController.getNewAccessTokenFromRefresh
     );
 
 module.exports = router;

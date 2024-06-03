@@ -88,4 +88,20 @@ module.exports = {
             next(err);
         }
     },
+    /** get a new access token via refresh token */
+    getNewAccessTokenFromRefresh: async (req, res, next) => {
+        try {
+            const result = await authService.getNewAccessTokenFromRefresh({
+                accessToken: req.header('Authorization'),
+                refreshToken: req.header('Refresh'),
+            });
+            res.status(200).json({
+                status: 'success',
+                data: result,
+                message: 'access token renewed successfully',
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 };
