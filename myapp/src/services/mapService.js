@@ -41,10 +41,7 @@ module.exports = {
 
         // query parameters
         if (args.name) {
-            baseQuery = baseQuery + `and fp.name ilike '%${args.name}%' `;
-        }
-        if (args.englishName) {
-            baseQuery = baseQuery + `and fp.english_name ilike '%${args.englishName}%' `;
+            baseQuery = baseQuery + `and (fp.name ilike '%${args.name}%' or fp.english_name ilike '%${args.englishName}%') `;
         }
         if (parseBoolean(args.openNow)) {
             baseQuery =
