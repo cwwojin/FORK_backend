@@ -86,6 +86,17 @@ router
             validatorChecker,
         ],
         reviewController.deleteReview
+    )
+    .get(
+        // GET : get summary by facility ID
+        '/summary/:facility',
+        [
+            param('facility', `route param 'facility' must be a positive integer`)
+                .exists()
+                .isInt({ min: 1 }),
+            validatorChecker,
+        ],
+        reviewController.getSummaryByFacilityId
     );
 
 /** Router for "api/hashtags" */

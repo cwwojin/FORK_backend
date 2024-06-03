@@ -95,6 +95,18 @@ module.exports = {
             next(err);
         }
     },
+    /** get a summary by facility ID */
+    getSummaryByFacilityId: async (req, res, next) => {
+        try {
+            const result = await reviewService.getSummaryByFacilityId(req.params.facility);
+            res.status(200).json({
+                status: 'success',
+                data: result,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
     /** get all hashtags */
     getAllHashtags: async (req, res, next) => {
         try {
