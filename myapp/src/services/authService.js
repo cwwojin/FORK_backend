@@ -1,7 +1,13 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
-const { validateKAISTMail, BCRYPT_SALTROUNDS, splitByDelimiter } = require('../helper/helper');
+const {
+    validateKAISTMail,
+    BCRYPT_SALTROUNDS,
+    splitByDelimiter,
+    ACCESS_TOKEN_EXPIRESIN,
+    REFRESH_TOKEN_EXPIRESIN,
+} = require('../helper/helper');
 const db = require('../models/index');
 const { sendAuthMail, sendPasswordResetMail } = require('../helper/mailSender');
 const userService = require('./userService');
@@ -10,7 +16,7 @@ const getAccessToken = (payload) => {
     return jwt.sign(
         payload,
         process.env.JWT_SECRET,
-        { expiresIn: '1m' } // TMP : 1 day
+        { expiresIn: ACCESS_TOKEN_EXPIRESIN } // TMP : 1 day
     );
 };
 
@@ -271,7 +277,7 @@ module.exports = {
             const refreshToken = jwt.sign(
                 { id: userId },
                 process.env.JWT_REFRESH_SECRET,
-                { expiresIn: '14d' } // exp : 2 weeks
+                { expiresIn: REFRESH_TOKEN_EXPIRESIN } // exp : 2 weeks
             );
 
             // save token in DB
