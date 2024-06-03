@@ -111,6 +111,7 @@
 | Location | Field Name             | Data Type | Required | Description                       |
 | -------- | ---------------------- | --------- | -------- | --------------------------------- |
 | body     | name                   | string    | O        | name of the facility              |
+| body     | englishName                   | string    | O        | English name of the facility              |
 | body     | businessId             | string    | O        | business ID of the facility       |
 | body     | type                   | string    | O        | type of the facility              |
 | body     | description            | string    | O        | description of the facility       |
@@ -154,6 +155,7 @@
 | -------- | ---------------------- | --------- | -------- | --------------------------------- |
 | param    | id                     | int       | O        | unique ID of the `facility`       |
 | body     | name                   | string    | O        | name of the facility              |
+| body     | englishName                   | string    | O        | English name of the facility              |
 | body     | businessId             | string    | O        | business ID of the facility       |
 | body     | type                   | string    | O        | type of the facility              |
 | body     | description            | string    | O        | description of the facility       |
@@ -1197,6 +1199,7 @@
 | Location | Field Name               | Data Type | Required | Description                                    |
 | -------- | ------------------------ | --------- | -------- | -----------------------------------------------|
 | body     | content.name             | string    | O        | name of the facility                           |
+| body     | content.englishName             | string    | O        | English name of the facility                           |
 | body     | content.type             | string    | O        | type of the facility                           |
 | body     | content.businessId       | string    | O        | business ID of the facility                    |
 | body     | content.phone            | string    | O        | phone number of the facility                   |
@@ -1254,6 +1257,7 @@
   "title" : "Hello FORK!",
   "content" : JSON.Stringify({
     "name":"Restaurant_01", 
+    "englishName":"Restaurant_01",
     "type":"restaurant", 
     "businessId":"B00001", 
     "phone":"02-1234-5678", 
@@ -1338,6 +1342,7 @@
     "title": "Hello FORK!",
     "content": {
       "name": "Restaurant_01",
+      "englishName":"Restaurant_01",
       "type": "restaurant",
       "businessId": "B00001",
       "phone": "02-1234-5678",

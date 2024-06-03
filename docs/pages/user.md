@@ -417,6 +417,7 @@
 | param    | user                   | int       | O        | unique ID of the user account         |
 | param    | facility               | int       | O        | unique ID of the facility             |
 | body     | name                   | string    | O        | name of the facility                  |
+| body     | englishName                   | string    | O        | English name of the facility                  |
 | body     | businessId             | string    | O        | business ID of the facility           |
 | body     | type                   | string    | O        | type of the facility                  |
 | body     | description            | string    | O        | description of the facility           |

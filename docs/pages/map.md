@@ -70,7 +70,7 @@
 
 | Location | Field Name | Data Type | Required | Description |
 | --- | --- | --- | --- | --- |
-| query | name | string | - | name of the facility to search for |
+| query | name | string | - | name of the facility to search for. this will search on columns `name, english_name` |
 | query | openNow | bool | - | if TRUE, then return only facilities that are currently open |
 | query | preferences | array | - | comma-seperated array of `preference.id` (integer). If provided, then search for facilities that contain at least one of the preferences queried |
 | query | favorite | bool | - | if TRUE, then return only the `favorite` facilities of the requesting `user` if the requester is a `guest` then using this parameter will raise ERROR |
