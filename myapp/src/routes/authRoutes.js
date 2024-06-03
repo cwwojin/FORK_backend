@@ -94,6 +94,16 @@ router
             validatorChecker,
         ],
         authController.getNewAccessTokenFromRefresh
+    )
+    .post(
+        // POST : logout - destroy stored refresh token
+        '/logout',
+        checkPermission([0, 1, 2]),
+        [
+            header('id', `header 'id' must be a positive integer`).exists().isInt({ min: 1 }),
+            validatorChecker,
+        ],
+        authController.logoutUser
     );
 
 module.exports = router;

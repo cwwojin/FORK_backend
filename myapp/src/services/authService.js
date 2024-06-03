@@ -352,4 +352,12 @@ module.exports = {
             throw { status: 401, message: `refresh token validation failed. Please login again` };
         }
     },
+    /** logout user - destroy stored refresh token */
+    logoutUser: async (userId) => {
+        const { rows } = await db.query({
+            text: `delete from user_refresh_token where user_id = $1 returning user_id`,
+            values: [userId],
+        });
+        return rows;
+    },
 };
