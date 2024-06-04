@@ -75,7 +75,7 @@ const syncS3DB = async () => {
 
     // delete target from S3 (if non-empty)
     let deletedObjects = [];
-    if (target.length) {
+    if (urisToDelete.length) {
         deletedObjects = await s3.deleteObjectsByUris(urisToDelete);
     }
 
