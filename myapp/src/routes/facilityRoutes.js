@@ -26,6 +26,7 @@ router.post(
     checkPermission([0]),
     [
         body('name').exists().isString().withMessage('Name is required'),
+        body('englishName').exists().isString().withMessage('English name is required'),
         body('businessId').exists().notEmpty().withMessage('Business ID is required'),
         body('type').exists().isString().withMessage('Type is required'),
         body('description').exists().isString().withMessage('Description is required'),
@@ -57,6 +58,7 @@ router.put(
     [
         param('id').isNumeric().withMessage('Valid ID is required'),
         body('name').exists().isString().withMessage('Name is required'),
+        body('englishName').exists().isString().withMessage('English name is required'),
         body('businessId').exists().notEmpty().withMessage('Business ID is required'),
         body('type').exists().isString().withMessage('Type is required'),
         body('description').exists().isString().withMessage('Description is required'),
@@ -451,6 +453,10 @@ router
                 .withMessage('Author ID is required and must be a positive integer'),
             body('title').exists().isString().withMessage('Title is required and must be a string'),
             body('content.name')
+                .exists()
+                .isString()
+                .withMessage('Content name is required and must be a string'),
+            body('content.englishName')
                 .exists()
                 .isString()
                 .withMessage('Content name is required and must be a string'),
