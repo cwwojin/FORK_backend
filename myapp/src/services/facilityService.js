@@ -523,7 +523,7 @@ class FacilityService {
             if (moderationResult.result) {
                 throw {
                     status: 499,
-                    message: 'review upload failed due to harmful content detected',
+                    message: 'facility post upload failed due to harmful content detected',
                     text: moderationResult.text,
                     image: moderationResult.image,
                 };
