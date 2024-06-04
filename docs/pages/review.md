@@ -8,6 +8,7 @@
   - [POST : Create a Review](#post--create-a-review)
   - [POST : Edit Review Contents - Text \& Hashtags](#post--edit-review-contents---text--hashtags)
   - [DELETE : Delete a Review](#delete--delete-a-review)
+  - [GET : Get a Summary of reviews for a Faciltiy](#get--get-a-summary-of-reviews-for-a-faciltiy)
 - [Hashtag Methods](#hashtag-methods)
   - [GET : Get all Hashtags from the system](#get--get-all-hashtags-from-the-system)
   - [GET : Get a Hashtag by ID](#get--get-a-hashtag-by-id)
@@ -156,6 +157,41 @@
 | data | the deleted `review` object (no hashtags) |
 
 ---
+
+## GET : Get a Summary of reviews for a Faciltiy
+- Get a summary text of all reviews for a certain facility
+- choose a facility via route parameter 'facility' (facility ID)
+- Response will include the summary if : **the facility has more than 3 reviews**
+
+### URL
+`/api/reviews/summary/:facility`
+
+### Request Format
+- Content-Type: `application/json`
+
+| Location | Field Name | Data Type | Required | Description |
+| --- | --- | --- | --- | --- |
+| param | facility | int | O | the unique id of the `facility` |
+| query | force | bool | - | if set to `true` this will force-recreate the summary rather than using a cached one. The constraint of facility needing more than 3 reviews will still apply. **ONLY USE THIS FOR DEVELOPMENT & TEST PURPOSES** |
+
+### Response Format
+- HTTP Status Code: `200`
+
+| Key | Description |
+| --- | --- |
+| status | `success` |
+| data | data format is `{ id, summary }, id = facilityId, summary = the generated text summary` |
+
+### Notes : Criteria for generating a summary
+- This method will generate a new summary & return it if :
+  1. the facility has 3 or more reviews
+  2. If a summary cached in DB exists, then use the cached summary if :
+    - The cached summary is not older than `24 hours`
+  3. If 2. is FALSE (either no cached summary or older than 24hrs), then generate a new summary via OpenAI API call
+    - Store the NEW summary in the DB 
+
+---
+
 
 # Hashtag Methods
 
