@@ -98,7 +98,7 @@ module.exports = {
     /** get a summary by facility ID */
     getSummaryByFacilityId: async (req, res, next) => {
         try {
-            const result = await reviewService.getSummaryByFacilityId(req.params.facility);
+            const result = await reviewService.getSummaryByFacilityId(req.params.facility, req.query.force);
             res.status(200).json({
                 status: 'success',
                 data: result,

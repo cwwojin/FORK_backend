@@ -194,7 +194,7 @@ module.exports = {
      * - (1) there is a cached summary but updated_at : older than 24 hrs
      * - (2) there is no cached summary
      */
-    getSummaryByFacilityId: async (facilityId) => {
+    getSummaryByFacilityId: async (facilityId, forceRecreate) => {
         const client = await db.connect();
         try {
             let summary = '';
@@ -202,20 +202,17 @@ module.exports = {
 
             // criteria : more than 3 reviews
             if (reviews.length >= 3) {
-                console.log(reviews.length);
                 // check for summary stored in DB - only if its made in the last 24 hrs
                 const storedSummary = await client.query({
                     text: `select * from summary where facility_id = $1 and updated_at > now() - interval '24 hours' `,
                     values: [facilityId],
                 });
-                console.log(storedSummary.rows);
 
                 // generate or use stored summary
-                if (storedSummary.rows.length) {
+                if (storedSummary.rows.length && !parseBoolean(forceRecreate) ) {
                     summary = storedSummary.rows[0].summary;
                 } else {
                     summary = await summaryModel.generateSummary(reviews.map((e) => e.content));
-                    console.log(summary);
 
                     // store new summary in DB
                     await client.query({
