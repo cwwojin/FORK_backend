@@ -1,6 +1,7 @@
 const db = require('../models/index');
 const { removeS3File } = require('../helper/s3Engine');
 const { makeS3Uri } = require('../helper/helper');
+const sightEngine = require('../helper/sightEngine');
 
 class FacilityService {
     async getAllFacilities() {
@@ -515,7 +516,20 @@ class FacilityService {
             };
         return rows[0];
     }
-    async createPost(facilityId, data, clientId) {
+    async createPost(facilityId, data, clientId, moderation) {
+        // perform content moderation if 'moderation' = true
+        if (moderation) {
+            const moderationResult = await sightEngine.moderateUserContent(data);
+            if (moderationResult.result) {
+                throw {
+                    status: 499,
+                    message: 'review upload failed due to harmful content detected',
+                    text: moderationResult.text,
+                    image: moderationResult.image,
+                };
+            }
+        }
+
         let client;
         try {
             client = await db.connect();
