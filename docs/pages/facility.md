@@ -588,6 +588,7 @@
 
 - Create a new post for a facility
 - a post can contain up to 1 image attachment
+- Content moderation will be performed on the uploaded text & image
 
 ### URL
 
@@ -614,8 +615,19 @@
 | status | `success`                 |
 | data   | the created `post` object |
 
+### Response Format - Moderation / Harmful Content Detected
+
+- HTTP Status Code: `499`
+
+| Key | Description |
+| --- | --- |
+| status | `error` |
+| message | `"post upload failed due to harmful content detected"` |
+| data | object containing content moderation result `{ status, message, image, text }` keys `image, text` include data & scores for each moderation result. |
+
 ### Notes
-- If a post should be made without an image, leave the `image` field undefined or omit it.
+- For content moderation, the method will return an ERROR if moderation fails / harmful content is detected.
+- we use a custom HTTP code to indicate this specific error case `499` in order to allow simple client-side error handling.
 
 ---
 

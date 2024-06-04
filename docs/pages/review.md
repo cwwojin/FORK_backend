@@ -69,6 +69,7 @@
 ## POST : Create a Review
 - Create a new review
 - Can have up to 1 image attachment
+- Content moderation will be performed on the uploaded review text & image
 
 ### URL
 `/api/reviews/upload`
@@ -105,6 +106,19 @@
 | --- | --- |
 | status | `success` |
 | data | the created `review` object + all associated `hashtag` |
+
+### Response Format - Moderation
+- HTTP Status Code: `499`
+
+| Key | Description |
+| --- | --- |
+| status | `error` |
+| message | `"review upload failed due to harmful content detected"` |
+| data | object containing content moderation result `{ status, message, image, text }` keys `image, text` include data & scores for each moderation result. |
+
+### Notes
+- For content moderation, the method will return an ERROR if moderation fails / harmful content is detected.
+- we use a custom HTTP code to indicate this specific error case `499` in order to allow simple client-side error handling.
 
 ---
 
