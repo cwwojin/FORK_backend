@@ -94,9 +94,7 @@ router
             param('facility', `route param 'facility' must be a positive integer`)
                 .exists()
                 .isInt({ min: 1 }),
-            query('force', `optional query field 'force' must be boolean`)
-                .optional()
-                .isBoolean(),
+            query('force', `optional query field 'force' must be boolean`).optional().isBoolean(),
             validatorChecker,
         ],
         reviewController.getSummaryByFacilityId

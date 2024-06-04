@@ -41,6 +41,10 @@ module.exports = {
             .toString(36)
             .substring(2, 2 + length);
     },
+    splitByDelimiter: (data, delim) => {
+        const pos = data ? data.indexOf(delim) : -1;
+        return pos > 0 ? [data.substr(0, pos), data.substr(pos + 1)] : ['', ''];
+    },
     /** request validation */
     validateUserId: (userId) => userNamePattern.test(userId),
     validatePassword: (password) => passwordPattern.test(password),

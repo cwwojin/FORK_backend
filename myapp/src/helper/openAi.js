@@ -1,5 +1,7 @@
 const { OpenAI } = require('openai');
 
+const { splitByDelimiter } = require('./helper');
+
 // GPT configs, prompt templates
 const modelName = 'gpt-3.5-turbo';
 const temperature = 0.6;
@@ -57,11 +59,31 @@ class summaryModel {
         };
     }
 
+    /** post-processing on summary output
+     * 1. remove title 'Keywords: Keyword of reviews: etc.' -> all seem to end in columns
+     * 2. all whitespace -> single-spaces
+     * 3. handle delimiters : ',' or '-' -> seperate each keyword-block
+     * 4. format response -> "First keyword, Second keyword, Third Keyword, .."
+     */
+    postProcessChatResponse(content) {
+        const titleContent = splitByDelimiter(content, ':');
+        let output = titleContent[1] ? titleContent[1] : titleContent[0];
+        output = output.replace(/\s\s+/g, ' ');
+
+        // tokenize
+        let tokens = output.split(/,-/g);
+        tokens = tokens.map((e) => e.trim());
+
+        // join & return output
+        output = tokens.join(', ');
+        return output;
+    }
+
     /** generate a summary of reviews */
     async generateSummary(reviews) {
         const prompt = this.makePrompt(reviews);
         const chatResponse = await this.chatCompletion([initialMessageTemplate, prompt]);
-        return chatResponse.content;
+        return this.postProcessChatResponse(chatResponse.content);
     }
 }
 

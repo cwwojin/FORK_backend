@@ -209,7 +209,7 @@ module.exports = {
                 });
 
                 // generate or use stored summary
-                if (storedSummary.rows.length && !parseBoolean(forceRecreate) ) {
+                if (storedSummary.rows.length && !parseBoolean(forceRecreate)) {
                     summary = storedSummary.rows[0].summary;
                 } else {
                     summary = await summaryModel.generateSummary(reviews.map((e) => e.content));
