@@ -254,7 +254,8 @@ module.exports = {
                     content,
                     imgUri,
                 },
-                getClientId(req)
+                getClientId(req),
+                true
             );
 
             res.status(201).json({

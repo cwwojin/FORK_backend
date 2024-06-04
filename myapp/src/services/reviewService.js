@@ -2,6 +2,7 @@ const db = require('../models/index');
 const { parseBoolean } = require('../helper/helper');
 const { removeS3File } = require('../helper/s3Engine');
 const summaryModel = require('../helper/openAi');
+const sightEngine = require('../helper/sightEngine');
 
 module.exports = {
     /** get review by review id */
@@ -58,7 +59,21 @@ module.exports = {
      * 4. Insert junction table "review_hashtag" entries
      * 5. COMMIT or ROLLBACK transaction if error
      */
-    createReview: async (args, clientId) => {
+    createReview: async (args, clientId, moderation) => {
+        // perform content moderation if 'moderation' = true
+        if (moderation) {
+            const moderationResult = await sightEngine.moderateUserContent(args);
+            if (moderationResult.result) {
+                throw {
+                    status: 499,
+                    message: 'review upload failed due to harmful content detected',
+                    text: moderationResult.text,
+                    image: moderationResult.image,
+                };
+            }
+        }
+
+        // upload review after moderation
         const client = await db.connect();
         try {
             let result;
@@ -95,7 +110,7 @@ module.exports = {
                     args.facilityId,
                     args.score,
                     args.content,
-                    args.imageUri,
+                    args.imgUri,
                 ],
             });
             const reviewId = result.rows[0]['id'];

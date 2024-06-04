@@ -79,11 +79,13 @@ const syncS3DB = async () => {
         deletedObjects = await s3.deleteObjectsByUris(urisToDelete);
     }
 
-    return {
+    const output = {
         timestamp: new Date().toISOString(),
         message: `${deletedObjects.length} objects deleted from s3`,
         data: deletedObjects,
     };
+    console.log(output);
+    return output;
 };
 
 module.exports.handler = async (event) => {

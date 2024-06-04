@@ -32,6 +32,7 @@
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "express-validator": "^7.0.1",
+    "form-data": "^4.0.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
@@ -39,6 +40,7 @@
     "nodemailer": "^6.9.13",
     "openai": "^4.47.3",
     "pg": "^8.11.5",
-    "pg-hstore": "^2.3.4"
+    "pg-hstore": "^2.3.4",
+    "superagent": "^9.0.2"
   }
 }
