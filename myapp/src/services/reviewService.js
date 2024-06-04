@@ -67,7 +67,7 @@ module.exports = {
             // new code - make array of {id, name} from args.hashtags (array of names)
             const hashtagArray = [];
             for await (const h of args.hashtags) {
-                const { rows } = await db.query({
+                const { rows } = await client.query({
                     text: `select * from hashtag where name = $1 or (slug <> '' and slug = slugify($1))`,
                     values: [h],
                 });
@@ -128,7 +128,7 @@ module.exports = {
             // new code - make array of {id, name} from args.hashtags (array of names)
             const hashtagArray = [];
             for await (const h of body.hashtags) {
-                const { rows } = await db.query({
+                const { rows } = await client.query({
                     text: `select * from hashtag where name = $1 or (slug <> '' and slug = slugify($1))`,
                     values: [h],
                 });
