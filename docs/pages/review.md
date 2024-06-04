@@ -123,10 +123,10 @@
 ```JSON
 {
   "status": "error",
-  "message": "facility post upload failed due to harmful content detected",
+  "message": "review upload failed due to harmful content detected",
   "data": {
     "status": 499,
-    "message": "facility post upload failed due to harmful content detected",
+    "message": "review upload failed due to harmful content detected",
     "text": {
       "result": true,
       "data": {
