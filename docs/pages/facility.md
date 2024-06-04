@@ -625,6 +625,40 @@
 | message | `"post upload failed due to harmful content detected"` |
 | data | object containing content moderation result `{ status, message, image, text }` keys `image, text` include data & scores for each moderation result. |
 
+### Example Response - Moderation
+
+- HTTP Status Code: `499`
+
+```JSON
+{
+  "status": "error",
+  "message": "facility post upload failed due to harmful content detected",
+  "data": {
+    "status": 499,
+    "message": "facility post upload failed due to harmful content detected",
+    "text": {
+      "result": true,
+      "data": {
+        "sexual": 0.09,
+        "discriminatory": 0.08,
+        "insulting": 0.86,
+        "violent": 0.04,
+        "toxic": 0.87
+      }
+    },
+    "image": {
+      "result": true,
+      "data": {
+        "nudity": 0.030000000000000027,
+        "offensive": 0.89,
+        "gore": 0.01,
+        "textProfanity": []
+      }
+    }
+  }
+}
+```
+
 ### Notes
 - For content moderation, the method will return an ERROR if moderation fails / harmful content is detected.
 - we use a custom HTTP code to indicate this specific error case `499` in order to allow simple client-side error handling.
