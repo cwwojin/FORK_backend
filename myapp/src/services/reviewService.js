@@ -1,6 +1,7 @@
 const db = require('../models/index');
 const { parseBoolean } = require('../helper/helper');
 const { removeS3File } = require('../helper/s3Engine');
+const summaryModel = require('../helper/openAi');
 
 module.exports = {
     /** get review by review id */
@@ -66,7 +67,7 @@ module.exports = {
             // new code - make array of {id, name} from args.hashtags (array of names)
             const hashtagArray = [];
             for await (const h of args.hashtags) {
-                const { rows } = await db.query({
+                const { rows } = await client.query({
                     text: `select * from hashtag where name = $1 or (slug <> '' and slug = slugify($1))`,
                     values: [h],
                 });
@@ -127,7 +128,7 @@ module.exports = {
             // new code - make array of {id, name} from args.hashtags (array of names)
             const hashtagArray = [];
             for await (const h of body.hashtags) {
-                const { rows } = await db.query({
+                const { rows } = await client.query({
                     text: `select * from hashtag where name = $1 or (slug <> '' and slug = slugify($1))`,
                     values: [h],
                 });
@@ -186,6 +187,54 @@ module.exports = {
         }
         return result.rows;
     },
+
+    /** get a summary of a single facility
+     * - conditions for a summary to be generated
+     * - more than 3 reviews total
+     * - (1) there is a cached summary but updated_at : older than 24 hrs
+     * - (2) there is no cached summary
+     */
+    getSummaryByFacilityId: async (facilityId, forceRecreate) => {
+        const client = await db.connect();
+        try {
+            let summary = '';
+            const reviews = await module.exports.getReviewByQuery({ facility: facilityId });
+
+            // criteria : more than 3 reviews
+            if (reviews.length >= 3) {
+                // check for summary stored in DB - only if its made in the last 24 hrs
+                const storedSummary = await client.query({
+                    text: `select * from summary where facility_id = $1 and updated_at > now() - interval '24 hours' `,
+                    values: [facilityId],
+                });
+
+                // generate or use stored summary
+                if (storedSummary.rows.length && !parseBoolean(forceRecreate)) {
+                    summary = storedSummary.rows[0].summary;
+                } else {
+                    summary = await summaryModel.generateSummary(reviews.map((e) => e.content));
+
+                    // store new summary in DB
+                    await client.query({
+                        text: `insert into summary (facility_id, summary) values ($1, $2)
+                            on conflict on constraint summary_pkey do update set summary = $2`,
+                        values: [facilityId, summary],
+                    });
+                }
+            }
+            await client.query('COMMIT');
+            return {
+                id: facilityId,
+                summary: summary,
+            };
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        } finally {
+            client.release();
+        }
+    },
+
     /** get all hashtags */
     getAllHashtags: async () => {
         const query = {
