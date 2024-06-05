@@ -116,7 +116,7 @@ module.exports = {
             const reviewId = result.rows[0]['id'];
 
             // insert hashtags only if nonempty
-            if (hashtagIds.length){
+            if (hashtagIds.length) {
                 const insertJunctionQuery = `insert into review_hashtag (review_id, hashtag_id)
                     values ${hashtagIds.map((e) => `(${reviewId}, ${e})`).join(`, `)}`;
                 await client.query(insertJunctionQuery);
@@ -179,9 +179,9 @@ module.exports = {
             });
 
             // insert hashtags only if nonempty
-            if (hashtagIds.length){
+            if (hashtagIds.length) {
                 const insertJunctionQuery = `insert into review_hashtag (review_id, hashtag_id)
-                    values ${hashtagIds.map((e) => `(${reviewId}, ${e})`).join(`, `)}`;
+                    values ${hashtagIds.map((e) => `(${id}, ${e})`).join(`, `)}`;
                 await client.query(insertJunctionQuery);
             }
 
