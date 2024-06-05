@@ -1,3 +1,4 @@
+const { getClientId } = require('../helper/helper');
 const mapService = require('../services/mapService');
 
 module.exports = {
@@ -41,7 +42,8 @@ module.exports = {
     /** get location by query (name, openNow, preferences) */
     getLocationByQuery: async (req, res, next) => {
         try {
-            const result = await mapService.getLocationByQuery(req.query);
+            const clientId = getClientId(req);
+            const result = await mapService.getLocationByQuery(req.query, clientId);
             res.status(200).json({
                 status: 'success',
                 data: result,

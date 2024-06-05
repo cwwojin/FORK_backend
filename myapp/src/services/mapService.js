@@ -4,7 +4,7 @@ const { parseBoolean } = require('../helper/helper');
 module.exports = {
     /** get location by facility id */
     getLocation: async (id) => {
-        query = {
+        const query = {
             text: `select * from facility_pin where id = $1`,
             values: [id],
         };
@@ -18,7 +18,7 @@ module.exports = {
      * - return (id, name, slug, lat, lng, avg_score) for each row
      * */
     getLocationByArea: async (latMin, lngMin, latMax, lngMax) => {
-        query = {
+        const query = {
             text: `select fpa.* from facility_pin fpa
                 where lat between $1 and $2
                 and lng between $3 and $4`,
@@ -28,46 +28,46 @@ module.exports = {
         return result.rows;
     },
     /** get locations by query
-     * (args) name, openNow, preferences (list)
-     * name is searched as case-insensitive substring search
+     * (args) name, openNow, preferences (list), favorite (bool)
+     * - name is searched as case-insensitive substring search
+     * - favorite : if TRUE, get only the user (clientId) favorites
      */
-    getLocationByQuery: async (args) => {
-        let values = [];
-        let baseQuery = `select 
-                            fpe.id,
-                            fpe.name,
-                            fpe.slug,
-                            fpe.profile_img_uri,
-                            fpe.description,
-                            fpe.lat,
-                            fpe.lng,
-                            fpe.road_address,
-                            fpe.english_address,
-                            fpe.avg_score,
-                            fpe.opening_hours,
-                            fpe.preference_ids,
-                            fpe.preferences
-                        from (select fp.*, json_array_elements(fp.opening_hours) oh from facility_pin fp) fpe where 1=1 `;
+    getLocationByQuery: async (args, clientId) => {
+        const values = [];
+        let baseQuery = `with base as (select f.id, oh from
+                facility_pin f,
+                json_array_elements(f.opening_hours) oh )
+            select distinct on (fp.id) fp.*
+            from facility_pin fp 
+            join base on fp.id = base.id `;
+
+        // query parameter - favorite
+        if (parseBoolean(args.favorite)) {
+            values.push(clientId);
+            baseQuery =
+                baseQuery +
+                `join favorite fv on fp.id = fv.facility_id and fv.user_id = $${values.length} `;
+        }
+        baseQuery = baseQuery + `where 1=1 `;
 
         // query parameters
         if (args.name) {
-            baseQuery = baseQuery + `and name ilike '%${args.name}%' `;
+            baseQuery =
+                baseQuery +
+                `and (fp.name ilike '%${args.name}%' or fp.english_name ilike '%${args.englishName}%') `;
         }
         if (parseBoolean(args.openNow)) {
             baseQuery =
                 baseQuery +
-                `and extract(dow from now()) = (fpe.oh->>'day')::integer 
-                and now()::time between (fpe.oh->>'open_time')::time and (fpe.oh->>'close_time')::time `;
+                `and extract(dow from (now() at time zone 'Asia/Seoul')) = (base.oh->>'day')::integer 
+                and (now() at time zone 'Asia/Seoul')::time between (base.oh->>'open_time')::time and (base.oh->>'close_time')::time `;
         }
         if (args.preferences !== undefined && args.preferences.length !== 0) {
             values.push(args.preferences);
-            baseQuery = baseQuery + `and fpe.preference_ids && $${values.length} `;
+            baseQuery = baseQuery + `and fp.preference_ids && $${values.length} `;
         }
 
-        const { rows } = await db.query({
-            text: baseQuery,
-            values: values,
-        });
+        const { rows } = await db.query(baseQuery, values);
         return rows;
     },
 };

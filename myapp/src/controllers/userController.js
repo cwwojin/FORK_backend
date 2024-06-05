@@ -1,5 +1,5 @@
 const userService = require('../services/userService');
-const { makeS3Uri } = require('../helper/helper');
+const { makeS3Uri, getClientId } = require('../helper/helper');
 
 module.exports = {
     /** get user by query - account_id, user_type */
@@ -18,7 +18,7 @@ module.exports = {
     getUserById: async (req, res, next) => {
         const id = Number(req.params.id);
         try {
-            const result = await userService.getUserById(id);
+            const result = await userService.getUserById(id, getClientId(req));
             if (result.length !== 0) {
                 res.status(200).json({
                     status: 'success',
@@ -171,6 +171,19 @@ module.exports = {
             res.status(200).json({
                 status: 'success',
                 data: result[0],
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    // Get all posts of favorite facilities of a user
+    getFavoriteFacilityPosts: async (req, res, next) => {
+        const id = Number(req.params.id);
+        try {
+            const result = await userService.getFavoriteFacilityPosts(id);
+            res.status(200).json({
+                status: 'success',
+                data: result,
             });
         } catch (err) {
             next(err);

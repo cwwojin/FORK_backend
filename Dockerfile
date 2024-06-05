@@ -1,14 +1,8 @@
-FROM node:lts-slim as base
+FROM node:lts-alpine as base
 
-# Install necessary packages
-# RUN apt-get update && apt-get install -y \
-#     unzip \
-#     curl
-
-# AWS CLI
-# RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-# RUN unzip awscliv2.zip
-# RUN ./aws/install
+# Set timezone
+ENV TZ=Asia/Seoul
+RUN apk add tzdata && ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime
 
 # App setup & dependencies
 WORKDIR /usr/myapp

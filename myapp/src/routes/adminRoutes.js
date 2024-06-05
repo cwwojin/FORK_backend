@@ -1,10 +1,12 @@
 const { Router } = require('express');
-const router = Router();
-const adminController = require('../controllers/adminController');
 const { body, param, query } = require('express-validator');
+
+const adminController = require('../controllers/adminController');
 const { validatorChecker } = require('../middleware/validator');
 const { REPORT_TYPES, REPORT_STATUS } = require('../helper/helper');
 const { checkPermission } = require('../middleware/authMiddleware');
+
+const router = Router();
 
 router
     .get(
@@ -81,6 +83,7 @@ router
     .get(
         // GET: get facility registration request by id
         '/facility-requests/:id',
+        checkPermission([0, 2]),
         [
             param('id', `route param 'id' must be a positive integer`).exists().isInt({ min: 1 }),
             validatorChecker,
@@ -90,6 +93,7 @@ router
     .get(
         // GET: get all facility registration requests
         '/facility-requests',
+        checkPermission([0, 2]),
         [
             query('user', `optional query field 'user' must be a positive integer`)
                 .optional()
@@ -104,6 +108,7 @@ router
     .post(
         // POST: accept facility registration request requested by specified id
         '/facility-requests/:id/accept',
+        checkPermission([0]),
         [
             param('id', `route param 'id' must be a positive integer`).exists().isInt({ min: 1 }),
             body('adminId', `body field 'adminId' must be a positive integer`)
@@ -116,6 +121,7 @@ router
     .post(
         // POST: decline facility registration request requested by specified id
         '/facility-requests/:id/decline',
+        checkPermission([0]),
         [
             param('id', `route param 'id' must be a positive integer`).exists().isInt({ min: 1 }),
             body('adminId', `body field 'adminId' must be a positive integer`)
@@ -128,6 +134,7 @@ router
     .delete(
         // DELETE: delete facility registration request of specified id
         '/facility-requests/:id',
+        checkPermission([0, 2]),
         [
             param('id', `route param 'id' must be a positive integer`).exists().isInt({ min: 1 }),
             validatorChecker,

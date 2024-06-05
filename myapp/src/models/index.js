@@ -1,6 +1,7 @@
 'use strict';
 
 const pg = require('pg');
+
 const env = process.env.NODE_ENV || 'development';
 const config = require('../config/config')[env];
 
@@ -11,11 +12,6 @@ const pool = new pg.Pool({
     database: config.database,
     port: 5432,
     max: 10,
-});
-pool.connect((err) => {
-    if (err) {
-        console.log('DB connection failed : ' + err);
-    }
 });
 
 module.exports = pool;

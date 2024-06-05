@@ -1,8 +1,9 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+
 const { validateKAISTMail, BCRYPT_SALTROUNDS } = require('../helper/helper');
 const db = require('../models/index');
-const { sendAuthMail } = require('../helper/mailSender');
+const { sendAuthMail, sendPasswordResetMail } = require('../helper/mailSender');
 const userService = require('./userService');
 
 const validateAccount = async (userId, password) => {
@@ -53,9 +54,10 @@ module.exports = {
     },
     /** re-send verification mail & update pending_kaist_user */
     reSendVerificationMail: async (userId) => {
+        const client = await db.connect();
         try {
-            await db.query('BEGIN');
-            const { rows } = await db.query({
+            await client.query('BEGIN');
+            const { rows } = await client.query({
                 text: `select * from pending_kaist_user where account_id = $1`,
                 values: [userId],
             });
@@ -71,7 +73,7 @@ module.exports = {
             const hash = await bcrypt.hash(authCode, BCRYPT_SALTROUNDS);
 
             // update pending-user with the new code hash
-            const result = await db.query({
+            const result = await client.query({
                 text: `update pending_kaist_user set auth_code = $1 where id = $2
                     returning email`,
                 values: [hash, pendingUser.id],
@@ -82,11 +84,13 @@ module.exports = {
                     message: `No pending KAIST user found or record was not updated. Please try registration again`,
                 };
 
-            await db.query('COMMIT');
+            await client.query('COMMIT');
             return result.rows;
         } catch (err) {
-            await db.query('ROLLBACK');
+            await client.query('ROLLBACK');
             throw err;
+        } finally {
+            client.release();
         }
     },
     /**
@@ -100,16 +104,18 @@ module.exports = {
      */
     registerNewUser: async (args) => {
         // check duplicate with account-ID
-        let users;
-        users = await userService.getUsers({ accountId: args.userId });
+        const users = await userService.getUsers({ accountId: args.userId });
         if (users.length !== 0)
             throw { status: 409, message: `User with the same account-ID already exists` };
 
         switch (Number(args.userType)) {
-            case 1:
+            case 1: {
                 // check duplicate with userType and email
-                users = await userService.getUsers({ type: args.userType, email: args.email });
-                if (users.length !== 0)
+                const KAISTUsers = await userService.getUsers({
+                    type: args.userType,
+                    email: args.email,
+                });
+                if (KAISTUsers.length !== 0)
                     throw {
                         status: 409,
                         message: `A KAIST User with the same email already exists`,
@@ -120,11 +126,13 @@ module.exports = {
                 if (pending.length === 0)
                     throw { status: 404, message: `Couldn't cache KAIST user info` };
                 return { type: 1, user: pending[0] };
-            case 2:
+            }
+            case 2: {
                 const result = await userService.createUser(args);
                 if (result.length === 0)
                     throw { status: 404, message: `Couldn't insert facility user` };
                 return { type: 2, user: result[0] };
+            }
         }
     },
     /** insert KAIST user info into the cache table
@@ -147,9 +155,10 @@ module.exports = {
      * - if successful, insert user into DB & return user info
      */
     verifyKAISTUser: async (args) => {
+        const client = await db.connect();
         try {
-            await db.query('BEGIN');
-            const { rows } = await db.query({
+            await client.query('BEGIN');
+            const { rows } = await client.query({
                 text: `select * from pending_kaist_user where account_id = $1`,
                 values: [args.userId],
             });
@@ -173,16 +182,59 @@ module.exports = {
             });
 
             // delete the pending user
-            await db.query({
+            await client.query({
                 text: `delete from pending_kaist_user where id = $1`,
                 values: [pendingUser.id],
             });
 
-            await db.query('COMMIT');
+            await client.query('COMMIT');
             return result;
         } catch (err) {
-            await db.query('ROLLBACK');
+            await client.query('ROLLBACK');
             throw err;
+        } finally {
+            client.release();
+        }
+    },
+    /** sign out - delete my account from FORK system
+     * - verify requesting user
+     * - use their id to request user deletion
+     */
+    signOutUser: async (userId) => {
+        const result = await userService.deleteUser(userId);
+        return result;
+    },
+    /** request password reset
+     * - generate random password
+     * - send mail to account email containing the new password
+     * - update DB w/ new password
+     */
+    resetPassword: async (userId) => {
+        const client = await db.connect();
+        try {
+            await client.query('BEGIN');
+            const users = await userService.getUsers({ accountId: userId }, true);
+            if (users.length === 0)
+                throw { status: 404, message: `No user with account id : ${userId}` };
+
+            const { id, email } = users[0];
+            const { newPassword } = await sendPasswordResetMail(email);
+
+            const result = await userService.updateUserProfile(
+                {
+                    password: newPassword,
+                    email: email,
+                },
+                id
+            );
+
+            await client.query('COMMIT');
+            return result;
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        } finally {
+            client.release();
         }
     },
 };

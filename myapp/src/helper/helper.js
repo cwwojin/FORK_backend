@@ -1,6 +1,7 @@
 const userNamePattern = new RegExp('^[a-zA-Z0-9._-]+$');
 const passwordPattern = new RegExp('^[a-zA-Z0-9._-]+$');
 const KAISTMailPattern = new RegExp('@kaist.ac.kr$');
+const searchBarInputPattern = new RegExp('^[ㄱ-ㅎㅏ-ㅣ가-힣a-zA-Z0-9!?@#$&()`._+,/"\'-]+$');
 
 module.exports = {
     /** CONSTANTS */
@@ -11,10 +12,8 @@ module.exports = {
     REPORT_TYPES: [0, 1],
     REPORT_STATUS: [0, 1],
     IMG_FILE_TYPES: ['png', 'jpg', 'jpeg', 'bmp', 'gif', 'webp', 'psd'],
-    /** user type checks */
-    isAdmin: (headers) => headers.userType === 0,
-    isKAISTUser: (headers) => headers.userType === 1,
-    isFacilityUser: (headers) => headers.userType === 2,
+    /** get user info from header */
+    getClientId: (req) => req.header('id'),
     /** general helpers */
     parseBoolean: (string) => {
         return string === 'true' ? true : string === 'false' ? false : undefined;
@@ -36,6 +35,23 @@ module.exports = {
     generateRandomCode: () => {
         const num = Math.floor(Math.random() * 1000000);
         return num.toString().padStart(6, '0');
+    },
+    generateRandomPassword: (length) => {
+        return Math.random()
+            .toString(36)
+            .substring(2, 2 + length);
+    },
+    splitByDelimiter: (data, delim) => {
+        const pos = data ? data.indexOf(delim) : -1;
+        return pos > 0 ? [data.substr(0, pos), data.substr(pos + 1)] : ['', ''];
+    },
+    /** convert S3 URI -> API-GW URL (for public access) */
+    s3UriToRequestUrl: (baseUrl, uri) => {
+        const url = new URL(uri);
+        const key = url.pathname.startsWith('/') ? url.pathname.slice(1) : url.pathname;
+        const parsedKey = key.replaceAll('/', '%2F');
+
+        return `${baseUrl}/s3/${url.hostname}/${parsedKey}`;
     },
     /** request validation */
     validateUserId: (userId) => userNamePattern.test(userId),
@@ -66,4 +82,5 @@ module.exports = {
         }
     },
     validateKAISTMail: (email) => KAISTMailPattern.test(email),
+    validateSearchInput: (str) => searchBarInputPattern.test(str),
 };

@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+
 const db = require('../models/index');
 const { BCRYPT_SALTROUNDS } = require('../helper/helper');
 const { removeS3File } = require('../helper/s3Engine');
@@ -9,9 +10,14 @@ module.exports = {
      * get user by query
      * - (args) account_id, user_type
      * */
-    getUsers: async (args) => {
-        let baseQuery = `select id, account_id, user_type, email, profile_img_uri, register_date from "user" where 1=1 `;
-        let values = [];
+    getUsers: async (args, getEmail) => {
+        let baseQuery;
+        if (getEmail) {
+            baseQuery = `select id, account_id, user_type, email, profile_img_uri, register_date from "user" where 1=1 `;
+        } else {
+            baseQuery = `select id, account_id, user_type, profile_img_uri, register_date from "user" where 1=1 `;
+        }
+        const values = [];
         if (args.accountId !== undefined) {
             values.push(args.accountId);
             baseQuery = baseQuery + `and account_id = $${values.length} `;
@@ -32,9 +38,17 @@ module.exports = {
         return result.rows;
     },
     // get user by id
-    getUserById: async (id) => {
+    getUserById: async (id, clientId) => {
+        let baseQuery;
+        if (Number(id) === Number(clientId)) {
+            baseQuery =
+                'select id, account_id, user_type, email, profile_img_uri, register_date from "user" where id = $1';
+        } else {
+            baseQuery =
+                'select id, account_id, user_type, profile_img_uri, register_date from "user" where id = $1';
+        }
         const query = {
-            text: 'select id, account_id, user_type, email, profile_img_uri, register_date from "user" where id = $1',
+            text: baseQuery,
             values: [id],
         };
         const result = await db.query(query);
@@ -106,7 +120,7 @@ module.exports = {
         const query = {
             text: `select f.* from favorite fv 
                 join "user" u on fv.user_id = u.id 
-                join facility f on fv.facility_id = f.id
+                join facility_detailed f on fv.facility_id = f.id
                 where fv.user_id = $1`,
             values: [id],
         };
@@ -139,6 +153,21 @@ module.exports = {
         const query = {
             text: `delete from favorite where user_id = $1 and facility_id = $2 returning *`,
             values: [userId, facilityId],
+        };
+        const result = await db.query(query);
+        return result.rows;
+    },
+    // Get all posts of favorite facilities of a user, ordered by updated dates
+    getFavoriteFacilityPosts: async (userId) => {
+        const query = {
+            text: `
+                SELECT p.*
+                FROM post p
+                JOIN favorite f ON p.facility_id = f.facility_id
+                WHERE f.user_id = $1
+                ORDER BY p.updated_at DESC
+            `,
+            values: [userId],
         };
         const result = await db.query(query);
         return result.rows;

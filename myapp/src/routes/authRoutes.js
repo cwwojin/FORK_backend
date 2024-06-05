@@ -1,10 +1,12 @@
 const { Router } = require('express');
-const router = Router();
+const { body, header } = require('express-validator');
+
 const authController = require('../controllers/authController');
-const { body, param, query } = require('express-validator');
 const { validatorChecker } = require('../middleware/validator');
 const { checkPermission } = require('../middleware/authMiddleware');
 const { USER_TYPES, validateUserId, validatePassword } = require('../helper/helper');
+
+const router = Router();
 
 router
     .post(
@@ -61,6 +63,26 @@ router
             validatorChecker,
         ],
         authController.verifyKAISTUser
+    )
+    .post(
+        // POST : sign out - delete my account
+        '/sign-out',
+        checkPermission([0, 1, 2]),
+        [
+            header('id', `header 'id' must be a positive integer`).exists().isInt({ min: 1 }),
+            validatorChecker,
+        ],
+        authController.signOutUser
+    )
+    .post(
+        // POST : request password reset
+        '/reset-password',
+        checkPermission([-1, 0]),
+        [
+            body('userId', `body field 'userId' should be string`).exists().isString(),
+            validatorChecker,
+        ],
+        authController.resetPassword
     );
 
 module.exports = router;

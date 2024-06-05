@@ -1,10 +1,11 @@
 const { Router } = require('express');
+const { body, param, query } = require('express-validator');
+
 const facilityController = require('../controllers/facilityController');
-const { body, param, check } = require('express-validator');
 const { validatorChecker } = require('../middleware/validator');
 const { s3Uploader } = require('../helper/s3Engine');
 const { checkPermission } = require('../middleware/authMiddleware');
-const { validateOptionalURL } = require('../helper/helper');
+const { validateOptionalURL, validateIntArray } = require('../helper/helper');
 
 const router = Router();
 
@@ -25,6 +26,7 @@ router.post(
     checkPermission([0]),
     [
         body('name').exists().isString().withMessage('Name is required'),
+        body('englishName').exists().isString().withMessage('English name is required'),
         body('businessId').exists().notEmpty().withMessage('Business ID is required'),
         body('type').exists().isString().withMessage('Type is required'),
         body('description').exists().isString().withMessage('Description is required'),
@@ -56,6 +58,7 @@ router.put(
     [
         param('id').isNumeric().withMessage('Valid ID is required'),
         body('name').exists().isString().withMessage('Name is required'),
+        body('englishName').exists().isString().withMessage('English name is required'),
         body('businessId').exists().notEmpty().withMessage('Business ID is required'),
         body('type').exists().isString().withMessage('Type is required'),
         body('description').exists().isString().withMessage('Description is required'),
@@ -441,6 +444,8 @@ router
     .post(
         // POST: send facility registration request to admin to create facility
         '/facility-requests',
+        checkPermission([0, 2]),
+        s3Uploader.array('images'),
         [
             body('authorId')
                 .exists()
@@ -448,6 +453,10 @@ router
                 .withMessage('Author ID is required and must be a positive integer'),
             body('title').exists().isString().withMessage('Title is required and must be a string'),
             body('content.name')
+                .exists()
+                .isString()
+                .withMessage('Content name is required and must be a string'),
+            body('content.englishName')
                 .exists()
                 .isString()
                 .withMessage('Content name is required and must be a string'),
@@ -476,6 +485,12 @@ router
                 .exists()
                 .isString()
                 .withMessage('Description is required and must be a string'),
+            body('content.profileImgFile')
+                .exists()
+                .isString()
+                .withMessage(
+                    `body field 'content.profileImgFile' is required and must be a string`
+                ),
             body('content.address')
                 .exists()
                 .isObject()
@@ -488,6 +503,10 @@ router
                 .optional()
                 .isArray()
                 .withMessage('Menu must be an array if provided'),
+            body('content.menu.*.imgFile')
+                .optional()
+                .isString()
+                .withMessage(`optional field 'content.menu.*.menuImgFile' is must be a string`),
             body('content.preferences')
                 .optional()
                 .isArray()
@@ -496,6 +515,12 @@ router
                 .optional()
                 .isObject()
                 .withMessage('Stamp ruleset must be an object if provided'),
+            body('content.stampRuleset.logoImgFile')
+                .optional()
+                .isString()
+                .withMessage(
+                    `optional field 'content.stampRuleset.logoImgFile' is must be a string`
+                ),
             body('content.stampRuleset.rewards')
                 .optional()
                 .isArray()
@@ -503,6 +528,34 @@ router
             validatorChecker,
         ],
         facilityController.createFacilityRegistrationRequest
+    );
+
+/** leaderboard methods */
+router
+    .get(
+        '/leaderboard/trending',
+        [
+            query('limit', `query field 'limit' must be a positive integer`)
+                .exists()
+                .isInt({ min: 1 }),
+            query('preferences', `optional query field 'preferences' must be an integer array`)
+                .optional()
+                .isString()
+                .customSanitizer((e) => e.split(',').map((e) => Number(e)))
+                .custom(validateIntArray),
+            validatorChecker,
+        ],
+        facilityController.getTrendingFacilities
+    )
+    .get(
+        '/leaderboard/newest',
+        [
+            query('limit', `query field 'limit' must be a positive integer`)
+                .exists()
+                .isInt({ min: 1 }),
+            validatorChecker,
+        ],
+        facilityController.getNewestFacilities
     );
 
 module.exports = router;

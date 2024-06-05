@@ -1,5 +1,5 @@
 const facilityService = require('../services/facilityService');
-const { makeS3Uri } = require('../helper/helper');
+const { makeS3Uri, getClientId } = require('../helper/helper');
 
 module.exports = {
     getAllFacilities: async (req, res, next) => {
@@ -246,12 +246,17 @@ module.exports = {
             const facilityId = Number(req.params.facilityId);
             const { authorId, title, content } = req.body;
 
-            const post = await facilityService.createPost(facilityId, {
-                authorId,
-                title,
-                content,
-                imgUri,
-            });
+            const post = await facilityService.createPost(
+                facilityId,
+                {
+                    authorId,
+                    title,
+                    content,
+                    imgUri,
+                },
+                getClientId(req),
+                true
+            );
 
             res.status(201).json({
                 status: 'success',
@@ -504,14 +509,43 @@ module.exports = {
     createFacilityRegistrationRequest: async (req, res, next) => {
         try {
             const { authorId, title, content } = req.body;
-            const request = await facilityService.createFacilityRegistrationRequest({
-                authorId,
-                title,
-                content,
-            });
+            const request = await facilityService.createFacilityRegistrationRequest(
+                {
+                    authorId,
+                    title,
+                    content: JSON.parse(content),
+                },
+                getClientId(req),
+                req.files
+            );
             res.status(201).json({
                 status: 'success',
                 data: request,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    /** get trending facilities */
+    getTrendingFacilities: async (req, res, next) => {
+        try {
+            const result = await facilityService.getTrendingFacilities(req.query);
+            res.status(200).json({
+                status: 'success',
+                data: result,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    /** get newest facilities */
+    getNewestFacilities: async (req, res, next) => {
+        try {
+            const limit = req.query.limit;
+            const result = await facilityService.getNewestFacilities(limit);
+            res.status(200).json({
+                status: 'success',
+                data: result,
             });
         } catch (err) {
             next(err);

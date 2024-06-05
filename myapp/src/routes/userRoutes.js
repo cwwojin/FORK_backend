@@ -1,7 +1,7 @@
 const { Router } = require('express');
-const router = Router();
-const userController = require('../controllers/userController');
 const { body, param, query } = require('express-validator');
+
+const userController = require('../controllers/userController');
 const { validatorChecker } = require('../middleware/validator');
 const {
     USER_TYPES,
@@ -11,6 +11,8 @@ const {
 } = require('../helper/helper');
 const { s3Uploader } = require('../helper/s3Engine');
 const { checkPermission } = require('../middleware/authMiddleware');
+
+const router = Router();
 
 /** Router for "/api/users" */
 router
@@ -174,6 +176,16 @@ router
         ],
         userController.deleteUserFavorite
     )
+    .get(
+        // GET: get posts of favorite facilities of a user
+        '/favorite/:id/updates',
+        checkPermission([0, 1, 2]),
+        [
+            param('id', `route param 'id' must be a positive integer`).exists().isInt({ min: 1 }),
+            validatorChecker,
+        ],
+        userController.getFavoriteFacilityPosts
+    )
     .post(
         // POST : upload / update a user profile image
         '/profile/image/:id',
@@ -197,6 +209,7 @@ router
     )
     .get(
         '/:id/myfacility', // GET: get facility with id
+        checkPermission([0, 2]),
         [
             param('id').exists().isInt({ min: 1 }).withMessage('Valid account ID is required'),
             validatorChecker,
@@ -206,12 +219,14 @@ router
     .post(
         // PUT: update facility with id
         '/:user/myfacility/:facility',
+        checkPermission([0, 2]),
         [
             param('user').exists().isInt({ min: 1 }).withMessage('Valid account ID is required'),
             param('facility', `route param 'facility' must be a positive integer`)
                 .exists()
                 .isInt({ min: 1 }),
             body('name').exists().isString().withMessage('Name is required'),
+            body('englishName').exists().isString().withMessage('English name is required'),
             body('businessId').exists().isString().withMessage('Business ID is required'),
             body('type').exists().isString().withMessage('Type is required'),
             body('description').exists().isString().withMessage('Description is required'),
@@ -249,6 +264,7 @@ router
     .delete(
         // DELETE: delete facility with id
         '/:id/myfacility/:facilityId',
+        checkPermission([0, 2]),
         [
             param('id').exists().isInt({ min: 1 }).withMessage('Valid account ID is required'),
             param('facilityId').isNumeric().withMessage('Valid facility ID is required'),

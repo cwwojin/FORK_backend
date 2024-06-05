@@ -1,5 +1,7 @@
 const db = require('../models/index');
 const { removeS3File } = require('../helper/s3Engine');
+const { makeS3Uri } = require('../helper/helper');
+const sightEngine = require('../helper/sightEngine');
 
 class FacilityService {
     async getAllFacilities() {
@@ -27,18 +29,20 @@ class FacilityService {
 
             // Insert into facility table, get the facility ID
             const facilityQuery = `
-        INSERT INTO facility (name, business_id, type, description, url, phone, email)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        INSERT INTO facility (name, english_name, business_id, type, description, url, phone, email, profile_img_uri)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         RETURNING *;
       `;
             const facilityValues = [
                 data.name,
+                data.englishName ? data.englishName : '',
                 data.businessId,
                 data.type,
                 data.description,
                 data.url,
                 data.phone,
                 data.email,
+                data.profileImgUri ? data.profileImgUri : '',
             ];
             const facilityResult = await client.query(facilityQuery, facilityValues);
             const facility = facilityResult.rows[0];
@@ -122,11 +126,18 @@ class FacilityService {
         const result = [];
         for (const item of menuItems) {
             const query = `
-        INSERT INTO menu (facility_id, name, description, price, quantity)
-        VALUES ($1, $2, $3, $4, $5)
+        INSERT INTO menu (facility_id, name, description, price, quantity, img_uri)
+        VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING *;
       `;
-            const values = [facilityId, item.name, item.description, item.price, item.quantity];
+            const values = [
+                facilityId,
+                item.name,
+                item.description,
+                item.price,
+                item.quantity,
+                item.imgUri ? item.imgUri : '',
+            ];
             const { rows } = await client.query(query, values);
             result.push(rows[0]);
         }
@@ -161,6 +172,10 @@ class FacilityService {
             if (data.name !== undefined) {
                 updateFields.push(`name = $${fieldIndex++}`);
                 updateValues.push(data.name);
+            }
+            if (data.englishName !== undefined) {
+                updateFields.push(`english_name = $${fieldIndex++}`);
+                updateValues.push(data.englishName);
             }
             if (data.businessId !== undefined) {
                 updateFields.push(`business_id = $${fieldIndex++}`);
@@ -412,7 +427,7 @@ class FacilityService {
             }
             throw error;
         } finally {
-            client?.release();
+            client.release();
         }
     }
 
@@ -470,7 +485,7 @@ class FacilityService {
             await client.query('ROLLBACK');
             throw error;
         } finally {
-            client?.release();
+            client.release();
         }
     }
 
@@ -501,7 +516,20 @@ class FacilityService {
             };
         return rows[0];
     }
-    async createPost(facilityId, data) {
+    async createPost(facilityId, data, clientId, moderation) {
+        // perform content moderation if 'moderation' = true
+        if (moderation) {
+            const moderationResult = await sightEngine.moderateUserContent(data);
+            if (moderationResult.result) {
+                throw {
+                    status: 499,
+                    message: 'facility post upload failed due to harmful content detected',
+                    text: moderationResult.text,
+                    image: moderationResult.image,
+                };
+            }
+        }
+
         let client;
         try {
             client = await db.connect();
@@ -512,7 +540,13 @@ class FacilityService {
         VALUES ($1, $2, $3, $4, $5)
         RETURNING *;
       `;
-            const values = [data.authorId, facilityId, data.title, data.content, data.imgUri];
+            const values = [
+                clientId || data.authorId,
+                facilityId,
+                data.title,
+                data.content,
+                data.imgUri,
+            ];
 
             const { rows } = await client.query(query, values);
             await client.query('COMMIT');
@@ -521,7 +555,7 @@ class FacilityService {
             await client.query('ROLLBACK');
             throw error;
         } finally {
-            client?.release();
+            client.release();
         }
     }
 
@@ -596,11 +630,11 @@ class FacilityService {
 
             // Insert the new stamp ruleset
             const insertQuery = `
-        INSERT INTO stamp_ruleset (facility_id, total_cnt)
-        VALUES ($1, $2)
+        INSERT INTO stamp_ruleset (facility_id, total_cnt, logo_img_uri)
+        VALUES ($1, $2, $3)
         RETURNING *;
       `;
-            const values = [facilityId, data.totalCnt];
+            const values = [facilityId, data.totalCnt, data.logoImgUri ? data.logoImgUri : ''];
             const { rows } = await client.query(insertQuery, values);
 
             if (rows.length === 0) {
@@ -756,7 +790,7 @@ class FacilityService {
             const { rows } = await client.query(query, values);
             return rows;
         } finally {
-            client?.release();
+            client.release();
         }
     }
 
@@ -773,7 +807,7 @@ class FacilityService {
             const { rows } = await client.query(query, values);
             return rows[0];
         } finally {
-            client?.release();
+            client.release();
         }
     }
 
@@ -876,14 +910,40 @@ class FacilityService {
         return result;
     }
 
-    /** create facility registration request */
-    async createFacilityRegistrationRequest(data) {
+    /**
+     * create facility registration request
+     * - matching uploaded images into content -> uri fields
+     * - make map { originalname : s3Uri } from files array
+     * - in content, make uri fields for only matched files and put s3-uri
+     * */
+    async createFacilityRegistrationRequest(data, clientId, files) {
+        const fileToS3UriMap = new Map();
+        files.map((e) => {
+            // map originalname -> s3-uri
+            if (!fileToS3UriMap.has(e.originalname))
+                fileToS3UriMap.set(e.originalname, makeS3Uri(e.bucket, e.key));
+        });
+
+        // set uri fields in 'content'
+        const content = structuredClone(data.content);
+        content.profileImgUri = fileToS3UriMap.get(content.profileImgFile);
+        if (content.stampRuleset !== undefined && content.stampRuleset.logoImgFile)
+            content.stampRuleset.logoImgUri = fileToS3UriMap.get(content.stampRuleset.logoImgFile);
+        if (content.menu !== undefined && content.menu.length) {
+            content.menu = content.menu.map((e) => {
+                return {
+                    ...e,
+                    imgUri: fileToS3UriMap.get(e.imgFile),
+                };
+            });
+        }
+
         const query = `
       INSERT INTO facility_registration_request (author_id, title, content)
       VALUES ($1, $2, $3)
       RETURNING *;
     `;
-        const values = [data.authorId, data.title, JSON.stringify(data.content)];
+        const values = [clientId || data.authorId, data.title, JSON.stringify(content)];
         const { rows } = await db.query(query, values);
         return rows[0];
     }
@@ -895,6 +955,35 @@ class FacilityService {
         };
         const result = await db.query(query);
         return result.rows.length > 0 ? result.rows[0].status : null;
+    }
+
+    /** get list of trending facilities
+     * - (args) limit : limit result to top-K
+     * - (args) preferences : filter by list of preferences
+     */
+    async getTrendingFacilities(args) {
+        const values = [];
+        let baseQuery = `select fp.* from facility_pin fp where fp.avg_score is not null `;
+        if (args.preferences && args.preferences.length !== 0) {
+            values.push(args.preferences);
+            baseQuery = baseQuery + `and fp.preference_ids && $${values.length} `;
+        }
+        const { rows } = await db.query({
+            text: baseQuery + `order by fp.avg_score desc limit ${args.limit} `,
+            values: values,
+        });
+        return rows;
+    }
+
+    /** get list of newest facilities
+     * - limit : limit result to top-K
+     */
+    async getNewestFacilities(limit) {
+        const { rows } = await db.query({
+            text: `select fp.* from facility_pin fp join facility f on fp.id = f.id order by f.created_at desc limit $1`,
+            values: [limit],
+        });
+        return rows;
     }
 }
 

@@ -1,5 +1,5 @@
 const reviewService = require('../services/reviewService');
-const { makeS3Uri } = require('../helper/helper');
+const { makeS3Uri, getClientId } = require('../helper/helper');
 
 module.exports = {
     /** get review by review id */
@@ -37,16 +37,16 @@ module.exports = {
     /** create review */
     createReview: async (req, res, next) => {
         try {
-            const imageUri = req.file !== undefined ? makeS3Uri(req.file.bucket, req.file.key) : '';
+            const imgUri = req.file !== undefined ? makeS3Uri(req.file.bucket, req.file.key) : '';
             const args = {
                 authorId: req.body.authorId,
                 facilityId: req.body.facilityId,
                 score: req.body.score,
                 content: req.body.content,
                 hashtags: JSON.parse(req.body.hashtags),
-                imageUri: imageUri,
+                imgUri: imgUri,
             };
-            const result = await reviewService.createReview(args);
+            const result = await reviewService.createReview(args, getClientId(req), true);
             if (result.length !== 0) {
                 res.status(201).json({
                     status: 'success',
@@ -95,6 +95,21 @@ module.exports = {
             next(err);
         }
     },
+    /** get a summary by facility ID */
+    getSummaryByFacilityId: async (req, res, next) => {
+        try {
+            const result = await reviewService.getSummaryByFacilityId(
+                req.params.facility,
+                req.query.force
+            );
+            res.status(200).json({
+                status: 'success',
+                data: result,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
     /** get all hashtags */
     getAllHashtags: async (req, res, next) => {
         try {
@@ -123,6 +138,18 @@ module.exports = {
                     message: `No hashtag with id : ${id}`,
                 });
             }
+        } catch (err) {
+            next(err);
+        }
+    },
+    /** get top-N hashtags of a facility */
+    getTopHashtags: async (req, res, next) => {
+        try {
+            const result = await reviewService.getTopHashtags(req.params.facility, req.query.limit);
+            res.status(200).json({
+                status: 'success',
+                data: result,
+            });
         } catch (err) {
             next(err);
         }
