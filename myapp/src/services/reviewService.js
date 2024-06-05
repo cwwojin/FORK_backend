@@ -114,9 +114,14 @@ module.exports = {
                 ],
             });
             const reviewId = result.rows[0]['id'];
-            const insertJunctionQuery = `insert into review_hashtag (review_id, hashtag_id)
-                values ${hashtagIds.map((e) => `(${reviewId}, ${e})`).join(`, `)}`;
-            await client.query(insertJunctionQuery);
+
+            // insert hashtags only if nonempty
+            if (hashtagIds.length) {
+                const insertJunctionQuery = `insert into review_hashtag (review_id, hashtag_id)
+                    values ${hashtagIds.map((e) => `(${reviewId}, ${e})`).join(`, `)}`;
+                await client.query(insertJunctionQuery);
+            }
+
             result = await client.query({
                 text: `select * from review_with_hashtag r where id = $1`,
                 values: [reviewId],
@@ -172,9 +177,14 @@ module.exports = {
                 text: `delete from review_hashtag where review_id = $1`,
                 values: [id],
             });
-            const insertJunctionQuery = `insert into review_hashtag (review_id, hashtag_id)
-                values ${hashtagIds.map((e) => `(${id}, ${e})`).join(`, `)}`;
-            await client.query(insertJunctionQuery);
+
+            // insert hashtags only if nonempty
+            if (hashtagIds.length) {
+                const insertJunctionQuery = `insert into review_hashtag (review_id, hashtag_id)
+                    values ${hashtagIds.map((e) => `(${id}, ${e})`).join(`, `)}`;
+                await client.query(insertJunctionQuery);
+            }
+
             result = await client.query({
                 text: `select * from review_with_hashtag r where id = $1`,
                 values: [id],
