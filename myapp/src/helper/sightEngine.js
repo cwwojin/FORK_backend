@@ -53,7 +53,7 @@ class sightEngineHandler {
     }
 
     /** Text moderation - Pattern-matching
-     * - check for {sexual, discriminatory, insulting, violent, toxic, self-harm}
+     * - check for {profanity, extremism}
      * - result : bool, data: object with scores
      */
     async moderateTextPattern(text) {
