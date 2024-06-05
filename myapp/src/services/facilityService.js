@@ -1,6 +1,7 @@
 const db = require('../models/index');
 const { removeS3File } = require('../helper/s3Engine');
 const { makeS3Uri } = require('../helper/helper');
+const sightEngine = require('../helper/sightEngine');
 
 class FacilityService {
     async getAllFacilities() {
@@ -28,12 +29,13 @@ class FacilityService {
 
             // Insert into facility table, get the facility ID
             const facilityQuery = `
-        INSERT INTO facility (name, business_id, type, description, url, phone, email, profile_img_uri)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        INSERT INTO facility (name, english_name, business_id, type, description, url, phone, email, profile_img_uri)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         RETURNING *;
       `;
             const facilityValues = [
                 data.name,
+                data.englishName ? data.englishName : '',
                 data.businessId,
                 data.type,
                 data.description,
@@ -170,6 +172,10 @@ class FacilityService {
             if (data.name !== undefined) {
                 updateFields.push(`name = $${fieldIndex++}`);
                 updateValues.push(data.name);
+            }
+            if (data.englishName !== undefined) {
+                updateFields.push(`english_name = $${fieldIndex++}`);
+                updateValues.push(data.englishName);
             }
             if (data.businessId !== undefined) {
                 updateFields.push(`business_id = $${fieldIndex++}`);
@@ -510,7 +516,20 @@ class FacilityService {
             };
         return rows[0];
     }
-    async createPost(facilityId, data, clientId) {
+    async createPost(facilityId, data, clientId, moderation) {
+        // perform content moderation if 'moderation' = true
+        if (moderation) {
+            const moderationResult = await sightEngine.moderateUserContent(data);
+            if (moderationResult.result) {
+                throw {
+                    status: 499,
+                    message: 'facility post upload failed due to harmful content detected',
+                    text: moderationResult.text,
+                    image: moderationResult.image,
+                };
+            }
+        }
+
         let client;
         try {
             client = await db.connect();

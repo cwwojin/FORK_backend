@@ -1,6 +1,8 @@
 const db = require('../models/index');
 const { parseBoolean } = require('../helper/helper');
 const { removeS3File } = require('../helper/s3Engine');
+const summaryModel = require('../helper/openAi');
+const sightEngine = require('../helper/sightEngine');
 
 module.exports = {
     /** get review by review id */
@@ -57,7 +59,21 @@ module.exports = {
      * 4. Insert junction table "review_hashtag" entries
      * 5. COMMIT or ROLLBACK transaction if error
      */
-    createReview: async (args, clientId) => {
+    createReview: async (args, clientId, moderation) => {
+        // perform content moderation if 'moderation' = true
+        if (moderation) {
+            const moderationResult = await sightEngine.moderateUserContent(args);
+            if (moderationResult.result) {
+                throw {
+                    status: 499,
+                    message: 'review upload failed due to harmful content detected',
+                    text: moderationResult.text,
+                    image: moderationResult.image,
+                };
+            }
+        }
+
+        // upload review after moderation
         const client = await db.connect();
         try {
             let result;
@@ -66,7 +82,7 @@ module.exports = {
             // new code - make array of {id, name} from args.hashtags (array of names)
             const hashtagArray = [];
             for await (const h of args.hashtags) {
-                const { rows } = await db.query({
+                const { rows } = await client.query({
                     text: `select * from hashtag where name = $1 or (slug <> '' and slug = slugify($1))`,
                     values: [h],
                 });
@@ -94,13 +110,18 @@ module.exports = {
                     args.facilityId,
                     args.score,
                     args.content,
-                    args.imageUri,
+                    args.imgUri,
                 ],
             });
             const reviewId = result.rows[0]['id'];
-            const insertJunctionQuery = `insert into review_hashtag (review_id, hashtag_id)
-                values ${hashtagIds.map((e) => `(${reviewId}, ${e})`).join(`, `)}`;
-            await client.query(insertJunctionQuery);
+
+            // insert hashtags only if nonempty
+            if (hashtagIds.length) {
+                const insertJunctionQuery = `insert into review_hashtag (review_id, hashtag_id)
+                    values ${hashtagIds.map((e) => `(${reviewId}, ${e})`).join(`, `)}`;
+                await client.query(insertJunctionQuery);
+            }
+
             result = await client.query({
                 text: `select * from review_with_hashtag r where id = $1`,
                 values: [reviewId],
@@ -127,7 +148,7 @@ module.exports = {
             // new code - make array of {id, name} from args.hashtags (array of names)
             const hashtagArray = [];
             for await (const h of body.hashtags) {
-                const { rows } = await db.query({
+                const { rows } = await client.query({
                     text: `select * from hashtag where name = $1 or (slug <> '' and slug = slugify($1))`,
                     values: [h],
                 });
@@ -156,9 +177,14 @@ module.exports = {
                 text: `delete from review_hashtag where review_id = $1`,
                 values: [id],
             });
-            const insertJunctionQuery = `insert into review_hashtag (review_id, hashtag_id)
-                values ${hashtagIds.map((e) => `(${id}, ${e})`).join(`, `)}`;
-            await client.query(insertJunctionQuery);
+
+            // insert hashtags only if nonempty
+            if (hashtagIds.length) {
+                const insertJunctionQuery = `insert into review_hashtag (review_id, hashtag_id)
+                    values ${hashtagIds.map((e) => `(${id}, ${e})`).join(`, `)}`;
+                await client.query(insertJunctionQuery);
+            }
+
             result = await client.query({
                 text: `select * from review_with_hashtag r where id = $1`,
                 values: [id],
@@ -186,6 +212,54 @@ module.exports = {
         }
         return result.rows;
     },
+
+    /** get a summary of a single facility
+     * - conditions for a summary to be generated
+     * - more than 3 reviews total
+     * - (1) there is a cached summary but updated_at : older than 24 hrs
+     * - (2) there is no cached summary
+     */
+    getSummaryByFacilityId: async (facilityId, forceRecreate) => {
+        const client = await db.connect();
+        try {
+            let summary = '';
+            const reviews = await module.exports.getReviewByQuery({ facility: facilityId });
+
+            // criteria : more than 3 reviews
+            if (reviews.length >= 3) {
+                // check for summary stored in DB - only if its made in the last 24 hrs
+                const storedSummary = await client.query({
+                    text: `select * from summary where facility_id = $1 and updated_at > now() - interval '24 hours' `,
+                    values: [facilityId],
+                });
+
+                // generate or use stored summary
+                if (storedSummary.rows.length && !parseBoolean(forceRecreate)) {
+                    summary = storedSummary.rows[0].summary;
+                } else {
+                    summary = await summaryModel.generateSummary(reviews.map((e) => e.content));
+
+                    // store new summary in DB
+                    await client.query({
+                        text: `insert into summary (facility_id, summary) values ($1, $2)
+                            on conflict on constraint summary_pkey do update set summary = $2`,
+                        values: [facilityId, summary],
+                    });
+                }
+            }
+            await client.query('COMMIT');
+            return {
+                id: facilityId,
+                summary: summary,
+            };
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        } finally {
+            client.release();
+        }
+    },
+
     /** get all hashtags */
     getAllHashtags: async () => {
         const query = {

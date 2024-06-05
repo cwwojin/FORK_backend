@@ -47,6 +47,14 @@ module.exports = {
         const pos = data ? data.indexOf(delim) : -1;
         return pos > 0 ? [data.substr(0, pos), data.substr(pos + 1)] : ['', ''];
     },
+    /** convert S3 URI -> API-GW URL (for public access) */
+    s3UriToRequestUrl: (baseUrl, uri) => {
+        const url = new URL(uri);
+        const key = url.pathname.startsWith('/') ? url.pathname.slice(1) : url.pathname;
+        const parsedKey = key.replaceAll('/', '%2F');
+
+        return `${baseUrl}/s3/${url.hostname}/${parsedKey}`;
+    },
     /** request validation */
     validateUserId: (userId) => userNamePattern.test(userId),
     validatePassword: (password) => passwordPattern.test(password),

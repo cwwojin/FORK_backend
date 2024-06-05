@@ -226,6 +226,7 @@ router
                 .exists()
                 .isInt({ min: 1 }),
             body('name').exists().isString().withMessage('Name is required'),
+            body('englishName').exists().isString().withMessage('English name is required'),
             body('businessId').exists().isString().withMessage('Business ID is required'),
             body('type').exists().isString().withMessage('Type is required'),
             body('description').exists().isString().withMessage('Description is required'),
