@@ -12,16 +12,18 @@ class sightEngineHandler {
             apiKey: process.env.SIGHTENGINE_SECRET,
             lang: 'en',
             models: 'nudity-2.1,offensive,text-content,gore-2.0',
-            textThreshold: 0.8,
+            categories: 'profanity,extremism',
+            textThreshold: 0.7,
             imageThreshold: 0.8,
         };
+        this.config.categoriesArray = this.config.categories.split(',');
     }
 
-    /** Text moderation
+    /** Text moderation - ML
      * - check for {sexual, discriminatory, insulting, violent, toxic, self-harm}
      * - result : bool, data: object with scores
      */
-    async moderateText(text) {
+    async moderateTextML(text) {
         try {
             const response = await request
                 .post('https://api.sightengine.com/1.0/text/check.json')
@@ -44,6 +46,37 @@ class sightEngineHandler {
             return {
                 result: result,
                 data: scoresByClass,
+            };
+        } catch (err) {
+            throw { status: 500, message: `error during SightEngine API request : ${err.message}` };
+        }
+    }
+
+    /** Text moderation - Pattern-matching
+     * - check for {profanity, extremism}
+     * - result : bool, data: object with scores
+     */
+    async moderateTextPattern(text) {
+        try {
+            const response = await request
+                .post('https://api.sightengine.com/1.0/text/check.json')
+                .field('text', text)
+                .field('mode', 'rules')
+                .field('categories', this.config.categories)
+                .field('lang', this.config.lang)
+                .field('api_user', this.config.apiUser)
+                .field('api_secret', this.config.apiKey)
+                .accept('json');
+
+            const matchesByClass = this.config.categoriesArray.reduce((acc, curr) => {
+                acc[curr] = response.body[curr].matches;
+                return acc;
+            }, {});
+
+            const result = !!Object.values(matchesByClass).filter((e) => !!e.length).length;
+            return {
+                result: result,
+                data: matchesByClass,
             };
         } catch (err) {
             throw { status: 500, message: `error during SightEngine API request : ${err.message}` };
@@ -98,7 +131,8 @@ class sightEngineHandler {
 
         // text moderation on content
         if (data.content) {
-            textResult = await this.moderateText(data.content);
+            // textResult = await this.moderateTextML(data.content);
+            textResult = await this.moderateTextPattern(data.content);
         } else {
             textResult = { result: false, message: 'No text provided' };
         }
