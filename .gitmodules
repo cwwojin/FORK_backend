@@ -2,3 +2,7 @@
 	path = lambda
 	url = https://github.com/cwwojin/FORK_backend_lambda.git
 	branch = main
+[submodule "database"]
+	path = database
+	url = https://github.com/cwwojin/FORK_backend_database.git
+	branch = main
