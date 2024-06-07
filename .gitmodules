@@ -1,0 +1,4 @@
+[submodule "lambda"]
+	path = lambda
+	url = https://github.com/cwwojin/FORK_backend_lambda.git
+	branch = main
