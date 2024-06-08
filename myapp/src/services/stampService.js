@@ -32,27 +32,40 @@ module.exports = {
     /**
      * perform a transaction
      * - args: buyer_id, facility_id, seller_id, type, amount
-     * 1. create row in "transaction" table
-     * 2. update row in "stampbook" corresponding to the buyer & facility
-     * 3. transaction type 0: -(amount), 1: +(amount)
-     * 4. COMMIT or ROLLBACK
+     * 1. create a stampbook (buyer_id, facility_id) if it doesn't exist
+     * 2. create row in "transaction" table
+     * 3. update row in "stampbook" corresponding to the buyer & facility
+     * 4. transaction type 0: -(amount), 1: +(amount)
      * */
     stampTransaction: async (args, clientId) => {
         const client = await db.connect();
         try {
             // facility manager verification
             const myFacilities = await userService.getMyFacility(clientId);
-            const allow = (args.sellerId === clientId) && (myFacilities.map((e) => e.id).includes(args.facilityId))
+            const allow =
+                args.sellerId === clientId &&
+                myFacilities.map((e) => e.id).includes(args.facilityId);
             if (!allow) {
-                throw { 
-                    status: 403, 
-                    message: `Requesting user is not allowed to approve stamp transaction. Only the facility manager can be the seller. 
-                        sellerId : ${clientId}, facilityId = ${args.facilityId}`
+                throw {
+                    status: 403,
+                    message: `Requesting user is not allowed to approve stamp transaction. sellerId : ${clientId}, facilityId = ${args.facilityId}`,
                 };
             }
 
             const amountDiff = (args.type ? 1 : -1) * args.amount;
             await client.query('BEGIN');
+
+            // create stampbook if it doesn't exist
+            const checkStampBooks = await module.exports.getStampBook(
+                args.buyerId,
+                args.facilityId
+            );
+            if (!checkStampBooks.length)
+                await module.exports.createStampBook({
+                    userId: args.buyerId,
+                    facilityId: args.facilityId,
+                });
+
             let result = await client.query({
                 text: `insert into transaction (buyer_id, facility_id, seller_id, type, amount)
                     values ($1, $2, $3, $4, $5)
@@ -69,7 +82,7 @@ module.exports = {
             return result.rows;
         } catch (err) {
             await client.query('ROLLBACK');
-            throw new Error(err);
+            throw err;
         } finally {
             client.release();
         }

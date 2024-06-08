@@ -36,10 +36,7 @@ module.exports = {
     /** perform a stamp transaction */
     stampTransaction: async (req, res, next) => {
         try {
-            const result = await stampService.stampTransaction(
-                req.body,
-                getClientId(req),
-            );
+            const result = await stampService.stampTransaction(req.body, getClientId(req));
             res.status(201).json({
                 status: 'success',
                 data: result[0],
