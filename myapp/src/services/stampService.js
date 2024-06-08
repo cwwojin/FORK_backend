@@ -1,4 +1,5 @@
 const db = require('../models/index');
+const userService = require('./userService');
 
 module.exports = {
     /** get stampbooks by query - user_id, facility_id */
@@ -36,9 +37,20 @@ module.exports = {
      * 3. transaction type 0: -(amount), 1: +(amount)
      * 4. COMMIT or ROLLBACK
      * */
-    stampTransaction: async (args) => {
+    stampTransaction: async (args, clientId) => {
         const client = await db.connect();
         try {
+            // facility manager verification
+            const myFacilities = await userService.getMyFacility(clientId);
+            const allow = (args.sellerId === clientId) && (myFacilities.map((e) => e.id).includes(args.facilityId))
+            if (!allow) {
+                throw { 
+                    status: 403, 
+                    message: `Requesting user is not allowed to approve stamp transaction. Only the facility manager can be the seller. 
+                        sellerId : ${clientId}, facilityId = ${args.facilityId}`
+                };
+            }
+
             const amountDiff = (args.type ? 1 : -1) * args.amount;
             await client.query('BEGIN');
             let result = await client.query({
