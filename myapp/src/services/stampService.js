@@ -73,7 +73,7 @@ module.exports = {
                 values: [args.buyerId, args.facilityId, args.sellerId, args.type, args.amount],
             });
             result = await client.query({
-                text: `update stampbook set cnt = cnt + $1
+                text: `update stampbook set cnt = greatest(cnt + $1, 0)
                     where user_id = $2 and facility_id = $3
                     returning *`,
                 values: [amountDiff, args.buyerId, args.facilityId],
