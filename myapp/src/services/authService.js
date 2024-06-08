@@ -44,6 +44,7 @@ module.exports = {
             id: user.id,
             accountId: user.account_id,
             userType: user.user_type,
+            iat: Date.now(),
         };
 
         const token = getAccessToken(payload);
@@ -275,7 +276,7 @@ module.exports = {
 
             // generate a refresh token
             const refreshToken = jwt.sign(
-                { id: userId },
+                { id: userId, iat: Date.now() },
                 process.env.JWT_REFRESH_SECRET,
                 { expiresIn: REFRESH_TOKEN_EXPIRESIN } // exp : 2 weeks
             );
@@ -316,6 +317,7 @@ module.exports = {
             const [type, oldAccessToken] = splitByDelimiter(args.accessToken, ' ');
             const { id } = jwt.verify(oldAccessToken, process.env.JWT_SECRET, {
                 ignoreExpiration: true,
+                // clockTimestamp: Date.now(),
             });
 
             // get saved RT from DB
@@ -325,8 +327,12 @@ module.exports = {
             const savedRefreshToken = rows[0].refresh_token;
 
             // decode both - RT, savedRT -> compare both token & payload
-            const inputRTPayload = jwt.verify(args.refreshToken, process.env.JWT_REFRESH_SECRET);
-            const savedRTPayload = jwt.verify(savedRefreshToken, process.env.JWT_REFRESH_SECRET);
+            const inputRTPayload = jwt.verify(args.refreshToken, process.env.JWT_REFRESH_SECRET, {
+                // clockTimestamp: Date.now(),
+            });
+            const savedRTPayload = jwt.verify(savedRefreshToken, process.env.JWT_REFRESH_SECRET, {
+                // clockTimestamp: Date.now(),
+            });
 
             const verify =
                 args.refreshToken === savedRefreshToken && inputRTPayload.id === savedRTPayload.id;
@@ -338,6 +344,7 @@ module.exports = {
                 id: user[0].id,
                 accountId: user[0].account_id,
                 userType: user[0].user_type,
+                iat: Date.now(),
             };
             const newAccessToken = getAccessToken(payload);
 
@@ -348,7 +355,6 @@ module.exports = {
                 user: payload,
             };
         } catch (err) {
-            if (err.message) throw err;
             throw { status: 401, message: `refresh token validation failed. Please login again` };
         }
     },

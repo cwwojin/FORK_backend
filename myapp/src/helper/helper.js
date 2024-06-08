@@ -6,8 +6,8 @@ const searchBarInputPattern = new RegExp('^[ㄱ-ㅎㅏ-ㅣ가-힣a-zA-Z0-9!?@#$&
 module.exports = {
     /** CONSTANTS */
     BCRYPT_SALTROUNDS: 5,
-    ACCESS_TOKEN_EXPIRESIN: '10m',
-    REFRESH_TOKEN_EXPIRESIN: '14d',
+    ACCESS_TOKEN_EXPIRESIN: '5m',
+    REFRESH_TOKEN_EXPIRESIN: '10m',
     /** ENUM */
     USER_TYPES: [0, 1, 2],
     TRANSACTION_TYPES: [0, 1],
