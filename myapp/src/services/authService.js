@@ -44,7 +44,7 @@ module.exports = {
             id: user.id,
             accountId: user.account_id,
             userType: user.user_type,
-            iat: Date.now(),
+            iat: Math.floor(Date.now() / 1000),
         };
 
         const token = getAccessToken(payload);
@@ -276,7 +276,7 @@ module.exports = {
 
             // generate a refresh token
             const refreshToken = jwt.sign(
-                { id: userId, iat: Date.now() },
+                { id: userId, iat: Math.floor(Date.now() / 1000) },
                 process.env.JWT_REFRESH_SECRET,
                 { expiresIn: REFRESH_TOKEN_EXPIRESIN } // exp : 2 weeks
             );
@@ -344,7 +344,7 @@ module.exports = {
                 id: user[0].id,
                 accountId: user[0].account_id,
                 userType: user[0].user_type,
-                iat: Date.now(),
+                iat: Math.floor(Date.now() / 1000),
             };
             const newAccessToken = getAccessToken(payload);
 
