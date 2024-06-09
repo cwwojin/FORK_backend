@@ -1,19 +1,24 @@
 const { Router } = require('express');
-const router = Router();
+const { param, query } = require('express-validator');
+
 const mapController = require('../controllers/mapController');
-const { body, param, query } = require('express-validator');
 const { validatorChecker } = require('../middleware/validator');
-const { validateIntArray, validateMapArea } = require('../helper/helper');
+const { validateIntArray, validateSearchInput } = require('../helper/helper');
+
+const router = Router();
 
 router
-    .get(       // GET - get location by id
+    .get(
+        // GET - get location by id
         '/locate/:id',
         [
-            param('id', `route param 'id' must be a positive integer`).exists().isInt({min: 1}),
+            param('id', `route param 'id' must be a positive integer`).exists().isInt({ min: 1 }),
             validatorChecker,
         ],
         mapController.getLocation
-    ).get(      // GET - get location by area
+    )
+    .get(
+        // GET - get location by area
         '/',
         [
             query('latMin', `query field 'latMin' should be float`).exists().isFloat(),
@@ -23,11 +28,24 @@ router
             validatorChecker,
         ],
         mapController.getLocationByArea
-    ).get(      // GET - get location by query
+    )
+    .get(
+        /** GET - get locations by query
+         * (search bar input) alphanumeric, whitespace, sp-char, numbers, length limit 50
+         */
         '/search',
         [
-            query('name', `optional query field 'name' must be a string`).optional().isString(),
-            query('openNow', `optional query field 'openNow' must be boolean`).optional().isBoolean(),
+            query('name', `optional query field 'name' must be a string`)
+                .optional()
+                .isString()
+                .isLength({ max: 50 })
+                .custom(validateSearchInput),
+            query('openNow', `optional query field 'openNow' must be boolean`)
+                .optional()
+                .isBoolean(),
+            query('favorite', `optional query field 'favorite' must be boolean`)
+                .optional()
+                .isBoolean(),
             query('preferences', `optional query field 'preferences' must be an integer array`)
                 .optional()
                 .isString()
@@ -36,6 +54,6 @@ router
             validatorChecker,
         ],
         mapController.getLocationByQuery
-    )
+    );
 
 module.exports = router;

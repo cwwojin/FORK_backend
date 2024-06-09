@@ -1,5 +1,6 @@
 /** load email config from env */
 const verificationMailTemplate = `<h1>Enter the Verification Code Below \n\n\n\n\n</h1>`;
+const passwordResetMailTemplate = `<h1>Here is the new password for your FORK account \n\n\n\n\n</h1>`;
 
 module.exports = {
     nodeMailConfig: {
@@ -10,8 +11,8 @@ module.exports = {
         auth: {
             user: process.env.NODEMAIL_USER,
             pass: process.env.NODEMAIL_PASSWORD,
-        }
+        },
     },
     mailTemplate: verificationMailTemplate,
-
-}
+    passwordResetMailTemplate: passwordResetMailTemplate,
+};
