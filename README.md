@@ -1,11 +1,13 @@
 # FORK_backend
 
 ## Table of contents
-1. [Introduction](#introduction)
-2. [Installation](#installation)
-3. [Contribution](#contribution)
-4. [API Docs](#api-documentation)
-5. [Team](#team)
+- [FORK\_backend](#fork_backend)
+  - [Table of contents](#table-of-contents)
+  - [This is the introduction ](#this-is-the-introduction-)
+  - [Installation ](#installation-)
+  - [Contribution ](#contribution-)
+  - [API Documentation ](#api-documentation-)
+  - [Team ](#team-)
 
 ## This is the introduction <a name="introduction"></a>
 2024 Spring CS350 Project - FORK
@@ -32,6 +34,6 @@ $ bash compose.sh dev
 
 ## Team <a name="team"></a>
 Woojin Choi <cwwojin@gmail.com> <br/>
-Wonjung Woo <br/>
-Aya Hamane <br/>
-Nurgissa Sailaubek <br/>
+Wonjung Woo <agnes2327@kaist.ac.kr> <br/>
+Aya Hamane <aya.hamane@epfl.ch> <br/>
+Nurgissa Sailaubek <sailaubek.nurgissa@gmail.com> <br/>
