@@ -64,19 +64,18 @@ module.exports = {
         const result = await db.query(query);
         return result.rows;
     },
-    /** update user - profile (password, email, display_name) 
+    /** update user - profile (password, email, display_name)
      * - optionally update user preferences from input list
-    */
+     */
     updateUserProfile: async (info, id) => {
         const passwordHash = await bcrypt.hash(info.password, BCRYPT_SALTROUNDS);
         const query = {
             text: 'update "user" set password = $1, email = $2 where id = $3 returning *',
             values: [passwordHash, info.email, id],
         };
-        
+
         // update preferences if given
-        if (info.preferences)
-            await module.exports.setUserPreferences(id, info.preferences);
+        if (info.preferences) await module.exports.setUserPreferences(id, info.preferences);
 
         const result = await db.query(query);
         return result.rows;

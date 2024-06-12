@@ -7,7 +7,6 @@ const {
     USER_TYPES,
     validateUserId,
     validatePassword,
-    validateOptionalURL,
     validateIntArray,
 } = require('../helper/helper');
 const { s3Uploader } = require('../helper/s3Engine');
@@ -234,10 +233,7 @@ router
             body('businessId').exists().isString().withMessage('Business ID is required'),
             body('type').exists().isString().withMessage('Type is required'),
             body('description').exists().isString().withMessage('Description is required'),
-            body('url')
-                .exists()
-                .isString()
-                .withMessage('Valid URL is required'),
+            body('url').exists().isString().withMessage('Valid URL is required'),
             body('phone', `body field 'phone' must be string`).exists().isString(),
             body('email', `body field 'email' must be string`).exists().isString(),
             /** optionally update address, opening-hours, menus, preferences */
