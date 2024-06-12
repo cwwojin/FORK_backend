@@ -36,7 +36,8 @@ Here are the example error codes and HTTP status codes for all API responses.
 | **401 Unauthorized** | `Unauthorized Access` | Request missing authorization token / required fields |
 | **403 Forbidden** | `Forbidden Access` | Request rejected, because it tried to access API calls not available to client user type. *(ex. non-admin tried to access admin features)* |
 | **404 Not Found** | `ex. No user with id: 1` | Requested resource not found |
-| **409 Conflict** | `ex. insert or update on table violates foreign key constraint` | Request accepted, but failed due to resource conflict with DB / server
+| **409 Conflict** | `ex. insert or update on table violates foreign key constraint` | Request accepted, but failed due to resource conflict with DB / server |
+| **499 Unknown** | `ex. review upload failed due to harmful content detected` | POST request rejected due to user content moderation |
 | **200 OK** | | Request accepted |
 | **201 Created** | | Request accepted, and resource was created as requested |
 
