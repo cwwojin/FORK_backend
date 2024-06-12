@@ -8,6 +8,7 @@ const {
     validateUserId,
     validatePassword,
     validateOptionalURL,
+    validateIntArray,
 } = require('../helper/helper');
 const { s3Uploader } = require('../helper/s3Engine');
 const { checkPermission } = require('../middleware/authMiddleware');
@@ -77,6 +78,9 @@ router
                 .isLength({ min: 6, max: 20 })
                 .custom(validatePassword),
             body('email', `body field 'email' must be a valid email`).exists().isEmail(),
+            body('preferences', `optional body field 'preferences' must be an integer array`)
+                .optional()
+                .custom(validateIntArray),
             validatorChecker,
         ],
         userController.updateUserProfile

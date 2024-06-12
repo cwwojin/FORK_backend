@@ -64,13 +64,20 @@ module.exports = {
         const result = await db.query(query);
         return result.rows;
     },
-    // update user - profile (password, email, display_name)
+    /** update user - profile (password, email, display_name) 
+     * - optionally update user preferences from input list
+    */
     updateUserProfile: async (info, id) => {
         const passwordHash = await bcrypt.hash(info.password, BCRYPT_SALTROUNDS);
         const query = {
             text: 'update "user" set password = $1, email = $2 where id = $3 returning *',
             values: [passwordHash, info.email, id],
         };
+        
+        // update preferences if given
+        if (info.preferences)
+            await module.exports.setUserPreferences(id, info.preferences);
+
         const result = await db.query(query);
         return result.rows;
     },
@@ -114,6 +121,42 @@ module.exports = {
         };
         const result = await db.query(query);
         return result.rows;
+    },
+    /** set user preferences - in batch
+     * - (args) array of preference-IDs
+     * - delete all preferences -> insert all from input
+     */
+    setUserPreferences: async (userId, preferences) => {
+        const client = await db.connect();
+        try {
+            await client.query('BEGIN');
+
+            // delete all preferences
+            await client.query({
+                text: `delete from user_preference where user_id = $1`,
+                values: [userId],
+            });
+
+            // insert all preferences from input (if nonempty)
+            let result = [];
+            if (preferences.length) {
+                let baseQuery = `insert into user_preference (user_id, preference_id) values `;
+                baseQuery = baseQuery + preferences.map((e, idx) => `($1, $${idx + 2})`).join(', ');
+                const { rows } = await client.query({
+                    text: baseQuery + ` returning *`,
+                    values: [userId, ...preferences],
+                });
+                result = rows;
+            }
+
+            await client.query('COMMIT');
+            return result;
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        } finally {
+            client.release();
+        }
     },
     /** get user favorites*/
     getUserFavorite: async (id) => {
@@ -268,10 +311,10 @@ module.exports = {
         return result.rows[0];
     },
 
-    /** Delete the facility from the system 
+    /** Delete the facility from the system
      * 1. validate facility ownership
      * 2. call facilityService to delete the facility (rest will be handled by cascade deletes)
-    */
+     */
     deleteMyfacility: async (userId, facilityId) => {
         // validate facility ownership
         const myFacility = await module.exports.getMyFacility(userId);

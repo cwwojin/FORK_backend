@@ -55,9 +55,12 @@ module.exports = {
     },
     // update user - profile
     updateUserProfile: async (req, res, next) => {
-        const id = Number(req.params.id);
+        const clientId = getClientId(req);
         try {
-            const result = await userService.updateUserProfile(req.body, id);
+            const result = await userService.updateUserProfile(
+                req.body, 
+                clientId || req.params.id,
+            );
             if (result.length !== 0) {
                 res.status(201).json({
                     status: 'success',
@@ -291,10 +294,7 @@ module.exports = {
     /** delete my facility */
     deleteMyFacility: async (req, res, next) => {
         try {
-            const result = await userService.deleteMyfacility(
-                req.params.id,
-                req.params.facilityId
-            );
+            const result = await userService.deleteMyfacility(req.params.id, req.params.facilityId);
             if (result) {
                 res.status(200).json({ status: 'success', data: result });
             } else {
