@@ -34,6 +34,6 @@ $ bash compose.sh dev
 
 ## Team <a name="team"></a>
 Woojin Choi <cwwojin@gmail.com> <br/>
-Wonjung Woo <br/>
-Aya Hamane <br/>
-Nurgissa Sailaubek <br/>
+Wonjung Woo <agnes2327@kaist.ac.kr> <br/>
+Aya Hamane <aya.hamane@epfl.ch> <br/>
+Nurgissa Sailaubek <sailaubek.nurgissa@gmail.com> <br/>
