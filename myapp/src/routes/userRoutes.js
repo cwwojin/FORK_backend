@@ -237,7 +237,6 @@ router
             body('url')
                 .exists()
                 .isString()
-                .custom(validateOptionalURL)
                 .withMessage('Valid URL is required'),
             body('phone', `body field 'phone' must be string`).exists().isString(),
             body('email', `body field 'email' must be string`).exists().isString(),
