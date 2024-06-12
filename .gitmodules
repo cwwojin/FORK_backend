@@ -6,3 +6,7 @@
 	path = database
 	url = https://cwwojin@github.com/cwwojin/FORK_backend_database.git
 	branch = main
+[submodule "docs"]
+	path = docs
+	url = https://github.com/cwwojin/FORK_backend_docs.git
+	branch = main
