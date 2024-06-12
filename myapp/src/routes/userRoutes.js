@@ -270,7 +270,7 @@ router
             param('facilityId').isNumeric().withMessage('Valid facility ID is required'),
             validatorChecker,
         ],
-        userController.deleteFacilityRelationship
+        userController.deleteMyFacility
     );
 
 /** Router for "/api/preferences" */

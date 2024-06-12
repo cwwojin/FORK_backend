@@ -258,7 +258,7 @@ module.exports = {
         return result;
     },
 
-    // Delete facility relationship (not the facility)
+    /** Delete facility relationship (not the facility) */
     deleteFacilityRelationship: async (id, facilityId) => {
         const query = {
             text: `DELETE FROM manages WHERE user_id = $1 AND facility_id = $2 RETURNING *`,
@@ -266,5 +266,23 @@ module.exports = {
         };
         const result = await db.query(query);
         return result.rows[0];
+    },
+
+    /** Delete the facility from the system 
+     * 1. validate facility ownership
+     * 2. call facilityService to delete the facility (rest will be handled by cascade deletes)
+    */
+    deleteMyfacility: async (userId, facilityId) => {
+        // validate facility ownership
+        const myFacility = await module.exports.getMyFacility(userId);
+        if (!myFacility.map((e) => e.id).includes(Number(facilityId))) {
+            throw {
+                status: 404,
+                message: `Facility not found or is not managed by the user`,
+            };
+        }
+
+        const result = await facilityService.deleteFacility(facilityId);
+        return result;
     },
 };

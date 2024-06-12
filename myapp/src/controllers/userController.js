@@ -288,10 +288,10 @@ module.exports = {
             next(err);
         }
     },
-    /** delete facility relationship */
-    deleteFacilityRelationship: async (req, res, next) => {
+    /** delete my facility */
+    deleteMyFacility: async (req, res, next) => {
         try {
-            const result = await userService.deleteFacilityRelationship(
+            const result = await userService.deleteMyfacility(
                 req.params.id,
                 req.params.facilityId
             );
