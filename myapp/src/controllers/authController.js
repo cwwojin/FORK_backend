@@ -108,7 +108,7 @@ module.exports = {
     /** logout user - destroy users refresh token from DB */
     logoutUser: async (req, res, next) => {
         try {
-            const result = await authService.logoutUser(getClientId(req));
+            await authService.logoutUser(getClientId(req));
             res.status(200).json({
                 status: 'success',
                 message: 'logout successful',

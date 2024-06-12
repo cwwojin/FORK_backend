@@ -114,7 +114,7 @@ class FacilityService {
       RETURNING *;
     `;
         const result = [];
-        for (const hour of openingHours) {
+        for await (const hour of openingHours) {
             const values = [facilityId, hour.day, hour.openTime, hour.closeTime];
             const { rows } = await client.query(insertQuery, values);
             result.push(rows[0]);
@@ -124,12 +124,19 @@ class FacilityService {
 
     async insertMenuItems(client, facilityId, menuItems) {
         const result = [];
-        for (const item of menuItems) {
+
+        // delete all menus first
+        // await client.query({
+        //     text: `delete from menu where facility_id = $1`,
+        //     values: [facilityId],
+        // });
+
+        for await (const item of menuItems) {
             const query = `
-        INSERT INTO menu (facility_id, name, description, price, quantity, img_uri)
-        VALUES ($1, $2, $3, $4, $5, $6)
-        RETURNING *;
-      `;
+                INSERT INTO menu (facility_id, name, description, price, quantity, img_uri)
+                VALUES ($1, $2, $3, $4, $5, $6)
+                RETURNING *;
+            `;
             const values = [
                 facilityId,
                 item.name,
@@ -146,12 +153,12 @@ class FacilityService {
 
     async insertPosts(client, facilityId, posts) {
         const result = [];
-        for (const post of posts) {
+        for await (const post of posts) {
             const query = `
-      INSERT INTO post (author_id, facility_id, title, content)
-      VALUES ($1, $2, $3, $4)
-      RETURNING *;
-    `;
+                INSERT INTO post (author_id, facility_id, title, content)
+                VALUES ($1, $2, $3, $4)
+                RETURNING *;
+            `;
             const values = [post.authorId, facilityId, post.title, post.content];
             const { rows } = await client.query(query, values);
             result.push(rows[0]);
@@ -345,7 +352,7 @@ class FacilityService {
             const result = [];
             const hoursArray = Array.isArray(openingHours) ? openingHours : [openingHours];
 
-            for (const hour of hoursArray) {
+            for await (const hour of hoursArray) {
                 const values = [facilityId, hour.day, hour.openTime, hour.closeTime];
                 const { rows } = await client.query(insertQuery, values);
                 result.push(rows[0]);
@@ -408,7 +415,7 @@ class FacilityService {
 
             // Insert menu items
             const result = [];
-            for (const item of menuItems) {
+            for await (const item of menuItems) {
                 const query = `
           INSERT INTO menu (facility_id, name, description, price, quantity)
           VALUES ($1, $2, $3, $4, $5)
@@ -651,7 +658,7 @@ class FacilityService {
           VALUES ($1, $2, $3)
           RETURNING *;
         `;
-                for (const reward of data.rewards) {
+                for await (const reward of data.rewards) {
                     const rewardValues = [facilityId, reward.cnt, reward.name];
                     await client.query(rewardsInsertQuery, rewardValues);
                 }

@@ -7,7 +7,7 @@ const {
     USER_TYPES,
     validateUserId,
     validatePassword,
-    validateOptionalURL,
+    validateIntArray,
 } = require('../helper/helper');
 const { s3Uploader } = require('../helper/s3Engine');
 const { checkPermission } = require('../middleware/authMiddleware');
@@ -77,6 +77,9 @@ router
                 .isLength({ min: 6, max: 20 })
                 .custom(validatePassword),
             body('email', `body field 'email' must be a valid email`).exists().isEmail(),
+            body('preferences', `optional body field 'preferences' must be an integer array`)
+                .optional()
+                .custom(validateIntArray),
             validatorChecker,
         ],
         userController.updateUserProfile
@@ -230,11 +233,7 @@ router
             body('businessId').exists().isString().withMessage('Business ID is required'),
             body('type').exists().isString().withMessage('Type is required'),
             body('description').exists().isString().withMessage('Description is required'),
-            body('url')
-                .exists()
-                .isString()
-                .custom(validateOptionalURL)
-                .withMessage('Valid URL is required'),
+            body('url').exists().isString().withMessage('Valid URL is required'),
             body('phone', `body field 'phone' must be string`).exists().isString(),
             body('email', `body field 'email' must be string`).exists().isString(),
             /** optionally update address, opening-hours, menus, preferences */
@@ -270,7 +269,7 @@ router
             param('facilityId').isNumeric().withMessage('Valid facility ID is required'),
             validatorChecker,
         ],
-        userController.deleteFacilityRelationship
+        userController.deleteMyFacility
     );
 
 /** Router for "/api/preferences" */

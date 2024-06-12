@@ -229,7 +229,7 @@ module.exports = {
 
     getPostById: async (req, res, next) => {
         try {
-            const { facilityId, postId } = req.params;
+            const { postId } = req.params;
             const post = await facilityService.getPostById(postId);
             res.status(200).json({
                 status: 'success',
