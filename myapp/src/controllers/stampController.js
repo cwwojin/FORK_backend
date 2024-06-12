@@ -1,3 +1,4 @@
+const { getClientId } = require('../helper/helper');
 const stampService = require('../services/stampService');
 
 module.exports = {
@@ -35,7 +36,7 @@ module.exports = {
     /** perform a stamp transaction */
     stampTransaction: async (req, res, next) => {
         try {
-            const result = await stampService.stampTransaction(req.body);
+            const result = await stampService.stampTransaction(req.body, getClientId(req));
             res.status(201).json({
                 status: 'success',
                 data: result[0],

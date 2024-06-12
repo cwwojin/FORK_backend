@@ -1,3 +1,4 @@
+const { getClientId } = require('../helper/helper');
 const authService = require('../services/authService');
 
 module.exports = {
@@ -63,7 +64,7 @@ module.exports = {
      */
     signOutUser: async (req, res, next) => {
         try {
-            const result = await authService.signOutUser(req.header('id'));
+            const result = await authService.signOutUser(getClientId(req));
             res.status(200).json({
                 status: 'success',
                 data: result[0],
@@ -83,6 +84,34 @@ module.exports = {
             res.status(201).json({
                 status: 'success',
                 message: 'Password reset mail sent', // hide email
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    /** get a new access token via refresh token */
+    getNewAccessTokenFromRefresh: async (req, res, next) => {
+        try {
+            const result = await authService.getNewAccessTokenFromRefresh({
+                accessToken: req.header('Authorization'),
+                refreshToken: req.header('Refresh'),
+            });
+            res.status(200).json({
+                status: 'success',
+                data: result,
+                message: 'access token renewed successfully',
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    /** logout user - destroy users refresh token from DB */
+    logoutUser: async (req, res, next) => {
+        try {
+            await authService.logoutUser(getClientId(req));
+            res.status(200).json({
+                status: 'success',
+                message: 'logout successful',
             });
         } catch (err) {
             next(err);
