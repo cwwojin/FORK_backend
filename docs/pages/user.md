@@ -17,9 +17,9 @@
   - [DELETE : delete a user favorite](#delete--delete-a-user-favorite)
   - [POST : upload a user profile image](#post--upload-a-user-profile-image)
   - [DELETE : delete a user profile image](#delete--delete-a-user-profile-image)
-  - [GET : get facility with id](#get--get-facility-with-id)
-  - [POST : update facility with id](#post--update-facility-with-id)
-  - [DELETE : delete facility with id](#delete--delete-facility-with-id)
+  - [GET : Get My Facilities](#get--get-my-facilities)
+  - [POST : Update My Facility](#post--update-my-facility)
+  - [DELETE : Delete My Facility](#delete--delete-my-facility)
   - [GET : get posts of all user's favorite facilities](#get--get-posts-of-all-users-favorite-facilities)
 - [Preference Methods](#preference-methods)
   - [GET : get all preferences from the system](#get--get-all-preferences-from-the-system)
@@ -102,7 +102,8 @@
 ---
 
 ## PUT : update user profile
-- update user profile - updatable fields are : `password, email`
+- update user profile - updatable fields are : `password, email, preferences`
+- preferences will be updated by input of list of preferences. This will overwrite all of the user's previous preference settings.
 
 ### URL
 `/api/users/profile/:id`
@@ -115,6 +116,7 @@
 | param | id | int | O | the unique id of the `user` |
 | body | password | string | O | the new password of the user, or the existing one if its not to be updated |
 | body | email | string | O | the new email of the user, or the existing one if its not to be updated |
+| body | preferences | array | - | integer array containing preference `id` |
 
 ### Response Format
 - HTTP Status Code: `201`
@@ -373,7 +375,7 @@
 | data | the updated `user` object |
 
 ---
-## GET : get facility with id
+## GET : Get My Facilities
 
 - Get facility by its ID associated with the user
 
@@ -400,7 +402,7 @@
 
 ---
 
-## POST : update facility with id
+## POST : Update My Facility
 
 - Update a facility by its ID associated with the user
 
@@ -509,9 +511,10 @@
 
 ---
 
-## DELETE : delete facility with id
+## DELETE : Delete My Facility
 
 - Delete a facility by its ID associated with the user
+- This request will remove the facility entirely from the system DB
 
 ### URL
 
